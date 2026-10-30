@@ -1473,6 +1473,50 @@ input,select,textarea{border-radius:10px;}
   #greetingSub{font-size:15.5px;}
 }
 
+/* ============================================================
+   Calm Overview: three things up front, the rest one tap away
+   ============================================================ */
+#view-overview .quick-actions-row{display:none !important;}
+.setaside-card.hero{grid-template-columns:1.5fr 1fr 1fr;align-items:end;padding:28px 30px;background:var(--white);border-color:var(--line);}
+.setaside-card.hero .sa-col + .sa-col{border-left:1px solid var(--line);padding-left:24px;}
+.setaside-card.hero .sa-label{color:var(--ink-500);font-size:11px;letter-spacing:.1em;font-weight:600;}
+.setaside-card.hero .sa-value{font-weight:500;font-size:24px;letter-spacing:-0.02em;font-variant-numeric:tabular-nums;color:var(--ink-900);}
+.setaside-card.hero .sa-main .sa-value{font-size:52px;line-height:1.05;color:var(--green-800);margin-top:6px;}
+.setaside-card.hero .sa-sub{color:var(--ink-500);}
+.setaside-card.hero .sa-edit{background:transparent;border-color:var(--line);color:var(--ink-500);}
+.fy-card{padding:6px 24px;margin-bottom:14px;}
+.fy-head{font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:600;color:var(--ink-500);padding:16px 0 4px;}
+.fy-row{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 0;border-top:1px solid var(--line);}
+.fy-head + .fy-row{border-top:none;}
+.fy-text{font-size:14.5px;font-weight:500;color:var(--ink-900);}
+.fy-why{font-size:12.5px;color:var(--ink-500);margin-top:2px;}
+.fy-actions{display:flex;align-items:center;gap:14px;flex:none;}
+.fy-btn{appearance:none;border:1px solid var(--green-800);background:var(--green-800);color:#fff;border-radius:999px;padding:8px 16px;font:inherit;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;}
+.fy-btn:hover{background:var(--green-900);}
+.fy-btn:disabled{opacity:.5;}
+.fy-later{appearance:none;border:none;background:none;padding:0;font:inherit;font-size:13px;color:var(--ink-500);cursor:pointer;white-space:nowrap;}
+.fy-later:hover{color:var(--ink-900);}
+.fy-empty .fy-text{color:var(--ink-500);font-weight:400;}
+.insight-strip{margin:-8px 0 20px;}
+.ov-more{margin-top:8px;}
+.ov-more > summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;color:var(--ink-500);font-size:13.5px;font-weight:500;border-radius:999px;}
+.ov-more > summary::-webkit-details-marker{display:none;}
+.ov-more > summary::after{content:"";width:7px;height:7px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:translateY(-2px) rotate(45deg);transition:transform .2s;}
+.ov-more[open] > summary::after{transform:translateY(2px) rotate(-135deg);}
+.ov-more > summary:hover{color:var(--ink-900);background:var(--cream-100);}
+.ov-more-body{padding-top:10px;}
+.ov-more .wins-row{margin:0 0 16px;}
+@media (max-width:720px){
+  .setaside-card.hero{grid-template-columns:1fr 1fr;padding:22px 20px;gap:18px;}
+  .setaside-card.hero .sa-main{grid-column:1 / -1;}
+  .setaside-card.hero .sa-main .sa-value{font-size:42px;}
+  .setaside-card.hero .sa-col + .sa-col{border-left:none;padding-left:0;}
+  .setaside-card.hero .sa-col:last-of-type{border-left:1px solid var(--line);padding-left:16px;}
+  .fy-card{padding:4px 18px;}
+  .fy-row{flex-direction:column;align-items:flex-start;gap:10px;}
+  .fy-actions{flex-direction:row-reverse;}
+}
+
 </style>
 </head>
 <body>
@@ -2074,16 +2118,11 @@ input,select,textarea{border-radius:10px;}
         </div>
       </div>
 
-      <div id="ovWins"></div>
       <div id="ovInsight"></div>
+      <div id="ovSetAside"></div>
       <div id="ovNudges"></div>
       <div id="ovPersona"></div>
-      <div id="ovSetAside"></div>
       <div id="ovChecklist"></div>
-      <div id="ovGoals"></div>
-      <div id="ovTakeHome"></div>
-      <div id="ovSmoothing"></div>
-      <div id="ovForecast"></div>
 
       <div class="stat-row">
         <div class="card stat-card">
@@ -2126,6 +2165,15 @@ input,select,textarea{border-radius:10px;}
           <div class="qa-label">Create Invoice</div>
         </button>
       </div>
+
+      <details class="ov-more" id="ovMore">
+        <summary><span>Charts, planning &amp; milestones</span></summary>
+        <div class="ov-more-body">
+      <div id="ovWins"></div>
+      <div id="ovGoals"></div>
+      <div id="ovTakeHome"></div>
+      <div id="ovSmoothing"></div>
+      <div id="ovForecast"></div>
 
       <div class="grid-2 section-gap">
         <div class="card chart-card">
@@ -2201,6 +2249,8 @@ input,select,textarea{border-radius:10px;}
           <div class="attn-sublist" data-attn-list="expense"></div>
         </div>
       </div>
+        </div>
+      </details>
     </section>
 
     <!-- ============ INCOME ============ -->
@@ -3841,6 +3891,7 @@ input,select,textarea{border-radius:10px;}
   function attnItemHtml(item, kind){
     const nameField = kind === "income" ? item.source : item.description;
     const options = kind === "income" ? state.incomeCategoryList : state.expenseCategoryList;
+    const guess = attnSuggestion(item, kind);
     return `
       <div class="attn-item" data-attn-item="${item.id}" data-attn-kind="${kind}">
         <div class="glyph">${item.glyph||"•"}</div>
@@ -3849,12 +3900,38 @@ input,select,textarea{border-radius:10px;}
           <div class="n2">${shortDate(item.date)}</div>
         </div>
         <select data-attn-pick="${item.id}">
-          ${options.map(o=>`<option>${o.name}</option>`).join("")}
+          ${options.map(o=>`<option ${o.name===guess?"selected":""}>${o.name}</option>`).join("")}
         </select>
         <div class="iamt">${money(item.amount)}</div>
         <button type="button" class="iabtn approve" data-attn-approve="${item.id}" data-attn-kind="${kind}">Approve</button>
         <button type="button" class="iabtn dismiss" data-attn-dismiss="${item.id}" data-attn-kind="${kind}">Dismiss</button>
       </div>`;
+  }
+  function attnSuggestion(item, kind){
+    return kind === "income" ? suggestIncomeType(item.source) : suggestExpenseCategory(item.description);
+  }
+  async function approveAttnItem(kind, id, chosen){
+    const listKey = kind === "income" ? "unclassifiedIncome" : "unclassifiedExpenses";
+    const sourceTable = kind === "income" ? "unclassified_income" : "unclassified_expenses";
+    const idx = state[listKey].findIndex(i=>i.id===id);
+    if(idx === -1) return false;
+    const item = state[listKey][idx];
+    if(chosen){
+      if(kind === "income"){
+        const { data, error } = await dbInsert("income", { user_id:workspaceOwnerId(), date:item.date, source:item.source, glyph:item.glyph, type:chosen, status:"received", amount:item.amount });
+        if(error) return false;
+        state.income.unshift({ id:data.id, date:data.date, source:data.source, glyph:data.glyph, type:data.type, status:data.status, amount:Number(data.amount) });
+      } else {
+        const { data, error } = await dbInsert("expenses", { user_id:workspaceOwnerId(), date:item.date, description:item.description, glyph:item.glyph, category:chosen, payment_method:"Uncategorized", deductible:true, amount:item.amount });
+        if(error) return false;
+        state.expenses.unshift({ id:data.id, date:data.date, description:data.description, glyph:data.glyph, category:data.category, payment:data.payment_method, deductible:data.deductible, amount:Number(data.amount) });
+      }
+    }
+    const { error: delError } = await dbDelete(sourceTable, id);
+    if(delError) return false;
+    const at = state[listKey].findIndex(i=>i.id===id);
+    if(at !== -1) state[listKey].splice(at,1);
+    return true;
   }
   function renderAttentionLists(){
     const incomeItems = state.unclassifiedIncome;
@@ -3986,31 +4063,12 @@ input,select,textarea{border-radius:10px;}
     const btn = approve || dismiss;
     const id = btn.dataset.attnApprove || btn.dataset.attnDismiss;
     const kind = btn.dataset.attnKind;
-    const listKey = kind === "income" ? "unclassifiedIncome" : "unclassifiedExpenses";
-    const sourceTable = kind === "income" ? "unclassified_income" : "unclassified_expenses";
-    const idx = state[listKey].findIndex(i=>i.id===id);
-    if(idx === -1) return;
-    const item = state[listKey][idx];
     btn.disabled = true;
-
-    if(approve){
-      const pick = document.querySelector(`[data-attn-pick="${id}"]`);
-      const chosen = pick ? pick.value : (kind === "income" ? "Other Income" : "Other");
-      if(kind === "income"){
-        const { data, error } = await dbInsert("income", { user_id:workspaceOwnerId(), date:item.date, source:item.source, glyph:item.glyph, type:chosen, status:"received", amount:item.amount });
-        if(error){ btn.disabled = false; return; }
-        state.income.unshift({ id:data.id, date:data.date, source:data.source, glyph:data.glyph, type:data.type, status:data.status, amount:Number(data.amount) });
-      } else {
-        const { data, error } = await dbInsert("expenses", { user_id:workspaceOwnerId(), date:item.date, description:item.description, glyph:item.glyph, category:chosen, payment_method:"Uncategorized", deductible:true, amount:item.amount });
-        if(error){ btn.disabled = false; return; }
-        state.expenses.unshift({ id:data.id, date:data.date, description:data.description, glyph:data.glyph, category:data.category, payment:data.payment_method, deductible:data.deductible, amount:Number(data.amount) });
-      }
-    }
-    const { error: delError } = await dbDelete(sourceTable, id);
-    if(delError){ btn.disabled = false; return; }
-    state[listKey].splice(idx,1);
+    const pick = approve ? document.querySelector(`[data-attn-pick="${id}"]`) : null;
+    const chosen = approve ? (pick ? pick.value : (kind === "income" ? "Other Income" : "Other")) : null;
+    if(!(await approveAttnItem(kind, id, chosen))){ btn.disabled = false; return; }
     renderAttentionLists();
-    renderIncomeTable(); renderExpenseTable(); renderStats();
+    renderIncomeTable(); renderExpenseTable(); renderStats(); renderNudges();
   });
 
   /* ============================================================
@@ -6674,21 +6732,21 @@ input,select,textarea{border-radius:10px;}
     const dueLabel = nd.q.dueDate.toLocaleDateString("en-US",{month:"short",day:"numeric"});
     const pct = Math.round(taxPct()*100);
     wrap.innerHTML = `
-      <div class="card setaside-card">
+      <div class="card setaside-card hero">
+        <div class="sa-col sa-main">
+          <div class="sa-label">Safe to spend</div>
+          <div class="sa-value up">${money(t.safe)}</div>
+          <div class="sa-sub">What's yours after spending and taxes. We do the math.</div>
+        </div>
         <div class="sa-col">
           <div class="sa-label">Set aside for taxes</div>
           <div class="sa-value">${money(t.setAside)}</div>
-          <div class="sa-sub">${pct}% of your ${money(t.net)} profit so far in ${t.year}${t.paid ? ` · ${money(t.paid)} already paid, ${money(t.remaining)} still to go` : ""}</div>
-        </div>
-        <div class="sa-col">
-          <div class="sa-label">Safe to spend</div>
-          <div class="sa-value up">${money(t.safe)}</div>
-          <div class="sa-sub">Money received, minus spending, minus your tax set-aside</div>
+          <div class="sa-sub">${pct}% of ${t.year} profit${t.paid ? ` · ${money(t.remaining)} still to go` : ""}</div>
         </div>
         <div class="sa-col">
           <div class="sa-label">Next tax payment</div>
-          <div class="sa-value" style="font-size:20px;">${dueLabel}</div>
-          <div class="sa-sub">Aim for about ${money(nd.suggested)} (${nd.q.label} profit × ${pct}%${nd.already ? `, after the ${money(nd.already)} you logged` : ""})</div>
+          <div class="sa-value">${money(nd.suggested)}</div>
+          <div class="sa-sub">Due ${dueLabel}</div>
         </div>
         <button type="button" class="sa-edit" id="saEditRate">Change %</button>
       </div>`;
@@ -6916,7 +6974,7 @@ input,select,textarea{border-radius:10px;}
   let checklistGo = [];
   function renderChecklist(){
     const wrap = document.getElementById("ovChecklist");
-    if(!wrap) return;
+    if(wrap){ wrap.innerHTML = ""; return; }
     const items = checklistItems();
     const done = items.filter(i=>i.done).length;
     if(state.creatorSettings.checklistDismissed || done === items.length || !canWriteInWorkspace()){ wrap.innerHTML = ""; return; }
@@ -6932,7 +6990,7 @@ input,select,textarea{border-radius:10px;}
   document.addEventListener("click", async (e)=>{
     const it = e.target.closest("[data-cl]");
     if(it && checklistGo[it.dataset.cl]){ checklistGo[it.dataset.cl](); return; }
-    if(e.target.closest("#clDismiss")){ state.creatorSettings.checklistDismissed = true; renderChecklist(); await saveCreatorSettings(); }
+    if(e.target.closest("#clDismiss")){ state.creatorSettings.checklistDismissed = true; renderNudges(); await saveCreatorSettings(); }
   });
 
   let wizardStep = 0;
@@ -7705,24 +7763,79 @@ input,select,textarea{border-radius:10px;}
     return out.concat(personalNudges()).filter(n=>!muted[n.type] && !nudgeQuieted(n.type) && !(snoozed[n.id] && snoozed[n.id] > todayStr)).sort((a,b)=>a.pri-b.pri).slice(0,3);
   }
   const NUDGE_NAMES = { tax:"tax reminders", late:"late-payment reminders", cash:"cash warnings", terms:"deal-date reminders", invoice:"invoice reminders", gifts:"gift reminders", bigpay:"set-aside reminders", goal:"goal reminders" };
+  // One short list of what matters now. The app does the sorting and
+  // suggesting; the creator just confirms.
+  let forYouGo = [];
   function renderNudges(){
     const wrap = document.getElementById("ovNudges");
     if(!wrap) return;
-    const list = computeNudges();
-    const muted = Object.keys(state.creatorSettings.nudgeMuted || {}).filter(k=>state.creatorSettings.nudgeMuted[k]);
-    if(!list.length && !muted.length){ wrap.innerHTML = ""; return; }
-    wrap.innerHTML = `<div class="card feature-card nudge-card">
-      ${list.length ? `<h3>${escapeHtml(wittyOn() ? pick(QUIPS.nudgeTitle) : "Worth your attention")}</h3>` : ""}
-      ${list.map(n=>`<div class="nudge">
-        <div class="nudge-body"><div class="nudge-text">${escapeHtml(n.text)}</div><div class="nudge-why">Why you're seeing this: ${escapeHtml(n.why)}</div></div>
-        <div class="nudge-actions">
-          ${n.cta.chase ? `<button type="button" class="pack-btn primary" data-nudge-type="${n.type}" data-chase-invoice="${n.cta.chase}">${n.cta.label}</button>` : `<button type="button" class="pack-btn primary" data-nudge-type="${n.type}" data-nudge-go="${n.cta.view}">${n.cta.label}</button>`}
-          <button type="button" class="nudge-link" data-nudge-type="${n.type}" data-nudge-snooze="${escapeHtml(n.id)}">Snooze a week</button>
-          <button type="button" class="nudge-link" data-nudge-mute="${n.type}">Hide ${NUDGE_NAMES[n.type]||"these"}</button>
-        </div></div>`).join("")}
-      ${muted.length ? `<div class="sa-sub" style="margin-top:6px;">Hidden: ${muted.map(k=>NUDGE_NAMES[k]||k).join(", ")}. <button type="button" class="nudge-link" data-nudge-restore="1">Show them again</button></div>` : ""}
+    const cs = state.creatorSettings;
+    const rows = [];
+    forYouGo = [];
+    const go = fn => { forYouGo.push(fn); return forYouGo.length - 1; };
+    computeNudges().forEach(n=>rows.push({
+      text: n.text, why: n.why,
+      action: n.cta.chase ? `<button type="button" class="fy-btn" data-nudge-type="${n.type}" data-chase-invoice="${n.cta.chase}">${n.cta.label}</button>`
+        : `<button type="button" class="fy-btn" data-nudge-type="${n.type}" data-nudge-go="${n.cta.view}">${n.cta.label}</button>`,
+      later: `<button type="button" class="fy-later" data-nudge-type="${n.type}" data-nudge-snooze="${escapeHtml(n.id)}">Later</button>`
+    }));
+    const pend = state.unclassifiedIncome.map(i=>({ i, k:"income" })).concat(state.unclassifiedExpenses.map(i=>({ i, k:"expense" })));
+    if(pend.length && canWriteInWorkspace()){
+      const sure = pend.filter(x=>attnSuggestion(x.i, x.k)).length;
+      rows.push({
+        text: sure ? `We sorted ${sure} of ${pend.length} new transaction${pend.length===1?"":"s"} for you.` : `${pend.length} new transaction${pend.length===1?"":"s"} to sort.`,
+        why: sure ? "Matched to how you categorized similar ones before." : "Pick a category once and GigBooks will remember it next time.",
+        action: sure ? `<button type="button" class="fy-btn" id="fyApproveAll">Approve ${sure === pend.length ? "all" : sure}</button>` : `<button type="button" class="fy-btn" data-fy="${go(openReview)}">Sort them</button>`,
+        later: sure ? `<button type="button" class="fy-later" data-fy="${go(openReview)}">Review</button>` : ""
+      });
+    }
+    if(!persona() && !cs.personaDismissed && isOwnWorkspace()) rows.push({
+      text: "Tell us what kind of creator you are.", why: "We'll hide tools you won't use. Takes 20 seconds.",
+      action: `<button type="button" class="fy-btn" data-fy="${go(openPersonaModal)}">Personalize</button>`,
+      later: `<button type="button" class="fy-later" id="pfDismiss">Not now</button>`
+    });
+    const next = checklistItems().find(i=>!i.done);
+    if(next && !cs.checklistDismissed && canWriteInWorkspace() && rows.length < 4) rows.push({
+      text: `Next step: ${next.label.charAt(0).toLowerCase() + next.label.slice(1)}.`, why: "Part of getting set up.",
+      action: `<button type="button" class="fy-btn" data-fy="${go(next.go)}">Start</button>`,
+      later: `<button type="button" class="fy-later" id="clDismiss">Skip setup</button>`
+    });
+    const shown = rows.slice(0, 4);
+    wrap.innerHTML = `<div class="card fy-card">
+      <div class="fy-head">For you</div>
+      ${shown.length ? shown.map(r=>`<div class="fy-row">
+          <div class="fy-body"><div class="fy-text">${escapeHtml(r.text)}</div><div class="fy-why">${escapeHtml(r.why)}</div></div>
+          <div class="fy-actions">${r.later}${r.action}</div>
+        </div>`).join("")
+        : `<div class="fy-row fy-empty"><div class="fy-text">You're all caught up.${quipSpan("upMonth")}</div></div>`}
     </div>`;
   }
+  function openReview(){
+    const more = document.getElementById("ovMore");
+    if(more) more.open = true;
+    document.querySelectorAll("#view-overview .attn-row[data-attn-toggle]").forEach(row=>{
+      row.classList.add("open");
+      const sub = row.nextElementSibling;
+      if(sub && sub.classList.contains("attn-sublist")) sub.classList.add("open");
+    });
+    const card = document.querySelector("#view-overview .attn-card");
+    if(card) card.scrollIntoView({ behavior:"smooth", block:"start" });
+  }
+  document.addEventListener("click", async e=>{
+    const fy = e.target.closest("[data-fy]");
+    if(fy && forYouGo[fy.dataset.fy]){ forYouGo[fy.dataset.fy](); return; }
+    const all = e.target.closest("#fyApproveAll");
+    if(!all) return;
+    all.disabled = true;
+    const pend = state.unclassifiedIncome.map(i=>({ i, k:"income" })).concat(state.unclassifiedExpenses.map(i=>({ i, k:"expense" })));
+    let n = 0;
+    for(const x of pend){
+      const cat = attnSuggestion(x.i, x.k);
+      if(cat && await approveAttnItem(x.k, x.i.id, cat)) n++;
+    }
+    renderAll();
+    showToast(`${n} transaction${n===1?"":"s"} sorted.${wittyOn() ? " " + pick(QUIPS.upMonth) : ""}`);
+  });
   document.addEventListener("click", async e=>{
     const typed = e.target.closest("[data-nudge-type]");
     const go = e.target.closest("[data-nudge-go]");
@@ -8765,7 +8878,7 @@ input,select,textarea{border-radius:10px;}
     const wrap = document.getElementById("ovPersona");
     if(!wrap) return;
     const cs = state.creatorSettings;
-    if(persona() || cs.personaDismissed || !isOwnWorkspace()){ wrap.innerHTML = ""; return; }
+    if(wrap){ wrap.innerHTML = ""; return; }
     wrap.innerHTML = `<div class="card feature-card persona-card">
       <div><h3>Make GigBooks yours</h3>
         <p class="feature-sub" style="margin-bottom:0;">Tell us what kind of creator you are and we'll hide what you don't need. Takes 20 seconds.${quipSpan("welcome")}</p></div>
@@ -8774,7 +8887,7 @@ input,select,textarea{border-radius:10px;}
   }
   document.addEventListener("click", async e=>{
     if(e.target.closest("#pfOpen")) openPersonaModal();
-    if(e.target.closest("#pfDismiss")){ state.creatorSettings.personaDismissed = true; renderPersonaPrompt(); await saveCreatorSettings(); }
+    if(e.target.closest("#pfDismiss")){ state.creatorSettings.personaDismissed = true; renderNudges(); await saveCreatorSettings(); }
   });
 
   // Hide tools this creator told us they don't use. Anything with data in it stays visible.
@@ -8845,7 +8958,8 @@ input,select,textarea{border-radius:10px;}
       const label = new Date(2000, best, 1).toLocaleDateString("en-US",{month:"long"});
       lines.push({ t:`${label} has been your strongest month historically. Plan launches and pitches around it.`, q:null });
     }
-    const top = lines.slice(0, 2);
+    if(!lines.length && cur) lines.push({ t:`You've brought in ${money(cur)} this month.`, q:null });
+    const top = lines.slice(0, 1);
     if(!top.length){ wrap.innerHTML = ""; return; }
     wrap.innerHTML = `<div class="insight-strip">${top.map(l=>`<div class="insight"><span class="insight-dot"></span><span>${escapeHtml(l.t)}${l.q ? quipSpan(l.q) : ""}</span></div>`).join("")}</div>`;
   }
@@ -8972,7 +9086,7 @@ input,select,textarea{border-radius:10px;}
     const typical = state.income.length ? state.income.reduce((a,r)=>a+r.amount,0)/state.income.length : 0;
     recent.filter(r=>r.amount >= Math.max(500, typical*1.5)).sort((a,b)=>b.amount-a.amount).slice(0,1).forEach(r=>{
       out.push({ id:`bigpay-${r.id}`, type:"bigpay", pri:1,
-        text:`${r.source} just paid ${money(r.amount)}. Move about ${money(r.amount*taxPct())} to your tax savings now.${wittyOn() ? " " + quip("setAsideBig") : ""}`,
+        text:`${r.source} just paid ${money(r.amount)}. Move about ${money(r.amount*taxPct())} to your tax savings now.`,
         why:`It's bigger than your usual payment, and moving it now beats remembering later.`, cta:{ label:"See set-aside", view:"taxes" } });
     });
     // Goal falling behind its date.
@@ -9162,6 +9276,12 @@ input,select,textarea{border-radius:10px;}
       el.dataset.set = "1"; el.dataset.vibe = String(wittyOn());
     }
   }
+  (function wireOverviewMore(){
+    const more = document.getElementById("ovMore");
+    if(!more) return;
+    try{ more.open = localStorage.getItem("gigbooks_ov_more") === "1"; }catch(e){}
+    more.addEventListener("toggle", ()=>{ try{ localStorage.setItem("gigbooks_ov_more", more.open ? "1" : "0"); }catch(e){} });
+  })();
   function renderPersonalization(){
     applyTailoredNav();
     renderGreetingQuip();

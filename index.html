@@ -1424,6 +1424,53 @@ input,select,textarea{border-radius:10px;}
   .card{border-radius:16px;}
 }
 
+/* ============================================================
+   Personalization
+   ============================================================ */
+.quick-actions-row{display:flex !important;flex-wrap:wrap;}
+.quick-actions-row > *{flex:1 1 150px;}
+.quip{font-style:italic;font-family:var(--font-serif);font-size:1.05em;color:var(--green-700);white-space:normal;}
+#greetingSub{font-family:var(--font-serif);font-style:italic;font-size:17px;color:var(--ink-500);}
+.field-hint{font-weight:400;color:var(--ink-400);font-size:11.5px;margin-left:4px;}
+.choice-grid{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px;}
+.choice-grid .preset-chip{padding:7px 14px;font-size:13px;font-weight:500;}
+.choice-grid .preset-chip:hover:not(.on){background:var(--cream-100);color:var(--ink-900);border-color:var(--sage-300);}
+.persona-card{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;background:var(--cream-100);}
+.persona-actions{display:flex;align-items:center;gap:14px;}
+.insight-strip{display:flex;flex-direction:column;gap:6px;margin:-6px 0 18px;}
+.insight{display:flex;align-items:baseline;gap:10px;font-size:14.5px;color:var(--ink-700);}
+.insight-dot{width:6px;height:6px;border-radius:50%;background:var(--green-700);flex:none;transform:translateY(-2px);}
+.wins-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:-8px 0 16px;}
+.win-chip{display:inline-flex;align-items:center;gap:4px;background:var(--tan-100);color:var(--ink-900);border:1px solid #E6D6BE;border-radius:999px;padding:5px 12px;font-size:12px;font-weight:600;}
+.wrapped-chip{appearance:none;cursor:pointer;background:var(--green-800);border-color:var(--green-800);color:#fff;font-family:inherit;}
+.wrapped-chip:hover{background:var(--green-900);}
+.th-inputs{display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px;}
+.th-inputs .field{margin:0;}
+.th-result{margin-top:14px;padding:14px 16px;border-radius:12px;background:var(--sage-100);min-height:52px;}
+.th-keep{display:flex;align-items:baseline;justify-content:space-between;gap:12px;font-size:13px;color:var(--green-900);font-weight:600;}
+.th-keep b{font-family:var(--font-serif);font-size:28px;font-weight:500;letter-spacing:-0.02em;font-variant-numeric:tabular-nums;}
+.th-rows{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:4px;font-size:12px;color:var(--ink-700);}
+.goal-row{padding:12px 0;border-top:1px solid var(--line);}
+.goal-row:first-of-type{border-top:none;}
+.goal-top{display:flex;justify-content:space-between;gap:12px;font-size:14px;margin-bottom:8px;}
+.goal-top span{color:var(--ink-500);font-size:13px;font-variant-numeric:tabular-nums;}
+.goal-foot{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:6px;}
+.picked-tag{display:inline-block;margin-left:6px;padding:1px 8px;border-radius:999px;background:var(--sage-100);color:var(--green-800);font-size:10.5px;font-weight:600;vertical-align:1px;}
+.wrapped{background:var(--green-900);color:#F5F3ED;border-radius:16px;padding:28px 24px;margin:-4px 0 4px;
+  background-image:radial-gradient(circle at 100% 0,rgba(169,188,156,.35),transparent 55%);}
+.wr-kicker{font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--sage-300);font-weight:600;}
+.wr-big{font-family:var(--font-serif);font-size:48px;font-weight:500;letter-spacing:-0.03em;margin-top:10px;line-height:1;}
+.wr-sub{font-family:var(--font-serif);font-style:italic;font-size:16px;color:var(--sage-200);margin-top:6px;}
+.wr-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px 20px;margin-top:22px;}
+.wr-grid span{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--sage-300);}
+.wr-grid b{display:block;font-size:14.5px;font-weight:600;margin-top:2px;}
+@media (max-width:720px){
+  .th-inputs{grid-template-columns:1fr 1fr;}
+  .th-inputs .field:first-child{grid-column:1 / -1;}
+  .wr-big{font-size:38px;}
+  #greetingSub{font-size:15.5px;}
+}
+
 </style>
 </head>
 <body>
@@ -2013,7 +2060,7 @@ input,select,textarea{border-radius:10px;}
       <div class="topbar">
         <div class="titles">
           <h1 id="greetingText">Good morning, Courteney</h1>
-          <p>Here's your financial overview.</p>
+          <p id="greetingSub">Here's your financial overview.</p>
         </div>
         <div class="actions">
           <div class="pill-btn dateselect-wrap">
@@ -2025,9 +2072,14 @@ input,select,textarea{border-radius:10px;}
         </div>
       </div>
 
+      <div id="ovWins"></div>
+      <div id="ovInsight"></div>
       <div id="ovNudges"></div>
+      <div id="ovPersona"></div>
       <div id="ovSetAside"></div>
       <div id="ovChecklist"></div>
+      <div id="ovGoals"></div>
+      <div id="ovTakeHome"></div>
       <div id="ovSmoothing"></div>
       <div id="ovForecast"></div>
 
@@ -2389,6 +2441,7 @@ input,select,textarea{border-radius:10px;}
       </div>
 
       <div class="stat-row cols-3" id="pipelineStatRow"></div>
+      <div id="pipelineTakeHome"></div>
 
       <div class="card table-card" id="dealTermsCard" style="margin-bottom:24px;padding:24px;display:none;">
         <h3 style="margin:0;font-size:16px;font-weight:700;">Deal Terms Coming Up</h3>
@@ -2589,6 +2642,7 @@ input,select,textarea{border-radius:10px;}
             <select class="dateselect" data-daterange aria-label="Select month"></select>
             <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><path d="m6 9 6 6 6-6"/></svg>
           </div>
+          <button type="button" class="pill-btn" data-wrapped="1">✨ Wrapped</button>
           <button class="btn-primary" id="exportReportBtn">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v11m0 0 4-4m-4 4-4-4"/><path d="M5 19h14"/></svg>
             Export Report
@@ -2855,6 +2909,10 @@ input,select,textarea{border-radius:10px;}
             </button>
             <button type="button" class="settings-row owner-only-row" data-setting="displayOptions">
               <div><div class="t1">Display Options</div><div class="t2">Choose how your data is displayed</div></div>
+              <svg class="chev-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+            </button>
+            <button type="button" class="settings-row owner-only-row" data-setting="personalization">
+              <div><div class="t1">Personalization</div><div class="t2">See what GigBooks knows about you and change it</div></div>
               <svg class="chev-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
             </button>
             <button type="button" class="settings-row" data-setting="dataPrivacy">
@@ -6882,13 +6940,19 @@ input,select,textarea{border-radius:10px;}
   }
   function renderWizard(){
     const cs = state.creatorSettings;
-    const dots = `<div class="wiz-dots">${[0,1,2].map(i=>`<span class="${i===wizardStep?"on":""}"></span>`).join("")}</div>`;
+    const dots = `<div class="wiz-dots">${[0,1,2,3].map(i=>`<span class="${i===wizardStep?"on":""}"></span>`).join("")}</div>`;
     if(wizardStep === 0){
       openSettingsModal(`${dots}<h2>Welcome to GigBooks</h2>
-        <p class="settings-note">Let's get your books ready in about a minute. First, what should we call your business?</p>
+        <p class="settings-note">Let's get your books ready in about a minute. ${escapeHtml(quip("welcome"))} First, what should we call your business?</p>
         <div class="field"><label>Business or creator name</label><input id="wizName" value="${escapeHtml(state.business.name)}" placeholder="e.g. Jess Creates"></div>
         <div class="modal-actions"><button type="button" class="btn-secondary" id="wizSkip">Skip setup</button><button type="button" class="btn-primary" id="wizNext">Next</button></div>`);
     } else if(wizardStep === 1){
+      openSettingsModal(`${dots}<h2>Tell us about you</h2>
+        <p class="settings-note">So GigBooks only shows what you need. You can change this any time in Settings.</p>
+        ${personaFormHtml(persona())}
+        <div class="modal-actions"><button type="button" class="btn-secondary" id="wizBack">Back</button><button type="button" class="btn-primary" id="wizNext">Next</button></div>`);
+      bindPersonaForm();
+    } else if(wizardStep === 2){
       const pct = Math.round(taxPct()*100);
       openSettingsModal(`${dots}<h2>How much for taxes?</h2>
         <p class="settings-note">As a creator, nobody takes taxes out of your payments. GigBooks keeps a running number of what to set aside. 30% is a safe starting point and you can change it any time.</p>
@@ -6920,6 +6984,10 @@ input,select,textarea{border-radius:10px;}
       if(wizardStep === 0){
         const name = document.getElementById("wizName").value.trim();
         if(name && name !== state.business.name){ state.business.name = name; await dbUpdateProfile({ business_name:name }); }
+      }
+      if(wizardStep === 1){
+        const pf = readPersonaForm();
+        if(pf.type || pf.streams.length || pf.focus) state.creatorSettings.persona = Object.assign(pf, { updatedAt: todayISO() });
       }
       wizardStep++; renderWizard();
     });
@@ -7014,10 +7082,10 @@ input,select,textarea{border-radius:10px;}
       <div class="card table-card" style="padding:24px;margin-bottom:24px;">
         <h3 style="margin:0;font-size:16px;font-weight:700;">Find more write-offs</h3>
         <p style="font-size:12.5px;color:var(--ink-500);margin:4px 0 14px;">Every dollar of business spending you log lowers the profit you're taxed on. Did you spend on any of these this year?</p>
-        <div class="ded-grid">${DEDUCTIONS.map(d=>`
+        <div class="ded-grid">${personalDeductionOrder(DEDUCTIONS).map(d=>`
           <div class="ded-item">
             <div class="ded-icon">${d.icon}</div>
-            <div class="ded-body"><div class="ded-title">${d.title}</div><div class="ded-blurb">${d.blurb}</div></div>
+            <div class="ded-body"><div class="ded-title">${d.title}${d.picked ? ` <span class="picked-tag">For ${escapeHtml(CREATOR_TYPES[persona().type].label.toLowerCase())}s</span>` : ""}</div><div class="ded-blurb">${d.blurb}</div></div>
             <button type="button" class="ded-btn" data-ded="${d.key}" ${writable?"":"disabled"}>${d.cta}</button>
           </div>`).join("")}</div>
       </div>`;
@@ -7632,9 +7700,9 @@ input,select,textarea{border-radius:10px;}
     });
     const unc = csList("gifts").filter(g=>!g.counted && g.status !== "returned");
     if(unc.length) out.push({ id:`gifts-${unc.length}`, type:"gifts", pri:4, text:`${unc.length} gifted product${unc.length===1?"":"s"} worth ${money(unc.reduce((a,g)=>a+(g.value||0),0))} ${unc.length===1?"isn't":"aren't"} counted as income yet.`, why:"Free products from brands are usually taxable at their retail value.", cta:{ label:"Review gifts", view:"gifts" } });
-    return out.filter(n=>!muted[n.type] && !(snoozed[n.id] && snoozed[n.id] > todayStr)).sort((a,b)=>a.pri-b.pri).slice(0,3);
+    return out.concat(personalNudges()).filter(n=>!muted[n.type] && !nudgeQuieted(n.type) && !(snoozed[n.id] && snoozed[n.id] > todayStr)).sort((a,b)=>a.pri-b.pri).slice(0,3);
   }
-  const NUDGE_NAMES = { tax:"tax reminders", late:"late-payment reminders", cash:"cash warnings", terms:"deal-date reminders", invoice:"invoice reminders", gifts:"gift reminders" };
+  const NUDGE_NAMES = { tax:"tax reminders", late:"late-payment reminders", cash:"cash warnings", terms:"deal-date reminders", invoice:"invoice reminders", gifts:"gift reminders", bigpay:"set-aside reminders", goal:"goal reminders" };
   function renderNudges(){
     const wrap = document.getElementById("ovNudges");
     if(!wrap) return;
@@ -7642,26 +7710,28 @@ input,select,textarea{border-radius:10px;}
     const muted = Object.keys(state.creatorSettings.nudgeMuted || {}).filter(k=>state.creatorSettings.nudgeMuted[k]);
     if(!list.length && !muted.length){ wrap.innerHTML = ""; return; }
     wrap.innerHTML = `<div class="card feature-card nudge-card">
-      ${list.length ? `<h3>Worth your attention</h3>` : ""}
+      ${list.length ? `<h3>${escapeHtml(wittyOn() ? pick(QUIPS.nudgeTitle) : "Worth your attention")}</h3>` : ""}
       ${list.map(n=>`<div class="nudge">
         <div class="nudge-body"><div class="nudge-text">${escapeHtml(n.text)}</div><div class="nudge-why">Why you're seeing this: ${escapeHtml(n.why)}</div></div>
         <div class="nudge-actions">
-          ${n.cta.chase ? `<button type="button" class="pack-btn primary" data-chase-invoice="${n.cta.chase}">${n.cta.label}</button>` : `<button type="button" class="pack-btn primary" data-nudge-go="${n.cta.view}">${n.cta.label}</button>`}
-          <button type="button" class="nudge-link" data-nudge-snooze="${escapeHtml(n.id)}">Snooze a week</button>
+          ${n.cta.chase ? `<button type="button" class="pack-btn primary" data-nudge-type="${n.type}" data-chase-invoice="${n.cta.chase}">${n.cta.label}</button>` : `<button type="button" class="pack-btn primary" data-nudge-type="${n.type}" data-nudge-go="${n.cta.view}">${n.cta.label}</button>`}
+          <button type="button" class="nudge-link" data-nudge-type="${n.type}" data-nudge-snooze="${escapeHtml(n.id)}">Snooze a week</button>
           <button type="button" class="nudge-link" data-nudge-mute="${n.type}">Hide ${NUDGE_NAMES[n.type]||"these"}</button>
         </div></div>`).join("")}
       ${muted.length ? `<div class="sa-sub" style="margin-top:6px;">Hidden: ${muted.map(k=>NUDGE_NAMES[k]||k).join(", ")}. <button type="button" class="nudge-link" data-nudge-restore="1">Show them again</button></div>` : ""}
     </div>`;
   }
   document.addEventListener("click", async e=>{
+    const typed = e.target.closest("[data-nudge-type]");
     const go = e.target.closest("[data-nudge-go]");
+    if(typed && !e.target.closest("[data-nudge-snooze]")){ recordNudge(typed.dataset.nudgeType, "acted"); saveCreatorSettings(); }
     if(go){ showView(go.dataset.nudgeGo); return; }
     const sn = e.target.closest("[data-nudge-snooze]");
     const mu = e.target.closest("[data-nudge-mute]");
     const re = e.target.closest("[data-nudge-restore]");
     if(!sn && !mu && !re) return;
     const cs = state.creatorSettings;
-    if(sn){ cs.nudgeSnoozed = cs.nudgeSnoozed || {}; cs.nudgeSnoozed[sn.dataset.nudgeSnooze] = isoLocal(addDays(new Date(), 7)); }
+    if(sn){ cs.nudgeSnoozed = cs.nudgeSnoozed || {}; cs.nudgeSnoozed[sn.dataset.nudgeSnooze] = isoLocal(addDays(new Date(), 7)); recordNudge(sn.dataset.nudgeType, "snoozed"); }
     if(mu){ cs.nudgeMuted = cs.nudgeMuted || {}; cs.nudgeMuted[mu.dataset.nudgeMute] = true; }
     if(re){ cs.nudgeMuted = {}; }
     renderNudges();
@@ -8283,6 +8353,8 @@ input,select,textarea{border-radius:10px;}
       <div class="field"><label>Where is it from?</label><select id="poPlatform">${Object.entries(PAYOUT_PRESETS).map(([k,p])=>`<option value="${k}">${p.label}</option>`).join("")}</select></div>
       <div class="field"><label>CSV file</label><input type="file" id="poFile" accept=".csv,.tsv,.txt,text/csv"></div>
       <div id="poStep2"></div>`);
+    const poDefault = personalPayoutDefault();
+    if(poDefault && PAYOUT_PRESETS[poDefault]) document.getElementById("poPlatform").value = poDefault;
     document.getElementById("poPlatform").addEventListener("change", e=>{ payoutImport.platform = e.target.value; if(payoutImport.rows.length) poAutoMap(); poRender(); });
     document.getElementById("poFile").addEventListener("change", async e=>{
       const f = e.target.files[0]; if(!f) return;
@@ -8586,7 +8658,521 @@ input,select,textarea{border-radius:10px;}
   }
 
 
+  /* ============================================================
+     Personalization — built around five promises:
+     know me, show me, reach me, empower me, delight me.
+     Everything here runs on the books already in this account plus
+     a few answers the creator gives us, all of which they can see
+     and change in Settings → Personalization.
+     ============================================================ */
+  const CREATOR_TYPES = {
+    youtube:{ label:"YouTuber", payout:"youtube", ded:["equipment","software","home","ads"] },
+    tiktok:{ label:"TikToker", payout:"tiktok", ded:["equipment","phone","software","ads"] },
+    instagram:{ label:"Instagrammer", payout:"other", ded:["ads","equipment","phone","travel"] },
+    podcast:{ label:"Podcaster", payout:"other", ded:["equipment","software","home","pro"] },
+    stream:{ label:"Streamer", payout:"twitch", ded:["equipment","phone","software","home"] },
+    writer:{ label:"Writer", payout:"stripe", ded:["software","home","pro","phone"] },
+    photo:{ label:"Photographer", payout:"stripe", ded:["equipment","mileage","travel","software"] },
+    music:{ label:"Musician", payout:"other", ded:["equipment","travel","mileage","ads"] },
+    other:{ label:"Creator", choice:"Something else", payout:"stripe", ded:[] }
+  };
+  const INCOME_STREAMS = {
+    brand:"Brand deals", ads:"Ad revenue & creator funds", affiliate:"Affiliate links",
+    members:"Memberships & subs", clients:"Client work", products:"Merch & digital products"
+  };
+  const MONEY_FOCUS = {
+    taxes:"Stop stressing about taxes", smooth:"Even out my income",
+    rates:"Charge what I'm worth", save:"Save for something big"
+  };
+
+  function persona(){
+    const cs = state.creatorSettings;
+    return cs.persona && typeof cs.persona === "object" ? cs.persona : null;
+  }
+  function wittyOn(){ return state.creatorSettings.vibe !== "plain"; }
+  function tailoringOn(){ return state.creatorSettings.tailorTools !== false; }
+  function pick(list){ return list[Math.floor(Math.random()*list.length)]; }
+
+  // One-liners. Always paired with the real information, never instead of it.
+  const QUIPS = {
+    greeting:[
+      "Let's check the bag.", "Your books, but make it cute.", "Main character finances only.",
+      "Vibe check on the money.", "Bestie, the numbers are in.", "Securing the bag, one entry at a time."
+    ],
+    greetingPlain:["Here's your financial overview."],
+    bestMonth:["It's giving CEO.", "Ate and left no crumbs.", "Understood the assignment.", "We love to see it."],
+    upMonth:["Big W.", "Up only.", "Lowkey thriving.", "The glow up is financial."],
+    downMonth:["Slow months happen. That's what the cushion is for.", "Not every month has to slay.", "Rest era. Totally valid."],
+    noIncomeYet:["The bag is loading…", "First payday energy incoming."],
+    setAsideBig:["Future you says thanks.", "Paying the IRS before they ask is so mature of you.", "Not the IRS lurking. Be ready."],
+    milestone:["Periodt.", "No cap, that's huge.", "Screenshot this.", "Main character moment."],
+    goalDone:["Goal: secured.", "You said it, you did it.", "Manifested and executed."],
+    goalEmpty:["Delulu is the solulu, but a savings goal is better.", "Name it, fund it, flex it."],
+    nudgeTitle:["Lowkey important", "Quick vibe check", "Worth your attention"],
+    takeHome:["The real number, not the vibes number.", "What actually hits your account."],
+    wrapped:["Your year, wrapped.", "The receipts are in."],
+    welcome:["Let's get your bag organized.", "Welcome to your money era."],
+    quieted:["We noticed you kept snoozing these, so we turned them down."]
+  };
+  function quip(key){ return wittyOn() && QUIPS[key] ? pick(QUIPS[key]) : ""; }
+  function quipSpan(key){ const q = quip(key); return q ? ` <span class="quip">${escapeHtml(q)}</span>` : ""; }
+
+  /* ---------- Know me: who are you? ---------- */
+  function personaFormHtml(p){
+    p = p || {};
+    const streams = new Set(p.streams || []);
+    return `
+      <div class="field"><label>What kind of creator are you?</label>
+        <div class="choice-grid" data-pf="type">${Object.entries(CREATOR_TYPES).map(([k,v])=>`<button type="button" class="preset-chip ${p.type===k?"on":""}" data-val="${k}">${v.choice || v.label}</button>`).join("")}</div></div>
+      <div class="field"><label>Where does your money come from? <span class="field-hint">Pick all that apply</span></label>
+        <div class="choice-grid" data-pf="streams" data-multi="1">${Object.entries(INCOME_STREAMS).map(([k,v])=>`<button type="button" class="preset-chip ${streams.has(k)?"on":""}" data-val="${k}">${v}</button>`).join("")}</div></div>
+      <div class="field"><label>What matters most right now?</label>
+        <div class="choice-grid" data-pf="focus">${Object.entries(MONEY_FOCUS).map(([k,v])=>`<button type="button" class="preset-chip ${p.focus===k?"on":""}" data-val="${k}">${v}</button>`).join("")}</div></div>`;
+  }
+  function bindPersonaForm(){
+    document.querySelectorAll("[data-pf] .preset-chip").forEach(b=>b.addEventListener("click", ()=>{
+      const grp = b.closest("[data-pf]");
+      if(grp.dataset.multi) b.classList.toggle("on");
+      else grp.querySelectorAll(".preset-chip").forEach(x=>x.classList.toggle("on", x===b));
+    }));
+  }
+  function readPersonaForm(){
+    const one = k => { const el = document.querySelector(`[data-pf="${k}"] .preset-chip.on`); return el ? el.dataset.val : null; };
+    const streams = Array.from(document.querySelectorAll(`[data-pf="streams"] .preset-chip.on`)).map(b=>b.dataset.val);
+    return { type: one("type"), streams, focus: one("focus") };
+  }
+  async function savePersona(p){
+    const cs = state.creatorSettings;
+    cs.persona = Object.assign({}, p, { updatedAt: todayISO() });
+    renderAll();
+    await saveCreatorSettings();
+  }
+  function openPersonaModal(){
+    openSettingsModal(`<h2>Make GigBooks yours</h2>
+      <p class="settings-note">Three quick taps. We use these to hide tools you won't use, sort tax tips for your kind of work and put what you care about first. ${escapeHtml(quip("welcome"))}</p>
+      ${personaFormHtml(persona())}
+      <div class="modal-actions"><button type="button" class="btn-secondary" data-close-settings>Cancel</button><button type="button" class="btn-primary" id="pfSave">Save</button></div>`);
+    bindPersonaForm();
+    document.getElementById("pfSave").addEventListener("click", async ()=>{
+      await savePersona(readPersonaForm());
+      closeSettingsModal();
+      showToast(wittyOn() ? "Saved. GigBooks just got a personality transplant." : "Saved.");
+    });
+  }
+  function renderPersonaPrompt(){
+    const wrap = document.getElementById("ovPersona");
+    if(!wrap) return;
+    const cs = state.creatorSettings;
+    if(persona() || cs.personaDismissed || !isOwnWorkspace()){ wrap.innerHTML = ""; return; }
+    wrap.innerHTML = `<div class="card feature-card persona-card">
+      <div><h3>Make GigBooks yours</h3>
+        <p class="feature-sub" style="margin-bottom:0;">Tell us what kind of creator you are and we'll hide what you don't need. Takes 20 seconds.${quipSpan("welcome")}</p></div>
+      <div class="persona-actions"><button type="button" class="pack-btn primary" id="pfOpen">Let's go</button><button type="button" class="nudge-link" id="pfDismiss">Not now</button></div>
+    </div>`;
+  }
+  document.addEventListener("click", async e=>{
+    if(e.target.closest("#pfOpen")) openPersonaModal();
+    if(e.target.closest("#pfDismiss")){ state.creatorSettings.personaDismissed = true; renderPersonaPrompt(); await saveCreatorSettings(); }
+  });
+
+  // Hide tools this creator told us they don't use. Anything with data in it stays visible.
+  function applyTailoredNav(){
+    const p = persona();
+    const tailor = tailoringOn() && p && Array.isArray(p.streams) && p.streams.length;
+    const streams = new Set(tailor ? p.streams : []);
+    const usesDeals = !tailor || streams.has("brand") || state.pipelineDeals.length > 0;
+    const usesInvoices = !tailor || streams.has("brand") || streams.has("clients") || state.invoices.length > 0;
+    const show = (sel, on) => document.querySelectorAll(sel).forEach(el=>{ el.style.display = on ? "" : "none"; });
+    show('.nav-item[data-nav-parent="deals"], [data-nav-subgroup="deals"]', usesDeals);
+    show('.nav-subitem[data-view="invoices"]', usesInvoices);
+    show('#ovQuickCreateInvoice', usesInvoices);
+  }
+  function personalDeductionOrder(list){
+    const p = persona();
+    const pref = p && CREATOR_TYPES[p.type] ? CREATOR_TYPES[p.type].ded : [];
+    if(!tailoringOn() || !pref.length) return list.map(d=>Object.assign({ picked:false }, d));
+    const rank = k => { const i = pref.indexOf(k); return i === -1 ? 99 : i; };
+    return list.slice().sort((a,b)=>rank(a.key)-rank(b.key)).map(d=>Object.assign({ picked: pref.includes(d.key) }, d));
+  }
+  function personalPayoutDefault(){
+    const p = persona();
+    return p && CREATOR_TYPES[p.type] ? CREATOR_TYPES[p.type].payout : null;
+  }
+
+  /* ---------- Show me: you vs. you ---------- */
+  function monthlyReceived(){
+    const map = new Map();
+    state.income.filter(r=>r.status === "received").forEach(r=>{
+      const k = r.date.slice(0,7); map.set(k, (map.get(k)||0) + r.amount);
+    });
+    return map;
+  }
+  function renderInsight(){
+    const wrap = document.getElementById("ovInsight");
+    if(!wrap) return;
+    const m = monthlyReceived();
+    const now = new Date();
+    const thisK = monthKey(now.getFullYear(), now.getMonth());
+    const lastD = new Date(now.getFullYear(), now.getMonth()-1, 1);
+    const lastK = monthKey(lastD.getFullYear(), lastD.getMonth());
+    const lyK = monthKey(now.getFullYear()-1, now.getMonth());
+    const cur = m.get(thisK) || 0;
+    const past = Array.from(m.entries()).filter(([k])=>k < thisK);
+    const lines = [];
+    if(!cur && !past.length){ wrap.innerHTML = ""; return; }
+    if(cur && past.length){
+      const better = past.filter(([,v])=>v > cur).length;
+      const monthName = now.toLocaleDateString("en-US",{month:"long"});
+      if(better === 0) lines.push({ t:`${monthName} is your best month on record at ${money(cur)}.`, q:"bestMonth" });
+      else if(better <= 2 && past.length >= 4) lines.push({ t:`${monthName} is already your #${better+1} month out of ${past.length+1}.`, q:"upMonth" });
+      const last = m.get(lastK) || 0;
+      if(last > 0){
+        const diff = (cur - last) / last;
+        if(Math.abs(diff) >= 0.1) lines.push({ t:`You're ${diff > 0 ? "up" : "down"} ${Math.round(Math.abs(diff)*100)}% on last month so far.`, q: diff > 0 ? "upMonth" : "downMonth" });
+      }
+      const ly = m.get(lyK) || 0;
+      if(ly > 0) lines.push({ t:`Same month last year you made ${money(ly)}.`, q:null });
+    } else if(!cur && past.length){
+      lines.push({ t:`Nothing received yet this month.`, q:"noIncomeYet" });
+    }
+    // Seasonality: which calendar month has historically been strongest?
+    if(past.length >= 6){
+      const byMonth = new Array(12).fill(0);
+      past.forEach(([k,v])=>{ byMonth[parseInt(k.slice(5,7),10)-1] += v; });
+      const best = byMonth.indexOf(Math.max(...byMonth));
+      const label = new Date(2000, best, 1).toLocaleDateString("en-US",{month:"long"});
+      lines.push({ t:`${label} has been your strongest month historically. Plan launches and pitches around it.`, q:null });
+    }
+    const top = lines.slice(0, 2);
+    if(!top.length){ wrap.innerHTML = ""; return; }
+    wrap.innerHTML = `<div class="insight-strip">${top.map(l=>`<div class="insight"><span class="insight-dot"></span><span>${escapeHtml(l.t)}${l.q ? quipSpan(l.q) : ""}</span></div>`).join("")}</div>`;
+  }
+
+  /* ---------- Empower me: take-home + goals ---------- */
+  function takeHomeBreakdown(gross, agentPct, feePct){
+    const agent = gross * (agentPct/100);
+    const fees = gross * (feePct/100);
+    const profit = Math.max(0, gross - agent - fees);
+    const tax = profit * taxPct();
+    return { gross, agent, fees, tax, keep: profit - tax };
+  }
+  function takeHomeCardHtml(prefix){
+    const cs = state.creatorSettings;
+    const agent = Number(cs.lastAgentPct) || 0, fee = Number(cs.lastFeePct) || 0;
+    return `<div class="card feature-card takehome-card">
+      <div class="smooth-head"><h3>What would I actually keep?</h3></div>
+      <p class="feature-sub" style="margin-top:0;">Pop in a deal amount before you say yes.${quipSpan("takeHome")}</p>
+      <div class="th-inputs">
+        <div class="field"><label>Deal amount</label><input type="number" min="0" step="50" id="${prefix}Gross" placeholder="2500"></div>
+        <div class="field"><label>Manager / agent %</label><input type="number" min="0" max="90" step="1" id="${prefix}Agent" value="${agent}"></div>
+        <div class="field"><label>Platform fees %</label><input type="number" min="0" max="50" step="0.5" id="${prefix}Fee" value="${fee}"></div>
+      </div>
+      <div class="th-result" id="${prefix}Out"></div>
+    </div>`;
+  }
+  function bindTakeHome(prefix){
+    const g = document.getElementById(prefix+"Gross"), a = document.getElementById(prefix+"Agent"), f = document.getElementById(prefix+"Fee"), out = document.getElementById(prefix+"Out");
+    if(!g) return;
+    const upd = ()=>{
+      const gross = Number(g.value)||0;
+      if(!gross){ out.innerHTML = `<span class="sa-sub">Your take-home shows up here.</span>`; return; }
+      const b = takeHomeBreakdown(gross, Number(a.value)||0, Number(f.value)||0);
+      out.innerHTML = `<div class="th-keep"><span>You keep about</span><b>${money(b.keep)}</b></div>
+        <div class="th-rows">${b.agent?`<span>Manager −${money(b.agent)}</span>`:""}${b.fees?`<span>Fees −${money(b.fees)}</span>`:""}<span>Taxes (${Math.round(taxPct()*100)}%) −${money(b.tax)}</span></div>`;
+    };
+    [g,a,f].forEach(el=>el.addEventListener("input", upd));
+    const remember = async ()=>{ const cs = state.creatorSettings; cs.lastAgentPct = Number(a.value)||0; cs.lastFeePct = Number(f.value)||0; await saveCreatorSettings(); };
+    [a,f].forEach(el=>el.addEventListener("change", remember));
+    upd();
+  }
+  function renderTakeHome(){
+    const pipe = document.getElementById("pipelineTakeHome");
+    if(pipe && !pipe.dataset.ready){ pipe.innerHTML = takeHomeCardHtml("thP"); bindTakeHome("thP"); pipe.dataset.ready = "1"; }
+    const ov = document.getElementById("ovTakeHome");
+    if(!ov) return;
+    const p = persona();
+    const want = p && p.focus === "rates";
+    if(!want){ ov.innerHTML = ""; delete ov.dataset.ready; return; }
+    if(!ov.dataset.ready){ ov.innerHTML = takeHomeCardHtml("thO"); bindTakeHome("thO"); ov.dataset.ready = "1"; }
+  }
+
+  function goalsList(){ const cs = state.creatorSettings; if(!Array.isArray(cs.goals)) cs.goals = []; return cs.goals; }
+  function monthsUntil(iso){
+    if(!iso) return null;
+    const now = new Date(), d = parseISODate(iso);
+    return Math.max(1, (d.getFullYear()-now.getFullYear())*12 + (d.getMonth()-now.getMonth()));
+  }
+  function renderGoals(){
+    const wrap = document.getElementById("ovGoals");
+    if(!wrap) return;
+    const goals = goalsList();
+    const p = persona();
+    if(!goals.length && !(p && p.focus === "save")){ wrap.innerHTML = ""; return; }
+    const writable = canWriteInWorkspace();
+    wrap.innerHTML = `<div class="card feature-card">
+      <div class="smooth-head"><h3>Money goals</h3>${writable?`<button type="button" class="sa-edit" style="position:static;" data-goal-new="1">Add goal</button>`:""}</div>
+      ${goals.length ? goals.map(g=>{
+        const pct = Math.min(100, Math.round((g.saved||0)/g.target*100));
+        const left = Math.max(0, g.target - (g.saved||0));
+        const mo = monthsUntil(g.by);
+        const pace = left === 0 ? (quip("goalDone") || "Done!") : (mo ? `${money(left/mo)}/month gets you there by ${shortDate(g.by)}` : `${money(left)} to go`);
+        return `<div class="goal-row">
+          <div class="goal-top"><b>${escapeHtml(g.name)}</b><span>${money(g.saved||0)} of ${money(g.target)}</span></div>
+          <div class="cl-bar"><span style="width:${pct}%"></span></div>
+          <div class="goal-foot"><span class="sa-sub">${escapeHtml(pace)}</span>${writable?`<span><button type="button" class="nudge-link" data-goal-add="${g.id}">Add money</button> · <button type="button" class="nudge-link" data-goal-del="${g.id}">Remove</button></span>`:""}</div>
+        </div>`;}).join("")
+      : `<p class="feature-sub" style="margin:0;">A camera, a cushion, a trip. Give it a name and a number.${quipSpan("goalEmpty")}</p>`}
+    </div>`;
+  }
+  function openGoalModal(){
+    openSettingsModal(`<h2>New money goal</h2>
+      <div class="field"><label>What are you saving for?</label><input id="goalName" placeholder="e.g. New camera, 3-month cushion"></div>
+      <div class="field"><label>Target amount</label><input type="number" id="goalTarget" min="1" step="1"></div>
+      <div class="field"><label>Already saved</label><input type="number" id="goalSaved" min="0" step="1" value="0"></div>
+      <div class="field"><label>By when? <span class="field-hint">Optional</span></label><input type="date" id="goalBy"></div>
+      <div class="modal-actions"><button type="button" class="btn-secondary" data-close-settings>Cancel</button><button type="button" class="btn-primary" id="goalSave">Save goal</button></div>`);
+    document.getElementById("goalSave").addEventListener("click", async ()=>{
+      const name = document.getElementById("goalName").value.trim();
+      const target = Number(document.getElementById("goalTarget").value);
+      if(!name || !(target > 0)){ showToast("Give it a name and an amount.", true); return; }
+      goalsList().push({ id: rid(), name, target, saved: Math.max(0, Number(document.getElementById("goalSaved").value)||0), by: document.getElementById("goalBy").value || null });
+      closeSettingsModal(); renderGoals(); await saveCreatorSettings();
+    });
+  }
+  document.addEventListener("click", async e=>{
+    if(e.target.closest("[data-goal-new]")){ openGoalModal(); return; }
+    const add = e.target.closest("[data-goal-add]"), del = e.target.closest("[data-goal-del]");
+    if(add){
+      const g = goalsList().find(x=>x.id === add.dataset.goalAdd); if(!g) return;
+      openSettingsModal(`<h2>Add to “${escapeHtml(g.name)}”</h2>
+        <div class="field"><label>Amount you put aside</label><input type="number" id="goalAmt" min="0.01" step="0.01"></div>
+        <div class="modal-actions"><button type="button" class="btn-secondary" data-close-settings>Cancel</button><button type="button" class="btn-primary" id="goalAmtSave">Add</button></div>`);
+      document.getElementById("goalAmtSave").addEventListener("click", async ()=>{
+        const amt = Number(document.getElementById("goalAmt").value); if(!(amt > 0)) return;
+        const wasDone = (g.saved||0) >= g.target;
+        g.saved = (g.saved||0) + amt;
+        closeSettingsModal(); renderGoals();
+        if(!wasDone && g.saved >= g.target) showToast(`“${g.name}” is fully funded! ${quip("goalDone")}`.trim());
+        await saveCreatorSettings();
+      });
+    }
+    if(del){
+      const cs = state.creatorSettings; cs.goals = goalsList().filter(x=>x.id !== del.dataset.goalDel);
+      renderGoals(); await saveCreatorSettings();
+    }
+  });
+
+  /* ---------- Reach me: event-driven nudges + learning ---------- */
+  function personalNudges(){
+    const out = [], today = startOfToday();
+    // A big payment just landed: prompt the set-aside while the money is still there.
+    const recent = state.income.filter(r=>r.status === "received" && (today - parseISODate(r.date))/DAY_MS <= 3 && (today - parseISODate(r.date)) >= 0);
+    const typical = state.income.length ? state.income.reduce((a,r)=>a+r.amount,0)/state.income.length : 0;
+    recent.filter(r=>r.amount >= Math.max(500, typical*1.5)).sort((a,b)=>b.amount-a.amount).slice(0,1).forEach(r=>{
+      out.push({ id:`bigpay-${r.id}`, type:"bigpay", pri:1,
+        text:`${r.source} just paid ${money(r.amount)}. Move about ${money(r.amount*taxPct())} to your tax savings now.${wittyOn() ? " " + quip("setAsideBig") : ""}`,
+        why:`It's bigger than your usual payment, and moving it now beats remembering later.`, cta:{ label:"See set-aside", view:"taxes" } });
+    });
+    // Goal falling behind its date.
+    goalsList().forEach(g=>{
+      if(!g.by || (g.saved||0) >= g.target) return;
+      const mo = monthsUntil(g.by);
+      if(mo <= 2) out.push({ id:`goal-${g.id}-${todayISO().slice(0,7)}`, type:"goal", pri:3,
+        text:`“${g.name}” needs ${money((g.target-(g.saved||0))/mo)} a month to land by ${shortDate(g.by)}.`,
+        why:"You set a date on this goal and it's coming up.", cta:{ label:"View goals", view:"overview" } });
+    });
+    return out;
+  }
+  function nudgeStats(){ const cs = state.creatorSettings; if(!cs.nudgeStats || typeof cs.nudgeStats !== "object") cs.nudgeStats = {}; return cs.nudgeStats; }
+  function recordNudge(type, what){
+    if(!type) return;
+    const s = nudgeStats(); s[type] = s[type] || { acted:0, snoozed:0 }; s[type][what]++;
+  }
+  // Learn from behavior: a type snoozed three times without ever being acted on gets quieted.
+  function nudgeQuieted(type){
+    if(state.creatorSettings.learnNudges === false) return false;
+    const s = nudgeStats()[type];
+    return !!(s && s.snoozed >= 3 && s.acted === 0);
+  }
+
+  /* ---------- Delight me: milestones + wrapped ---------- */
+  const MILESTONES = [
+    { key:"first-income", label:"First payday logged", test: c=>c.received > 0 },
+    { key:"month-1k", label:"First $1K month", test: c=>c.bestMonth >= 1000 },
+    { key:"month-5k", label:"First $5K month", test: c=>c.bestMonth >= 5000 },
+    { key:"month-10k", label:"First $10K month", test: c=>c.bestMonth >= 10000 },
+    { key:"month-25k", label:"First $25K month", test: c=>c.bestMonth >= 25000 },
+    { key:"ytd-50k", label:"$50K this year", test: c=>c.ytd >= 50000 },
+    { key:"ytd-100k", label:"Six figures this year", test: c=>c.ytd >= 100000 },
+    { key:"invoice-paid", label:"First invoice paid", test: c=>c.paidInvoices > 0 },
+    { key:"tax-paid", label:"First estimated tax payment", test: c=>c.taxPayments > 0 },
+    { key:"brands-5", label:"Five different brands paid you", test: c=>c.brands >= 5 },
+    { key:"profit-streak", label:"Three profitable months in a row", test: c=>c.streak >= 3 }
+  ];
+  function milestoneContext(){
+    const m = monthlyReceived(), y = String(new Date().getFullYear());
+    const exp = new Map(); state.expenses.forEach(r=>{ const k = r.date.slice(0,7); exp.set(k,(exp.get(k)||0)+r.amount); });
+    let streak = 0, best = 0;
+    const now = new Date();
+    for(let i=1;i<=24;i++){
+      const d = new Date(now.getFullYear(), now.getMonth()-i, 1), k = monthKey(d.getFullYear(), d.getMonth());
+      if((m.get(k)||0) - (exp.get(k)||0) > 0){ streak++; best = Math.max(best, streak); } else streak = 0;
+    }
+    const received = state.income.filter(r=>r.status === "received");
+    return {
+      received: received.length,
+      bestMonth: Math.max(0, ...m.values()),
+      ytd: received.filter(r=>r.date.startsWith(y)).reduce((a,r)=>a+r.amount,0),
+      paidInvoices: state.invoices.filter(i=>i.status === "paid").length,
+      taxPayments: state.creatorSettings.taxPayments.length,
+      brands: new Set(received.map(r=>normText(r.source))).size,
+      streak: best
+    };
+  }
+  let winsChecking = false;
+  async function checkMilestones(){
+    if(winsChecking || !isOwnWorkspace()) return;
+    const cs = state.creatorSettings;
+    if(!cs.wins || typeof cs.wins !== "object") cs.wins = {};
+    const ctx = milestoneContext();
+    const fresh = MILESTONES.filter(ms=>!cs.wins[ms.key] && ms.test(ctx));
+    if(!fresh.length) return;
+    winsChecking = true;
+    // First run on an existing account: record past wins quietly instead of a toast storm.
+    const quiet = !cs.winsSeeded;
+    fresh.forEach(ms=>{ cs.wins[ms.key] = todayISO(); });
+    cs.winsSeeded = true;
+    if(!quiet){
+      const ms = fresh[fresh.length-1];
+      showToast(`🏆 ${ms.label}! ${quip("milestone")}`.trim());
+    }
+    renderWins();
+    await saveCreatorSettings();
+    winsChecking = false;
+  }
+  function renderWins(){
+    const wrap = document.getElementById("ovWins");
+    if(!wrap) return;
+    const wins = state.creatorSettings.wins || {};
+    const got = MILESTONES.filter(ms=>wins[ms.key]).sort((a,b)=>wins[a.key] < wins[b.key] ? 1 : -1);
+    const m = new Date().getMonth();
+    const showWrapped = m >= 10 || m === 0;
+    if(!got.length && !showWrapped){ wrap.innerHTML = ""; return; }
+    wrap.innerHTML = `<div class="wins-row">
+      ${got.slice(0,3).map(ms=>`<span class="win-chip">🏆 ${escapeHtml(ms.label)}</span>`).join("")}
+      ${got.length > 3 ? `<button type="button" class="nudge-link" data-wins-all="1">+${got.length-3} more</button>` : ""}
+      ${showWrapped ? `<button type="button" class="win-chip wrapped-chip" data-wrapped="1">✨ Your year, wrapped</button>` : ""}
+    </div>`;
+  }
+  document.addEventListener("click", e=>{
+    if(e.target.closest("[data-wins-all]")){
+      const wins = state.creatorSettings.wins || {};
+      openSettingsModal(`<h2>Your wins</h2>
+        <div class="settings-section">${MILESTONES.map(ms=>`<div class="toggle-row"><div><div class="t1">${wins[ms.key] ? "🏆" : "🔒"} ${escapeHtml(ms.label)}</div>${wins[ms.key] ? `<div class="t2">Unlocked ${shortDate(wins[ms.key])}</div>` : ""}</div></div>`).join("")}</div>
+        <div class="settings-form-actions" style="margin-top:14px;"><button type="button" class="btn-secondary" data-close-settings>Close</button></div>`);
+    }
+    if(e.target.closest("[data-wrapped]")) openWrapped();
+  });
+
+  function wrappedData(year){
+    const y = String(year);
+    const inc = state.income.filter(r=>r.status === "received" && r.date.startsWith(y));
+    const exp = state.expenses.filter(r=>r.date.startsWith(y));
+    const total = inc.reduce((a,r)=>a+r.amount,0);
+    const spent = exp.reduce((a,r)=>a+r.amount,0);
+    const written = exp.filter(r=>r.deductible).reduce((a,r)=>a+r.amount,0);
+    const by = (rows, key) => { const mp = new Map(); rows.forEach(r=>mp.set(r[key]||"Other",(mp.get(r[key]||"Other")||0)+r.amount)); return [...mp].sort((a,b)=>b[1]-a[1]); };
+    const months = by(inc.map(r=>({ m:r.date.slice(0,7), amount:r.amount })), "m");
+    const bestMonth = months[0] ? new Date(months[0][0]+"-01T00:00:00").toLocaleDateString("en-US",{month:"long"}) : null;
+    const topType = by(inc, "type")[0];
+    const ERAS = { "Brand Deal":"Brand deal era", "Ad Revenue":"Ad revenue era", "Affiliate":"Affiliate era", "Memberships":"Community era", "Platform Payout":"Platform era" };
+    return { year, total, spent, written, entries: inc.length, brands: by(inc, "source").slice(0,3), bestMonth, bestMonthAmt: months[0] ? months[0][1] : 0,
+      topExp: by(exp, "category")[0] || null, era: topType ? (ERAS[topType[0]] || `${topType[0]} era`) : null, setAside: Math.max(0,total-spent)*taxPct() };
+  }
+  function openWrapped(){
+    const now = new Date();
+    const year = now.getMonth() === 0 ? now.getFullYear()-1 : now.getFullYear();
+    const w = wrappedData(year);
+    if(!w.entries){ showToast("Log some income this year and your Wrapped will be ready."); return; }
+    const p = persona(), who = p && CREATOR_TYPES[p.type] ? CREATOR_TYPES[p.type].label : "Creator";
+    const text = `My ${year} on GigBooks: earned ${money(w.total)} from ${w.entries} payments${w.brands[0] ? `, top brand ${w.brands[0][0]}` : ""}${w.bestMonth ? `, best month ${w.bestMonth}` : ""}.`;
+    openSettingsModal(`<div class="wrapped">
+      <div class="wr-kicker">${year} · ${escapeHtml(who)} Wrapped</div>
+      <div class="wr-big">${money(w.total)}</div>
+      <div class="wr-sub">earned across ${w.entries} payment${w.entries===1?"":"s"}${wittyOn() ? ". " + escapeHtml(pick(QUIPS.wrapped)) : ""}</div>
+      <div class="wr-grid">
+        ${w.era ? `<div><span>Your era</span><b>${escapeHtml(w.era)}</b></div>` : ""}
+        ${w.bestMonth ? `<div><span>Best month</span><b>${escapeHtml(w.bestMonth)} · ${money(w.bestMonthAmt)}</b></div>` : ""}
+        ${w.brands.length ? `<div><span>Top payers</span><b>${w.brands.map(b=>escapeHtml(b[0])).join(", ")}</b></div>` : ""}
+        <div><span>Written off</span><b>${money(w.written)}</b></div>
+        ${w.topExp ? `<div><span>Biggest spend</span><b>${escapeHtml(w.topExp[0])}</b></div>` : ""}
+        <div><span>Tax set-aside</span><b>${money(w.setAside)}</b></div>
+      </div>
+    </div>
+    <div class="modal-actions"><button type="button" class="btn-secondary" data-close-settings>Close</button><button type="button" class="btn-primary" id="wrCopy">Copy to share</button></div>`);
+    document.getElementById("wrCopy").addEventListener("click", async ()=>{
+      try{ await navigator.clipboard.writeText(text); showToast(wittyOn() ? "Copied. Go flex (responsibly)." : "Copied."); }
+      catch(e){ showToast("Couldn't copy — your browser blocked it.", true); }
+    });
+  }
+
+  /* ---------- Trust: what GigBooks knows ---------- */
+  function renderPersonalizationSettings(){
+    const cs = state.creatorSettings, p = persona();
+    const s = nudgeStats();
+    const quieted = Object.keys(s).filter(nudgeQuieted);
+    const row = (t, v, use) => `<div class="toggle-row"><div><div class="t1">${t}: <span style="font-weight:500;">${v}</span></div><div class="t2">${use}</div></div></div>`;
+    openSettingsModal(`<h2>Personalization</h2>
+      <p class="settings-note">Everything GigBooks uses to tailor the app is listed here. It comes from your answers and your own books, stays in your account, and is never sold or shared.</p>
+      <div class="settings-section">
+        ${row("Creator type", p && CREATOR_TYPES[p.type] ? CREATOR_TYPES[p.type].label : "Not set", "Sorts tax write-off ideas and picks your default payout import.")}
+        ${row("Income streams", p && p.streams && p.streams.length ? p.streams.map(k=>INCOME_STREAMS[k]).join(", ") : "Not set", "Hides Deals and Invoices if you don't use them.")}
+        ${row("Focus", p && MONEY_FOCUS[p.focus] ? MONEY_FOCUS[p.focus] : "Not set", "Decides what shows up first on Overview.")}
+        ${row("Your history", "Income and expenses you've logged", "Powers month-to-month comparisons, milestones and Wrapped.")}
+        ${row("Reminder habits", quieted.length ? `Quieted: ${quieted.map(k=>NUDGE_NAMES[k]||k).join(", ")}` : "Nothing quieted", "Reminders you keep snoozing without acting on get turned down.")}
+      </div>
+      <div class="settings-section">
+        ${toggleRowHtml("pzTailor", tailoringOn(), "Tailor tools to me", "Hide tools you said you don't use.")}
+        ${toggleRowHtml("pzLearn", cs.learnNudges !== false, "Learn from my reminders", "Quiet reminders you keep snoozing.")}
+        ${toggleRowHtml("pzVibe", wittyOn(), "Witty mode", "Little one-liners around the app. Turn off for just the facts.")}
+      </div>
+      <div class="settings-form-actions" style="margin-top:14px;justify-content:space-between;">
+        <button type="button" class="btn-secondary" id="pzReset">Reset personalization</button>
+        <span style="display:flex;gap:8px;"><button type="button" class="btn-secondary" id="pzEdit">Edit answers</button><button type="button" class="btn-primary" data-close-settings>Done</button></span>
+      </div>`);
+    const bind = (id, fn) => document.getElementById(id).addEventListener("change", async e=>{ fn(e.target.checked); renderAll(); await saveCreatorSettings(); });
+    bind("pzTailor", v=>{ cs.tailorTools = v; });
+    bind("pzLearn", v=>{ cs.learnNudges = v; });
+    bind("pzVibe", v=>{ cs.vibe = v ? "witty" : "plain"; });
+    document.getElementById("pzEdit").addEventListener("click", openPersonaModal);
+    document.getElementById("pzReset").addEventListener("click", async ()=>{
+      delete cs.persona; cs.nudgeStats = {}; cs.personaDismissed = false;
+      closeSettingsModal(); renderAll(); await saveCreatorSettings();
+      showToast("Personalization reset. Fresh start.");
+    });
+  }
+
+  function renderGreetingQuip(){
+    const el = document.getElementById("greetingSub");
+    if(!el) return;
+    if(!el.dataset.set || el.dataset.vibe !== String(wittyOn())){
+      el.textContent = wittyOn() ? pick(QUIPS.greeting) : QUIPS.greetingPlain[0];
+      el.dataset.set = "1"; el.dataset.vibe = String(wittyOn());
+    }
+  }
+  function renderPersonalization(){
+    applyTailoredNav();
+    renderGreetingQuip();
+    renderPersonaPrompt();
+    renderInsight();
+    renderGoals();
+    renderTakeHome();
+    renderWins();
+    checkMilestones();
+  }
+
   function renderCreatorFeatures(){
+    renderPersonalization();
     renderNudges();
     renderTaxSetAside();
     renderSmoothing();
@@ -9646,7 +10232,7 @@ input,select,textarea{border-radius:10px;}
     openSettingsModal(`
       <h2>Data &amp; Privacy</h2>
       <p style="font-size:12.5px;color:var(--ink-500);margin:-8px 0 4px;">Manage your data and privacy settings.</p>
-      <div class="settings-note">Everything in GigBooks stays in this browser — nothing is sent to a server.</div>
+      <div class="settings-note">Your books are stored in your GigBooks account and protected so only you (and anyone you invite) can see them. We never sell or share your data. See what's used to personalize the app under Settings → Personalization.</div>
       <div class="settings-section">
         <div class="danger-zone">
           <div class="t1">Reset My Data</div>
@@ -9767,6 +10353,7 @@ input,select,textarea{border-radius:10px;}
     dateCurrency: renderDateCurrencySettings,
     displayOptions: renderDisplayOptionsSettings,
     dataPrivacy: renderDataPrivacySettings,
+    personalization: renderPersonalizationSettings,
     exportData: renderExportDataSettings,
     deleteAccount: renderDeleteAccountSettings
   };

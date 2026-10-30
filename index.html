@@ -1473,6 +1473,35 @@ input,select,textarea{border-radius:10px;}
   #greetingSub{font-size:15.5px;}
 }
 
+.moment-card{background:linear-gradient(180deg,var(--white),var(--cream-50));}
+.moment-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;}
+.moment-kicker{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;color:var(--green-700);margin-bottom:4px;}
+.moment-card h3{font-style:italic;font-size:21px !important;}
+.moment-future{margin:8px 0 16px;font-size:13.5px;color:var(--ink-500);}
+.moment-future em{font-family:var(--font-serif);font-size:15.5px;color:var(--ink-900);}
+.moment-grid{display:grid;grid-template-columns:auto 1fr 1fr;gap:14px;align-items:end;}
+.moment-grid .field{margin:0;}
+.moment-stat{padding-right:10px;}
+.moment-stat span{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-500);font-weight:600;}
+.moment-stat b{font-family:var(--font-serif);font-weight:500;font-size:26px;color:var(--green-800);font-variant-numeric:tabular-nums;}
+.moment-actions{display:flex;justify-content:flex-end;margin-top:14px;}
+.moment-done{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 0;margin:-8px 0 18px;font-size:13.5px;color:var(--ink-900);}
+.moment-streak{margin-left:14px;font-family:var(--font-serif);font-style:italic;color:var(--green-700);}
+.gratitude-card{padding:18px 22px;}
+.gratitude-q{margin:0 0 10px;font-size:14.5px;}
+.gratitude-row{display:flex;gap:10px;align-items:center;}
+.gratitude-row input{flex:1;min-width:0;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit;font-size:13.5px;background:var(--white);}
+.insight.calm{font-family:var(--font-serif);font-style:italic;font-size:15.5px;color:var(--green-800);}
+.insight.calm .insight-dot{background:var(--sage-300);}
+.wr-quote{margin-top:22px;padding-top:18px;border-top:1px solid rgba(255,255,255,.15);font-family:var(--font-serif);font-style:italic;font-size:17px;line-height:1.4;}
+.wr-quote span{display:block;margin-top:6px;font-family:var(--font-sans);font-style:normal;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--sage-300);}
+@media (max-width:720px){
+  .moment-grid{grid-template-columns:1fr;}
+  .gratitude-row{flex-wrap:wrap;}
+  .gratitude-row input{flex-basis:100%;}
+  .moment-streak{margin-left:0;flex-basis:100%;}
+}
+
 </style>
 </head>
 <body>
@@ -2076,6 +2105,8 @@ input,select,textarea{border-radius:10px;}
 
       <div id="ovWins"></div>
       <div id="ovInsight"></div>
+      <div id="ovMoment"></div>
+      <div id="ovGratitude"></div>
       <div id="ovNudges"></div>
       <div id="ovPersona"></div>
       <div id="ovSetAside"></div>
@@ -8846,8 +8877,12 @@ input,select,textarea{border-radius:10px;}
       lines.push({ t:`${label} has been your strongest month historically. Plan launches and pitches around it.`, q:null });
     }
     const top = lines.slice(0, 2);
+    if(top.some(l=>l.q === "downMonth" || l.q === "noIncomeYet") && mindsetOn()){
+      const j = journalReminder();
+      top.push({ t: j ? `You once wrote: “${j.note}” ${encourage("slow")}` : encourage("slow"), q:null, calm:true });
+    }
     if(!top.length){ wrap.innerHTML = ""; return; }
-    wrap.innerHTML = `<div class="insight-strip">${top.map(l=>`<div class="insight"><span class="insight-dot"></span><span>${escapeHtml(l.t)}${l.q ? quipSpan(l.q) : ""}</span></div>`).join("")}</div>`;
+    wrap.innerHTML = `<div class="insight-strip">${top.map(l=>`<div class="insight${l.calm ? " calm" : ""}"><span class="insight-dot"></span><span>${escapeHtml(l.t)}${l.q ? quipSpan(l.q) : ""}</span></div>`).join("")}</div>`;
   }
 
   /* ---------- Empower me: take-home + goals ---------- */
@@ -9059,10 +9094,11 @@ input,select,textarea{border-radius:10px;}
     const got = MILESTONES.filter(ms=>wins[ms.key]).sort((a,b)=>wins[a.key] < wins[b.key] ? 1 : -1);
     const m = new Date().getMonth();
     const showWrapped = m >= 10 || m === 0;
-    if(!got.length && !showWrapped){ wrap.innerHTML = ""; return; }
+    if(!got.length && !showWrapped && !(journal().length && mindsetOn())){ wrap.innerHTML = ""; return; }
     wrap.innerHTML = `<div class="wins-row">
       ${got.length ? `<span class="wins-label">Milestones</span>${got.slice(0,3).map(ms=>`<span class="win-item">${escapeHtml(ms.label)}</span>`).join("")}` : ""}
       ${got.length > 3 ? `<button type="button" class="wins-more" data-wins-all="1">See all ${got.length}</button>` : ""}
+      ${journal().length && mindsetOn() ? `<button type="button" class="wins-more" data-journal-open="1">Wins journal</button>` : ""}
       ${showWrapped ? `<button type="button" class="wins-more" data-wrapped="1">Your year, wrapped →</button>` : ""}
     </div>`;
   }
@@ -9110,6 +9146,7 @@ input,select,textarea{border-radius:10px;}
         ${w.topExp ? `<div><span>Biggest spend</span><b>${escapeHtml(w.topExp[0])}</b></div>` : ""}
         <div><span>Tax set-aside</span><b>${money(w.setAside)}</b></div>
       </div>
+      ${(()=>{ const j = journal().filter(x=>x.date.startsWith(String(year))); return j.length ? `<div class="wr-quote">“${escapeHtml(j[j.length-1].note)}”<span>From your wins journal · ${j.length} entr${j.length===1?"y":"ies"} this year</span></div>` : ""; })()}
     </div>
     <div class="modal-actions"><button type="button" class="btn-secondary" data-close-settings>Close</button><button type="button" class="btn-primary" id="wrCopy">Copy to share</button></div>`);
     document.getElementById("wrCopy").addEventListener("click", async ()=>{
@@ -9130,6 +9167,7 @@ input,select,textarea{border-radius:10px;}
         ${row("Creator type", p && CREATOR_TYPES[p.type] ? CREATOR_TYPES[p.type].label : "Not set", "Sorts tax write-off ideas and picks your default payout import.")}
         ${row("Income streams", p && p.streams && p.streams.length ? p.streams.map(k=>INCOME_STREAMS[k]).join(", ") : "Not set", "Hides Deals and Invoices if you don't use them.")}
         ${row("Focus", p && MONEY_FOCUS[p.focus] ? MONEY_FOCUS[p.focus] : "Not set", "Decides what shows up first on Overview.")}
+        ${row("Future self", futureSelf() ? escapeHtml(futureSelf()) : "Not set", "Shown on your daily money moment.")}
         ${row("Your history", "Income and expenses you've logged", "Powers month-to-month comparisons, milestones and Wrapped.")}
         ${row("Reminder habits", quieted.length ? `Quieted: ${quieted.map(k=>NUDGE_NAMES[k]||k).join(", ")}` : "Nothing quieted", "Reminders you keep snoozing without acting on get turned down.")}
       </div>
@@ -9137,15 +9175,17 @@ input,select,textarea{border-radius:10px;}
         ${toggleRowHtml("pzTailor", tailoringOn(), "Tailor tools to me", "Hide tools you said you don't use.")}
         ${toggleRowHtml("pzLearn", cs.learnNudges !== false, "Learn from my reminders", "Quiet reminders you keep snoozing.")}
         ${toggleRowHtml("pzVibe", wittyOn(), "Witty mode", "Little one-liners around the app. Turn off for just the facts.")}
+        ${toggleRowHtml("pzMind", mindsetOn(), "Mindset moments", "Daily money moment, gratitude when money lands, and encouragement on slow months.")}
       </div>
       <div class="settings-form-actions" style="margin-top:14px;justify-content:space-between;">
         <button type="button" class="btn-secondary" id="pzReset">Reset personalization</button>
-        <span style="display:flex;gap:8px;"><button type="button" class="btn-secondary" id="pzEdit">Edit answers</button><button type="button" class="btn-primary" data-close-settings>Done</button></span>
+        <span style="display:flex;gap:8px;flex-wrap:wrap;"><button type="button" class="btn-secondary" data-future-edit="1">Future self</button><button type="button" class="btn-secondary" data-journal-open="1">Journal</button><button type="button" class="btn-secondary" id="pzEdit">Edit answers</button><button type="button" class="btn-primary" data-close-settings>Done</button></span>
       </div>`);
     const bind = (id, fn) => document.getElementById(id).addEventListener("change", async e=>{ fn(e.target.checked); renderAll(); await saveCreatorSettings(); });
     bind("pzTailor", v=>{ cs.tailorTools = v; });
     bind("pzLearn", v=>{ cs.learnNudges = v; });
     bind("pzVibe", v=>{ cs.vibe = v ? "witty" : "plain"; });
+    bind("pzMind", v=>{ cs.mindset = v; });
     document.getElementById("pzEdit").addEventListener("click", openPersonaModal);
     document.getElementById("pzReset").addEventListener("click", async ()=>{
       delete cs.persona; cs.nudgeStats = {}; cs.personaDismissed = false;
@@ -9162,11 +9202,177 @@ input,select,textarea{border-radius:10px;}
       el.dataset.set = "1"; el.dataset.vibe = String(wittyOn());
     }
   }
+  /* ---------- Mindset: future self, gratitude, a daily money moment ----------
+     A calmer voice than the quips: encouragement that points at
+     who the creator is becoming, not just what they did. */
+  function mindsetOn(){ return state.creatorSettings.mindset !== false; }
+  const ENCOURAGE = {
+    morning:[
+      "You're doing better than you think.", "Small steps still count as moving.",
+      "Clear numbers, calm mind.", "Today is a good day to be the person you're becoming.",
+      "You don't have to do it all today. Just the next thing."
+    ],
+    slow:[
+      "Slow months are part of the rhythm, not a verdict on you.",
+      "Quiet months are when good creators plant the next season.",
+      "Your worth isn't this month's total."
+    ],
+    grateful:["Noticing what's working is how you get more of it.", "That's worth remembering.", "Saved to your wins journal."],
+    done:["Intention set. Go be that person.", "That's how habits become who you are.", "Done. Future you is proud of you."]
+  };
+  function encourage(key){ return mindsetOn() && ENCOURAGE[key] ? pick(ENCOURAGE[key]) : ""; }
+  function journal(){ const cs = state.creatorSettings; if(!Array.isArray(cs.journal)) cs.journal = []; return cs.journal; }
+  function moments(){ const cs = state.creatorSettings; if(!cs.moments || typeof cs.moments !== "object") cs.moments = {}; return cs.moments; }
+  function futureSelf(){ const f = state.creatorSettings.futureSelf; return f && f.text ? f.text : ""; }
+
+  function momentStreak(){
+    const m = moments();
+    let n = 0, d = startOfToday();
+    if(!m[isoLocal(d)]) d = addDays(d, -1);
+    while(m[isoLocal(d)] && n < 400){ n++; d = addDays(d, -1); }
+    return n;
+  }
+  function streakLine(n){
+    if(n >= 21) return `${n} mornings in a row. This is just who you are now.`;
+    if(n >= 7) return `${n} mornings in a row. You're becoming someone who knows their numbers.`;
+    if(n >= 3) return `${n} mornings in a row. It's turning into a habit.`;
+    return "";
+  }
+  function suggestedIntention(){
+    const n = computeNudges()[0];
+    if(n && n.type === "late") return `Follow up with ${n.text.split(" is ")[0]}`;
+    if(n && n.type === "tax") return "Move money into tax savings";
+    if(n && n.type === "invoice") return "Send that invoice";
+    if(state.unclassifiedIncome.length + state.unclassifiedExpenses.length) return "Sort my uncategorized transactions";
+    return "Log today's receipts";
+  }
+
+  function renderMoment(){
+    const wrap = document.getElementById("ovMoment");
+    if(!wrap) return;
+    if(!mindsetOn() || !isOwnWorkspace()){ wrap.innerHTML = ""; return; }
+    const today = todayISO(), m = moments()[today];
+    const fs = futureSelf();
+    const t = taxSummaryYTD();
+    if(m){
+      const streak = streakLine(momentStreak());
+      wrap.innerHTML = `<div class="moment-done">
+        <span class="wins-label">Today</span><span>${escapeHtml(m.intention || "Showing up")}</span>
+        ${streak ? `<span class="moment-streak">${escapeHtml(streak)}</span>` : ""}</div>`;
+      return;
+    }
+    if(state.creatorSettings.momentSkipped === today){ wrap.innerHTML = ""; return; }
+    wrap.innerHTML = `<div class="card feature-card moment-card">
+      <div class="moment-head">
+        <div><div class="moment-kicker">Your money moment</div>
+          <h3>${escapeHtml(encourage("morning"))}</h3></div>
+        <button type="button" class="nudge-link" id="momentSkip">Skip today</button>
+      </div>
+      ${fs ? `<p class="moment-future">You're becoming: <em>${escapeHtml(fs)}</em></p>`
+        : `<p class="moment-future"><button type="button" class="nudge-link" data-future-edit="1">Describe the creator you're becoming</button></p>`}
+      <div class="moment-grid">
+        <div class="moment-stat"><span>Safe to spend</span><b>${money(t.safe)}</b></div>
+        <div class="field"><label>One thing I'll do today</label><input id="momentIntent" placeholder="${escapeHtml(suggestedIntention())}"></div>
+        <div class="field"><label>One thing I'm grateful for</label><input id="momentGrateful" placeholder="A client, a win, a slow morning…"></div>
+      </div>
+      <div class="moment-actions"><button type="button" class="pack-btn primary" id="momentSave">Set my intention</button></div>
+    </div>`;
+  }
+  document.addEventListener("click", async e=>{
+    if(e.target.closest("#momentSkip")){ state.creatorSettings.momentSkipped = todayISO(); renderMoment(); await saveCreatorSettings(); }
+    if(e.target.closest("#momentSave")){
+      const intentEl = document.getElementById("momentIntent");
+      const intention = intentEl.value.trim() || intentEl.placeholder;
+      const grateful = document.getElementById("momentGrateful").value.trim();
+      moments()[todayISO()] = { intention, grateful: grateful || null };
+      if(grateful) journal().unshift({ id: rid(), date: todayISO(), note: grateful, kind:"moment" });
+      renderMoment(); renderWins();
+      showToast(encourage("done") || "Saved.");
+      await saveCreatorSettings();
+    }
+    if(e.target.closest("[data-future-edit]")) openFutureSelfModal();
+    if(e.target.closest("[data-journal-open]")) openJournal();
+  });
+
+  function openFutureSelfModal(){
+    openSettingsModal(`<h2>Who are you becoming?</h2>
+      <p class="settings-note">Describe the creator you're growing into, as if it's already true. Keep it short and in your own words. We'll remind you of it on your money moments.</p>
+      <div class="field"><label>I am…</label><textarea id="futureText" rows="3" maxlength="160" placeholder="e.g. a calm, six-figure creator who never panics about taxes">${escapeHtml(futureSelf())}</textarea></div>
+      <div class="choice-grid" style="margin:-4px 0 12px;">${["a full-time creator with three months of savings","someone who pays themselves a steady paycheck","a creator brands are excited to work with"].map(x=>`<button type="button" class="preset-chip" data-future-pick="${escapeHtml(x)}">${escapeHtml(x)}</button>`).join("")}</div>
+      <div class="modal-actions"><button type="button" class="btn-secondary" data-close-settings>Cancel</button><button type="button" class="btn-primary" id="futureSave">Save</button></div>`);
+    document.querySelectorAll("[data-future-pick]").forEach(b=>b.addEventListener("click", ()=>{ document.getElementById("futureText").value = b.dataset.futurePick; }));
+    document.getElementById("futureSave").addEventListener("click", async ()=>{
+      const text = document.getElementById("futureText").value.trim().replace(/^i am\s+/i, "");
+      state.creatorSettings.futureSelf = text ? { text, setAt: todayISO() } : null;
+      closeSettingsModal(); renderMoment();
+      if(text) showToast("Saved. Now go meet them halfway.");
+      await saveCreatorSettings();
+    });
+  }
+
+  // When money lands, invite a moment of gratitude. One payment at a time, never nagging.
+  function renderGratitude(){
+    const wrap = document.getElementById("ovGratitude");
+    if(!wrap) return;
+    if(!mindsetOn() || !isOwnWorkspace()){ wrap.innerHTML = ""; return; }
+    const cs = state.creatorSettings;
+    if(cs.gratitudeLast === todayISO()){ wrap.innerHTML = ""; return; }
+    const noted = new Set(journal().map(j=>j.incomeId).filter(Boolean).concat(cs.gratitudeSkipped || []));
+    const today = startOfToday();
+    const r = state.income.filter(x=>x.status === "received" && !noted.has(x.id) && (today - parseISODate(x.date))/DAY_MS <= 7 && parseISODate(x.date) <= today)
+      .sort((a,b)=>b.amount-a.amount)[0];
+    if(!r){ wrap.innerHTML = ""; return; }
+    wrap.innerHTML = `<div class="card feature-card gratitude-card">
+      <div class="moment-kicker">Money landed</div>
+      <p class="gratitude-q"><b>${escapeHtml(r.source)}</b> paid you ${money(r.amount)}. What made this possible?</p>
+      <div class="gratitude-row">
+        <input id="gratNote" maxlength="200" placeholder="Your consistency, a great pitch, a client who believed in you…">
+        <button type="button" class="pack-btn primary" data-grat-save="${r.id}">Save</button>
+        <button type="button" class="nudge-link" data-grat-skip="${r.id}">Skip</button>
+      </div>
+    </div>`;
+  }
+  document.addEventListener("click", async e=>{
+    const sv = e.target.closest("[data-grat-save]"), sk = e.target.closest("[data-grat-skip]");
+    if(!sv && !sk) return;
+    const cs = state.creatorSettings;
+    if(sv){
+      const note = document.getElementById("gratNote").value.trim();
+      if(!note) return;
+      const r = state.income.find(x=>x.id === sv.dataset.gratSave);
+      journal().unshift({ id: rid(), date: todayISO(), incomeId: r ? r.id : null, source: r ? r.source : "", amount: r ? r.amount : null, note, kind:"payment" });
+      showToast(encourage("grateful") || "Saved to your wins journal.");
+    } else {
+      cs.gratitudeSkipped = (cs.gratitudeSkipped || []).concat(sk.dataset.gratSkip).slice(-100);
+    }
+    cs.gratitudeLast = todayISO();
+    renderGratitude(); renderInsight(); renderWins();
+    await saveCreatorSettings();
+  });
+
+  function openJournal(){
+    const list = journal();
+    openSettingsModal(`<h2>Wins journal</h2>
+      <p class="settings-note">Everything you've been grateful for. Read it on a slow day.</p>
+      <div class="settings-section">${list.length ? list.slice(0,60).map(j=>`<div class="toggle-row"><div>
+        <div class="t1" style="font-weight:500;">${escapeHtml(j.note)}</div>
+        <div class="t2">${shortDate(j.date)}${j.source ? ` · ${escapeHtml(j.source)}${j.amount ? " · " + money(j.amount) : ""}` : ""}</div></div></div>`).join("")
+        : `<div class="settings-note">Nothing yet. Your first entry is one payment away.</div>`}</div>
+      <div class="settings-form-actions" style="margin-top:14px;"><button type="button" class="btn-secondary" data-close-settings>Close</button></div>`);
+  }
+  // On a slow stretch, bring back something the creator once wrote down.
+  function journalReminder(){
+    const list = journal().filter(j=>j.kind === "payment");
+    return mindsetOn() && list.length ? list[Math.floor(Math.random()*Math.min(list.length, 20))] : null;
+  }
+
   function renderPersonalization(){
     applyTailoredNav();
     renderGreetingQuip();
     renderPersonaPrompt();
     renderInsight();
+    renderMoment();
+    renderGratitude();
     renderGoals();
     renderTakeHome();
     renderWins();

@@ -1440,10 +1440,12 @@ input,select,textarea{border-radius:10px;}
 .insight-strip{display:flex;flex-direction:column;gap:6px;margin:-6px 0 18px;}
 .insight{display:flex;align-items:baseline;gap:10px;font-size:14.5px;color:var(--ink-700);}
 .insight-dot{width:6px;height:6px;border-radius:50%;background:var(--green-700);flex:none;transform:translateY(-2px);}
-.wins-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:-8px 0 16px;}
-.win-chip{display:inline-flex;align-items:center;gap:4px;background:var(--tan-100);color:var(--ink-900);border:1px solid #E6D6BE;border-radius:999px;padding:5px 12px;font-size:12px;font-weight:600;}
-.wrapped-chip{appearance:none;cursor:pointer;background:var(--green-800);border-color:var(--green-800);color:#fff;font-family:inherit;}
-.wrapped-chip:hover{background:var(--green-900);}
+.wins-row{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 0;margin:-10px 0 18px;font-size:13px;color:var(--ink-700);}
+.wins-label{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;color:var(--green-700);margin-right:12px;}
+.win-item{white-space:nowrap;}
+.win-item + .win-item::before{content:"·";margin:0 10px;color:var(--ink-400);}
+.wins-more{appearance:none;border:none;background:none;padding:0;margin-left:14px;font:inherit;font-size:13px;color:var(--green-800);font-weight:600;cursor:pointer;}
+.wins-more:hover{text-decoration:underline;}
 .th-inputs{display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px;}
 .th-inputs .field{margin:0;}
 .th-result{margin-top:14px;padding:14px 16px;border-radius:12px;background:var(--sage-100);min-height:52px;}
@@ -2642,7 +2644,7 @@ input,select,textarea{border-radius:10px;}
             <select class="dateselect" data-daterange aria-label="Select month"></select>
             <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><path d="m6 9 6 6 6-6"/></svg>
           </div>
-          <button type="button" class="pill-btn" data-wrapped="1">✨ Wrapped</button>
+          <button type="button" class="pill-btn" data-wrapped="1">Wrapped</button>
           <button class="btn-primary" id="exportReportBtn">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v11m0 0 4-4m-4 4-4-4"/><path d="M5 19h14"/></svg>
             Export Report
@@ -9044,7 +9046,7 @@ input,select,textarea{border-radius:10px;}
     cs.winsSeeded = true;
     if(!quiet){
       const ms = fresh[fresh.length-1];
-      showToast(`🏆 ${ms.label}! ${quip("milestone")}`.trim());
+      showToast(`Milestone: ${ms.label}. ${quip("milestone")}`.trim());
     }
     renderWins();
     await saveCreatorSettings();
@@ -9059,16 +9061,16 @@ input,select,textarea{border-radius:10px;}
     const showWrapped = m >= 10 || m === 0;
     if(!got.length && !showWrapped){ wrap.innerHTML = ""; return; }
     wrap.innerHTML = `<div class="wins-row">
-      ${got.slice(0,3).map(ms=>`<span class="win-chip">🏆 ${escapeHtml(ms.label)}</span>`).join("")}
-      ${got.length > 3 ? `<button type="button" class="nudge-link" data-wins-all="1">+${got.length-3} more</button>` : ""}
-      ${showWrapped ? `<button type="button" class="win-chip wrapped-chip" data-wrapped="1">✨ Your year, wrapped</button>` : ""}
+      ${got.length ? `<span class="wins-label">Milestones</span>${got.slice(0,3).map(ms=>`<span class="win-item">${escapeHtml(ms.label)}</span>`).join("")}` : ""}
+      ${got.length > 3 ? `<button type="button" class="wins-more" data-wins-all="1">See all ${got.length}</button>` : ""}
+      ${showWrapped ? `<button type="button" class="wins-more" data-wrapped="1">Your year, wrapped →</button>` : ""}
     </div>`;
   }
   document.addEventListener("click", e=>{
     if(e.target.closest("[data-wins-all]")){
       const wins = state.creatorSettings.wins || {};
       openSettingsModal(`<h2>Your wins</h2>
-        <div class="settings-section">${MILESTONES.map(ms=>`<div class="toggle-row"><div><div class="t1">${wins[ms.key] ? "🏆" : "🔒"} ${escapeHtml(ms.label)}</div>${wins[ms.key] ? `<div class="t2">Unlocked ${shortDate(wins[ms.key])}</div>` : ""}</div></div>`).join("")}</div>
+        <div class="settings-section">${MILESTONES.map(ms=>`<div class="toggle-row"><div><div class="t1" style="${wins[ms.key] ? "" : "color:var(--ink-400);font-weight:500;"}">${escapeHtml(ms.label)}</div>${wins[ms.key] ? `<div class="t2">Reached ${shortDate(wins[ms.key])}</div>` : `<div class="t2">Not yet</div>`}</div></div>`).join("")}</div>
         <div class="settings-form-actions" style="margin-top:14px;"><button type="button" class="btn-secondary" data-close-settings>Close</button></div>`);
     }
     if(e.target.closest("[data-wrapped]")) openWrapped();

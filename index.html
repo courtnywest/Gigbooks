@@ -1570,6 +1570,27 @@ input,select,textarea{border-radius:10px;}
   input[type=file]{max-width:100%;}
 }
 
+/* ---------- Growth & automation ---------- */
+.bench-box{font-size:12.5px;color:var(--ink-700);background:var(--sage-100);border-radius:10px;padding:9px 12px;margin:2px 0 14px;line-height:1.45;}
+.bench-box:empty{display:none;}
+.mk-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px;}
+.mk-row.two{grid-template-columns:2fr 1fr;}
+.mk-row input{min-width:0;padding:9px 10px;border:1px solid var(--line);border-radius:10px;font:inherit;font-size:13px;}
+.giggy-note-head{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+.giggy-note-head .giggy-av{width:40px;height:40px;flex:none;}
+.giggy-note{margin:0 0 16px;padding:0;list-style:none;}
+.giggy-note li{padding:11px 0;border-top:1px solid var(--line);font-size:14px;line-height:1.5;}
+.giggy-note li:first-child{border-top:none;}
+.afford-out{min-height:10px;margin-bottom:12px;}
+.afford{display:flex;flex-direction:column;gap:4px;padding:14px 16px;border-radius:12px;font-size:13.5px;line-height:1.45;}
+.afford b{font-family:var(--font-serif);font-weight:500;font-size:20px;}
+.afford.yes{background:var(--sage-100);color:var(--green-900);}
+.afford.maybe{background:#FBF4E4;color:#6B4E12;}
+.afford.no{background:#F8E9E6;color:#7A2E24;}
+.afford-link{appearance:none;border:none;background:none;padding:0;margin-top:8px;font:inherit;font-size:13px;font-weight:600;color:var(--green-800);cursor:pointer;text-decoration:underline;text-underline-offset:3px;}
+#scanReceiptBtn svg{color:var(--green-800);}
+@media (max-width:720px){ .mk-row{grid-template-columns:1fr 1fr;} .mk-row input:first-child{grid-column:1 / -1;} .mk-row.two input:first-child{grid-column:auto;} }
+
 </style>
 </head>
 <body>
@@ -2881,6 +2902,10 @@ input,select,textarea{border-radius:10px;}
               <div><div class="t1">Profile Information</div><div class="t2">Update your name and email</div></div>
               <svg class="chev-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
             </button>
+            <button type="button" class="settings-row owner-only-row" data-setting="invite">
+              <div><div class="t1">Invite a creator</div><div class="t2">Share GigBooks with your link</div></div>
+              <svg class="chev-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+            </button>
             <button type="button" class="settings-row" data-setting="security">
               <div><div class="t1">Security</div><div class="t2">Change your password and manage 2FA</div></div>
               <svg class="chev-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
@@ -2924,6 +2949,14 @@ input,select,textarea{border-radius:10px;}
               </button>
               <button type="button" class="settings-row" data-setting="activityLog">
                 <div><div class="t1">Activity Log</div><div class="t2">See who added, changed, or removed what</div></div>
+                <svg class="chev-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+              </button>
+              <button type="button" class="settings-row owner-only-row" data-setting="getPaid">
+                <div><div class="t1">Getting paid</div><div class="t2">Add pay links to every invoice and reminder</div></div>
+                <svg class="chev-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+              </button>
+              <button type="button" class="settings-row owner-only-row" data-setting="mediaKit">
+                <div><div class="t1">Media kit</div><div class="t2">A one-page PDF for brands, built from your numbers</div></div>
                 <svg class="chev-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
               </button>
               <button type="button" class="settings-row" data-setting="paymentMethods">
@@ -4830,6 +4863,7 @@ input,select,textarea{border-radius:10px;}
             </div>
           </div>
         </div>
+        ${invoicePayHtml(vm)}
         ${vm.notes ? `<div style="font-size:11.5px;color:#777;border-top:1px solid #eee;padding-top:12px;white-space:pre-line;">${vm.notes}</div>` : ""}
       </div>
     `;
@@ -6482,7 +6516,7 @@ input,select,textarea{border-radius:10px;}
       const { data: authData, error } = await sb.auth.signUp({
         email: data.email.trim(),
         password: data.password,
-        options: { data: { full_name: data.name.trim(), role: data.role } }
+        options: { data: Object.assign({ full_name: data.name.trim(), role: data.role }, pendingReferral() ? { referred_by: pendingReferral() } : {}) }
       });
       if(submitBtn) submitBtn.disabled = false;
       if(error){
@@ -6794,6 +6828,7 @@ input,select,textarea{border-radius:10px;}
           <div class="sa-label">Safe to spend</div>
           <div class="sa-value up">${money(t.safe)}</div>
           <div class="sa-sub">What's yours after spending and taxes. We do the math.</div>
+          <button type="button" class="afford-link" data-afford="1">Can I afford something?</button>
         </div>
         <div class="sa-col">
           <div class="sa-label">Set aside for taxes</div>
@@ -7830,7 +7865,16 @@ input,select,textarea{border-radius:10px;}
     const rows = [];
     forYouGo = [];
     const go = fn => { forYouGo.push(fn); return forYouGo.length - 1; };
-    computeNudges().forEach(n=>rows.push({
+    if(cs.noteSeen !== weekKey(new Date()) && (state.income.length || state.expenses.length)) rows.push({
+      text: "Giggy's weekly note is ready.", why: "Your week in money, in under a minute.",
+      action: `<button type="button" class="fy-btn" data-weekly-note="1">Read</button>`, later: ""
+    });
+    remindersDue().slice(0,2).forEach(r=>rows.push({
+      text: `${r.inv.clientName} is ${r.late} days late on ${money(r.inv.total)}. A reminder is ready.`,
+      why: Object.keys(payHandles()).some(k=>payHandles()[k]) ? "Written for you, with your pay links included." : "Written for you. Add pay links in Settings to get paid faster.",
+      action: `<button type="button" class="fy-btn" data-nudge-type="late" data-chase-invoice="${r.inv.id}">Send reminder</button>`, later: ""
+    }));
+    computeNudges().filter(n=>n.type !== "late").forEach(n=>rows.push({
       text: n.text, why: n.why,
       action: n.cta.chase ? `<button type="button" class="fy-btn" data-nudge-type="${n.type}" data-chase-invoice="${n.cta.chase}">${n.cta.label}</button>`
         : `<button type="button" class="fy-btn" data-nudge-type="${n.type}" data-nudge-go="${n.cta.view}">${n.cta.label}</button>`,
@@ -8117,6 +8161,12 @@ input,select,textarea{border-radius:10px;}
       </div>`;
   }
   function chaseDraft(inv, tone){
+    const d = chaseDraftBase(inv, tone);
+    const pay = payText(inv.total, `Invoice #${String(inv.number).padStart(4,"0")}`);
+    if(pay){ const i = d.body.lastIndexOf("\n\n"); d.body = i > 0 ? d.body.slice(0,i) + "\n\n" + pay + d.body.slice(i) : d.body + "\n\n" + pay; }
+    return d;
+  }
+  function chaseDraftBase(inv, tone){
     const num = String(inv.number).padStart(4,"0");
     const late = invoiceDaysLate(inv);
     const me = (currentUser && currentUser.name) ? currentUser.name.trim() : "";
@@ -9282,7 +9332,8 @@ input,select,textarea{border-radius:10px;}
         <div><span>Tax set-aside</span><b>${money(w.setAside)}</b></div>
       </div>
     </div>
-    <div class="modal-actions"><button type="button" class="btn-secondary" data-close-settings>Close</button><button type="button" class="btn-primary" id="wrCopy">Copy to share</button></div>`);
+    <div class="modal-actions"><button type="button" class="btn-secondary" data-close-settings>Close</button><button type="button" class="btn-secondary" id="wrCopy">Copy text</button><button type="button" class="btn-primary" id="wrImage">Share image</button></div>`);
+    document.getElementById("wrImage").addEventListener("click", ()=>shareWrappedImage(w, who).catch(()=>showToast("Couldn't make the image.", true)));
     document.getElementById("wrCopy").addEventListener("click", async ()=>{
       try{ await navigator.clipboard.writeText(text); showToast(wittyOn() ? "Copied. Go flex (responsibly)." : "Copied."); }
       catch(e){ showToast("Couldn't copy — your browser blocked it.", true); }
@@ -9308,6 +9359,7 @@ input,select,textarea{border-radius:10px;}
         ${toggleRowHtml("pzTailor", tailoringOn(), "Tailor tools to me", "Hide tools you said you don't use.")}
         ${toggleRowHtml("pzLearn", cs.learnNudges !== false, "Learn from my reminders", "Quiet reminders you keep snoozing.")}
         ${toggleRowHtml("pzVibe", wittyOn(), "Witty mode", "Little one-liners around the app. Turn off for just the facts.")}
+        ${toggleRowHtml("pzBench", benchOn(), "Share anonymous deal rates", "Your creator type, deliverable and price only. Unlocks rate benchmarks.")}
       </div>
       <div class="settings-form-actions" style="margin-top:14px;justify-content:space-between;">
         <button type="button" class="btn-secondary" id="pzReset">Reset personalization</button>
@@ -9317,6 +9369,7 @@ input,select,textarea{border-radius:10px;}
     bind("pzTailor", v=>{ cs.tailorTools = v; });
     bind("pzLearn", v=>{ cs.learnNudges = v; });
     bind("pzVibe", v=>{ cs.vibe = v ? "witty" : "plain"; });
+    bind("pzBench", v=>{ cs.shareRates = v; });
     document.getElementById("pzEdit").addEventListener("click", openPersonaModal);
     document.getElementById("pzReset").addEventListener("click", async ()=>{
       delete cs.persona; cs.nudgeStats = {}; cs.personaDismissed = false;
@@ -9339,6 +9392,409 @@ input,select,textarea{border-radius:10px;}
     try{ more.open = localStorage.getItem("gigbooks_ov_more") === "1"; }catch(e){}
     more.addEventListener("toggle", ()=>{ try{ localStorage.setItem("gigbooks_ov_more", more.open ? "1" : "0"); }catch(e){} });
   })();
+  /* ============================================================
+     Growth & automation: get paid, reminders, rate benchmarks,
+     receipt scanning, media kit, sharing and invites, Giggy's note
+     ============================================================ */
+
+  /* ---------- 1. Get paid: pay links on every invoice ---------- */
+  function payHandles(){ const cs = state.creatorSettings; return cs.payHandles && typeof cs.payHandles === "object" ? cs.payHandles : {}; }
+  function payLinks(amount, note){
+    const h = payHandles(), amt = Number(amount||0).toFixed(2), n = encodeURIComponent(note || "");
+    const clean = v => String(v||"").trim().replace(/^[@$]/, "");
+    const out = [];
+    if(clean(h.link) && /^https:\/\//i.test(String(h.link).trim())) out.push({ label:"Pay online", url:String(h.link).trim() });
+    if(clean(h.paypal)) out.push({ label:"PayPal", url:`https://www.paypal.me/${encodeURIComponent(clean(h.paypal))}/${amt}` });
+    if(clean(h.venmo)) out.push({ label:"Venmo", url:`https://venmo.com/?txn=pay&recipients=${encodeURIComponent(clean(h.venmo))}&amount=${amt}&note=${n}` });
+    if(clean(h.cashapp)) out.push({ label:"Cash App", url:`https://cash.app/$${encodeURIComponent(clean(h.cashapp))}/${amt}` });
+    if(String(h.zelle||"").trim()) out.push({ label:"Zelle", text:String(h.zelle).trim() });
+    if(String(h.bank||"").trim()) out.push({ label:"Bank transfer", text:String(h.bank).trim() });
+    return out;
+  }
+  function invoicePayHtml(vm){
+    const links = payLinks(vm.total, vm.number ? `Invoice #${String(vm.number).padStart(4,"0")}` : "Invoice");
+    if(!links.length) return "";
+    const accent = state.invoiceBranding.accentColor || "#2F4A2E";
+    return `<div style="border:1px solid #e6e3d9;border-radius:8px;padding:12px 14px;margin-bottom:16px;">
+      <div style="font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:#999;margin-bottom:8px;">Ways to pay</div>
+      ${links.map(l=>`<div style="font-size:12px;margin:4px 0;"><b style="display:inline-block;min-width:96px;">${escapeHtml(l.label)}</b>${l.url
+        ? `<a href="${escapeHtml(l.url)}" style="color:${accent};word-break:break-all;">${escapeHtml(l.url.replace(/^https:\/\/(www\.)?/,""))}</a>`
+        : escapeHtml(l.text)}</div>`).join("")}
+    </div>`;
+  }
+  function payText(amount, note){
+    const links = payLinks(amount, note);
+    return links.length ? "You can pay here:\n" + links.map(l=>`${l.label}: ${l.url || l.text}`).join("\n") : "";
+  }
+  function renderGetPaidSettings(){
+    const h = payHandles();
+    const f = (id, label, val, ph, hint) => `<div class="field"><label>${label}${hint ? ` <span class="field-hint">${hint}</span>` : ""}</label><input id="${id}" value="${escapeHtml(val||"")}" placeholder="${ph}"></div>`;
+    openSettingsModal(`<h2>Getting paid</h2>
+      <p class="settings-note">Add any of these and every invoice and payment reminder gets "pay now" links with the amount filled in. Brands pay in one tap.</p>
+      ${f("gpLink","Payment link", h.link, "https://buy.stripe.com/…", "Stripe, Square or any https link")}
+      ${f("gpPaypal","PayPal.me username", h.paypal, "yourname")}
+      ${f("gpVenmo","Venmo username", h.venmo, "yourname")}
+      ${f("gpCash","Cash App $cashtag", h.cashapp, "$yourname")}
+      ${f("gpZelle","Zelle email or phone", h.zelle, "you@email.com")}
+      ${f("gpBank","Bank transfer details", h.bank, "Bank, account and routing numbers", "Shown as text")}
+      <div class="modal-actions"><button type="button" class="btn-secondary" data-close-settings>Cancel</button><button type="button" class="btn-primary" id="gpSave">Save</button></div>`);
+    document.getElementById("gpSave").addEventListener("click", async ()=>{
+      const v = id => document.getElementById(id).value.trim();
+      const link = v("gpLink");
+      if(link && !/^https:\/\//i.test(link)){ showToast("Payment links need to start with https://", true); return; }
+      state.creatorSettings.payHandles = { link, paypal:v("gpPaypal"), venmo:v("gpVenmo"), cashapp:v("gpCash"), zelle:v("gpZelle"), bank:v("gpBank") };
+      closeSettingsModal(); renderNudges();
+      showToast("Saved. Your invoices now have pay links.");
+      await saveCreatorSettings();
+    });
+  }
+
+  /* ---------- 1b. Reminders on a schedule: 3, 7 and 14 days late ---------- */
+  function remindersDue(){
+    const cs = state.creatorSettings;
+    return state.invoices.filter(inv=>(inv.status === "sent" || inv.status === "overdue") && effectiveInvoiceStatus(inv) === "overdue")
+      .map(inv=>{
+        const late = invoiceDaysLate(inv);
+        const stage = late >= 14 ? 3 : late >= 7 ? 2 : late >= 3 ? 1 : 0;
+        const sent = ((cs.chases || {})[inv.id] || []).length;
+        return { inv, late, due: stage > sent };
+      }).filter(r=>r.due).sort((a,b)=>b.late-a.late);
+  }
+
+  /* ---------- 2. Rate benchmarks (opt-in, anonymous, pooled) ---------- */
+  const BENCH_TYPES = ["Sponsored social post","Video / Reel / TikTok","UGC content","Brand partnership","Event / appearance","Freelance project","Other"];
+  function deliverableType(text){
+    const t = String(text||"").toLowerCase();
+    if(/ugc/.test(t)) return "UGC content";
+    if(/reel|tiktok|video|youtube|short|integration|vlog/.test(t)) return "Video / Reel / TikTok";
+    if(/event|appearance|panel|host|speak/.test(t)) return "Event / appearance";
+    if(/ambassador|partnership|campaign|retainer|bundle/.test(t)) return "Brand partnership";
+    if(/post|story|stories|carousel|instagram|feed|tweet|pin/.test(t)) return "Sponsored social post";
+    if(/freelance|edit|design|photo|shoot|consult/.test(t)) return "Freelance project";
+    return "Other";
+  }
+  function benchOn(){ return state.creatorSettings.shareRates === true; }
+  let benchUnavailable = false;
+  async function contributeRates(){
+    if(!benchOn() || benchUnavailable || !isOwnWorkspace()) return;
+    const cs = state.creatorSettings, p = persona();
+    const sent = new Set(cs.benchSent || []);
+    const rows = state.pipelineDeals.filter(d=>["signed","delivered","paid"].includes(d.stage) && d.estimatedValue > 0 && !sent.has(d.id))
+      .map(d=>({ id:d.id, row:{ creator_type: p && p.type ? p.type : "other", deliverable: deliverableType(d.deliverable), amount: Math.round(d.estimatedValue) } }));
+    if(!rows.length) return;
+    const { error } = await sb.from("rate_benchmarks").insert(rows.map(r=>r.row));
+    if(error){ benchUnavailable = true; return; }
+    cs.benchSent = Array.from(sent).concat(rows.map(r=>r.id)).slice(-500);
+    await saveCreatorSettings();
+  }
+  const benchCache = {};
+  async function fetchBenchmark(deliverable){
+    const p = persona(), type = p && p.type ? p.type : "other";
+    const key = type + "|" + deliverable;
+    if(key in benchCache) return benchCache[key];
+    if(benchUnavailable) return null;
+    const { data, error } = await sb.rpc("rate_benchmark", { p_creator_type: type, p_deliverable: deliverable });
+    if(error){ benchUnavailable = true; return null; }
+    const row = Array.isArray(data) ? data[0] : data;
+    benchCache[key] = row && row.n ? row : { n:0 };
+    return benchCache[key];
+  }
+  async function renderBenchmark(){
+    const sel = document.getElementById("rcProjectType");
+    const anchor = document.getElementById("rcRecommendedRate");
+    if(!sel || !anchor) return;
+    let box = document.getElementById("rcBenchmark");
+    if(!box){ box = document.createElement("div"); box.id = "rcBenchmark"; box.className = "bench-box"; anchor.insertAdjacentElement("afterend", box); }
+    if(!benchOn()){
+      box.innerHTML = `<span>See what creators like you charge.</span> <button type="button" class="nudge-link" data-bench-optin="1">Turn on rate benchmarks</button>`;
+      return;
+    }
+    const b = await fetchBenchmark(sel.value);
+    if(!b){ box.innerHTML = ""; return; }
+    const p = persona(), who = p && CREATOR_TYPES[p.type] ? CREATOR_TYPES[p.type].label + "s" : "Creators";
+    box.innerHTML = b.n >= 5
+      ? `<span>${escapeHtml(who)} usually charge <b>${money(b.p25)}–${money(b.p75)}</b> for this (typical ${money(b.median)}, from ${b.n} deals).</span>`
+      : `<span>Not enough shared deals for this yet. Benchmarks appear once enough creators share theirs.</span>`;
+  }
+  document.addEventListener("change", e=>{ if(e.target && e.target.id === "rcProjectType") renderBenchmark(); });
+  document.addEventListener("click", e=>{ if(e.target.closest("[data-bench-optin]")) openBenchOptIn(); });
+  function openBenchOptIn(){
+    openSettingsModal(`<h2>Rate benchmarks</h2>
+      <p class="settings-note">Share the price of your signed deals, anonymously, and see what creators like you charge. We only share three things: your creator type, the kind of deliverable and the amount. Never your name, the brand or anything else. You only see ranges built from at least 5 deals.</p>
+      <div class="modal-actions"><button type="button" class="btn-secondary" data-close-settings>Not now</button><button type="button" class="btn-primary" id="benchYes">Share anonymously</button></div>`);
+    document.getElementById("benchYes").addEventListener("click", async ()=>{
+      state.creatorSettings.shareRates = true;
+      closeSettingsModal(); await saveCreatorSettings();
+      await contributeRates(); renderBenchmark();
+      showToast("Thanks. You're helping every creator price better.");
+    });
+  }
+
+  /* ---------- 3. Scan a receipt photo ---------- */
+  let ocrLoading = null;
+  function loadOcr(){
+    if(window.Tesseract) return Promise.resolve(window.Tesseract);
+    if(ocrLoading) return ocrLoading;
+    ocrLoading = new Promise((res, rej)=>{
+      const sc = document.createElement("script");
+      sc.src = "https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js";
+      sc.onload = ()=>res(window.Tesseract); sc.onerror = ()=>{ ocrLoading = null; rej(new Error("load")); };
+      document.head.appendChild(sc);
+    });
+    return ocrLoading;
+  }
+  function parseReceipt(text){
+    const lines = text.split(/\n/).map(l=>l.trim()).filter(Boolean);
+    const amt = s => (s.match(/\$?\s?(\d{1,3}(?:,\d{3})*|\d+)[.,]\d{2}\b/g) || []).map(x=>parseFloat(x.replace(/[$\s,]/g,"").replace(/(\d)[.,](\d{2})$/,"$1.$2"))).filter(n=>n>0 && n<100000);
+    let total = null;
+    const keyLines = lines.filter(l=>/total|amount due|balance|grand/i.test(l) && !/sub ?total/i.test(l));
+    keyLines.forEach(l=>{ const a = amt(l); if(a.length) total = Math.max(total||0, ...a); });
+    if(total === null){ const all = amt(text); if(all.length) total = Math.max(...all); }
+    let date = null;
+    const m1 = text.match(/\b(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})\b/);
+    const m2 = text.match(/\b(20\d{2})-(\d{2})-(\d{2})\b/);
+    const m3 = text.match(/\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+(\d{1,2}),?\s+(20\d{2})/i);
+    if(m2) date = `${m2[1]}-${m2[2]}-${m2[3]}`;
+    else if(m1){ const y = m1[3].length === 2 ? "20" + m1[3] : m1[3]; date = `${y}-${pad2(+m1[1])}-${pad2(+m1[2])}`; }
+    else if(m3){ const mi = ["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"].indexOf(m3[1].toLowerCase().slice(0,3)); date = `${m3[3]}-${pad2(mi+1)}-${pad2(+m3[2])}`; }
+    if(date && (isNaN(parseISODate(date)) || date > todayISO())) date = null;
+    const merchant = lines.find(l=>/[a-z]{3,}/i.test(l) && (l.replace(/[^0-9]/g,"").length < l.length/3) && !/receipt|invoice|welcome|thank/i.test(l)) || "";
+    return { total, date, merchant: merchant.replace(/[^\w&'.\- ]+/g," ").replace(/\s+/g," ").trim().slice(0,60) };
+  }
+  async function scanReceipt(file){
+    if(!file) return;
+    if(!canWriteInWorkspace()){ showToast("You don't have permission to add expenses here.", true); return; }
+    showView("expenses");
+    document.getElementById("openAddExpense").click();
+    pendingReceiptFile = file; removeExistingReceiptFlag = false;
+    renderReceiptStatus(null);
+    const form = document.getElementById("expenseForm");
+    const status = document.getElementById("receiptStatusWrap");
+    const note = document.createElement("span");
+    note.className = "sa-sub"; note.textContent = "Reading your receipt…";
+    if(status) status.appendChild(note);
+    try{
+      const T = await loadOcr();
+      const { data } = await T.recognize(file, "eng");
+      const r = parseReceipt(data.text || "");
+      const set = (name, v) => { const el = form.elements[name]; if(el && v && !el.value) el.value = v; };
+      set("description", r.merchant); set("amount", r.total ? r.total.toFixed(2) : ""); if(r.date) form.elements.date.value = r.date;
+      if(r.merchant) form.elements.description.dispatchEvent(new Event("input", { bubbles:true }));
+      note.textContent = r.total ? "Filled in from your receipt. Check it and save." : "Couldn't read the total. Fill it in and save.";
+    }catch(e){
+      note.textContent = "Couldn't read that photo. The receipt is attached; fill in the rest.";
+    }
+  }
+  document.addEventListener("change", e=>{ if(e.target && e.target.id === "scanReceiptInput"){ scanReceipt(e.target.files[0]); e.target.value = ""; } });
+
+  /* ---------- 4. Media kit from real numbers ---------- */
+  function mediaKitData(){
+    const cs = state.creatorSettings;
+    const mk = Object.assign({ name: state.business.name || (currentUser && currentUser.name) || "", bio:"", niche:"", email:(currentUser && currentUser.email) || "", platforms:[], rates:[], showPartners:true }, cs.mediaKit || {});
+    if(!mk.rates.length){
+      const seen = new Set();
+      state.rateCalculations.forEach(r=>{ const t = r.projectType || r.project_type; const v = r.totalRate || r.total_rate || r.recommendedRate; if(t && v && !seen.has(t)){ seen.add(t); mk.rates.push({ item:t, price:Math.round(Number(v)) }); } });
+    }
+    return mk;
+  }
+  function pastPartners(){
+    const set = new Map();
+    state.pipelineDeals.filter(d=>["signed","delivered","paid"].includes(d.stage)).forEach(d=>set.set(normText(d.brandName), d.brandName));
+    state.income.filter(r=>/brand|sponsor|partner/i.test(r.type||"")).forEach(r=>set.set(normText(r.source), r.source));
+    return Array.from(set.values()).filter(Boolean).slice(0, 10);
+  }
+  function mediaKitHtml(mk){
+    const partners = mk.showPartners ? pastPartners() : [];
+    const p = persona();
+    return `<div id="mediaKitTarget" style="width:720px;font-family:Inter,Arial,sans-serif;color:#20221D;background:#FBFAF6;">
+      <div style="background:#2F4A2E;color:#F5F3ED;padding:44px 48px 36px;">
+        <div style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#A9BC9C;">Media kit${p && CREATOR_TYPES[p.type] ? " · " + escapeHtml(CREATOR_TYPES[p.type].label) : ""}</div>
+        <div style="font-family:Newsreader,Georgia,serif;font-size:44px;line-height:1.05;margin-top:10px;">${escapeHtml(mk.name || "Your name")}</div>
+        ${mk.niche ? `<div style="font-size:15px;margin-top:8px;color:#C7D2BC;">${escapeHtml(mk.niche)}</div>` : ""}
+        ${mk.bio ? `<div style="font-size:14px;line-height:1.55;margin-top:18px;max-width:560px;">${escapeHtml(mk.bio)}</div>` : ""}
+      </div>
+      <div style="padding:32px 48px;">
+        ${mk.platforms.length ? `<div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:28px;">${mk.platforms.map(pl=>`<div style="flex:1 1 140px;border:1px solid #E6E3D9;border-radius:12px;padding:14px 16px;background:#fff;">
+          <div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#787A6E;">${escapeHtml(pl.platform)}</div>
+          <div style="font-family:Newsreader,Georgia,serif;font-size:26px;margin-top:4px;">${escapeHtml(pl.followers)}</div>
+          <div style="font-size:12px;color:#787A6E;">${escapeHtml(pl.handle)}</div></div>`).join("")}</div>` : ""}
+        ${mk.rates.length ? `<div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#3C5B3D;margin-bottom:8px;">Rates</div>
+          ${mk.rates.map(r=>`<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #E6E3D9;font-size:14px;"><span>${escapeHtml(r.item)}</span><b>${money(r.price).replace(/\.00$/,"")}</b></div>`).join("")}` : ""}
+        ${partners.length ? `<div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#3C5B3D;margin:28px 0 10px;">Brands I've worked with</div>
+          <div style="font-size:15px;line-height:1.8;">${partners.map(escapeHtml).join(" · ")}</div>` : ""}
+        <div style="margin-top:32px;padding-top:18px;border-top:1px solid #E6E3D9;display:flex;justify-content:space-between;font-size:12px;color:#787A6E;">
+          <span>${escapeHtml(mk.email)}</span><span>Made with GigBooks</span></div>
+      </div></div>`;
+  }
+  function renderMediaKitSettings(){
+    const mk = mediaKitData();
+    const plRow = (pl, i) => `<div class="mk-row" data-mk-pl="${i}"><input placeholder="Platform" value="${escapeHtml(pl.platform||"")}" data-k="platform"><input placeholder="@handle" value="${escapeHtml(pl.handle||"")}" data-k="handle"><input placeholder="Followers" value="${escapeHtml(pl.followers||"")}" data-k="followers"></div>`;
+    const rtRow = (r, i) => `<div class="mk-row two" data-mk-rt="${i}"><input placeholder="Deliverable" value="${escapeHtml(r.item||"")}" data-k="item"><input type="number" placeholder="Price" value="${r.price||""}" data-k="price"></div>`;
+    const plats = mk.platforms.length ? mk.platforms : [{},{}];
+    const rates = mk.rates.length ? mk.rates : [{},{}];
+    openSettingsModal(`<h2>Media kit</h2>
+      <p class="settings-note">A one-page PDF for brands. Your rates come from your Rate Calculator and your past partners from your deals. Edit anything.</p>
+      <div class="field"><label>Name</label><input id="mkName" value="${escapeHtml(mk.name)}"></div>
+      <div class="field"><label>Niche</label><input id="mkNiche" value="${escapeHtml(mk.niche)}" placeholder="e.g. Clean beauty and slow living"></div>
+      <div class="field"><label>Short bio</label><textarea id="mkBio" rows="3" maxlength="300">${escapeHtml(mk.bio)}</textarea></div>
+      <div class="field"><label>Platforms</label><div id="mkPlats">${plats.map(plRow).join("")}</div><button type="button" class="nudge-link" id="mkAddPl">+ Add platform</button></div>
+      <div class="field"><label>Rates</label><div id="mkRates">${rates.map(rtRow).join("")}</div><button type="button" class="nudge-link" id="mkAddRt">+ Add rate</button></div>
+      <div class="field"><label>Contact email</label><input id="mkEmail" value="${escapeHtml(mk.email)}"></div>
+      <label class="check-row" style="margin-bottom:14px;"><input type="checkbox" id="mkPartners" ${mk.showPartners?"checked":""}> Show brands I've worked with (${pastPartners().length} found)</label>
+      <div class="modal-actions"><button type="button" class="btn-secondary" data-close-settings>Close</button><button type="button" class="btn-primary" id="mkMake">Download PDF</button></div>`);
+    document.getElementById("mkAddPl").addEventListener("click", ()=>{ const w = document.getElementById("mkPlats"); w.insertAdjacentHTML("beforeend", plRow({}, w.children.length)); });
+    document.getElementById("mkAddRt").addEventListener("click", ()=>{ const w = document.getElementById("mkRates"); w.insertAdjacentHTML("beforeend", rtRow({}, w.children.length)); });
+    document.getElementById("mkMake").addEventListener("click", async ()=>{
+      const rows = sel => Array.from(document.querySelectorAll(sel)).map(r=>{ const o = {}; r.querySelectorAll("input").forEach(i=>o[i.dataset.k] = i.value.trim()); return o; });
+      const next = { name:document.getElementById("mkName").value.trim(), niche:document.getElementById("mkNiche").value.trim(), bio:document.getElementById("mkBio").value.trim(),
+        email:document.getElementById("mkEmail").value.trim(), showPartners:document.getElementById("mkPartners").checked,
+        platforms: rows("#mkPlats .mk-row").filter(p=>p.platform || p.handle), rates: rows("#mkRates .mk-row").filter(r=>r.item && Number(r.price) > 0).map(r=>({ item:r.item, price:Number(r.price) })) };
+      state.creatorSettings.mediaKit = next;
+      saveCreatorSettings();
+      const box = document.createElement("div");
+      box.style.position = "fixed"; box.style.left = "-9999px"; box.innerHTML = mediaKitHtml(next);
+      document.body.appendChild(box);
+      try{
+        if(document.fonts && document.fonts.ready) await document.fonts.ready;
+        await html2pdf().set({ margin:0, filename:"media-kit.pdf", html2canvas:{ scale:2, backgroundColor:"#FBFAF6" }, jsPDF:{ unit:"px", format:[720, box.firstElementChild.offsetHeight], hotfixes:["px_scaling"] } }).from(box.firstElementChild).save();
+        showToast("Media kit downloaded.");
+      }catch(e){ showToast("Couldn't make the PDF. Please try again.", true); }
+      finally{ document.body.removeChild(box); }
+    });
+  }
+
+  /* ---------- 6. Share Wrapped as an image, invite creators ---------- */
+  async function wrappedImage(w, who){
+    if(document.fonts && document.fonts.ready) await document.fonts.ready;
+    const c = document.createElement("canvas"); c.width = 1080; c.height = 1350;
+    const x = c.getContext("2d");
+    x.fillStyle = "#1E3320"; x.fillRect(0,0,1080,1350);
+    const g = x.createRadialGradient(1080,0,0,1080,0,900); g.addColorStop(0,"rgba(169,188,156,.35)"); g.addColorStop(1,"rgba(169,188,156,0)");
+    x.fillStyle = g; x.fillRect(0,0,1080,1350);
+    x.fillStyle = "#A9BC9C"; x.font = "600 30px Inter, Arial, sans-serif"; x.fillText(`${w.year} · ${who.toUpperCase()} WRAPPED`, 90, 170);
+    x.fillStyle = "#F5F3ED"; x.font = "500 150px Newsreader, Georgia, serif"; x.fillText(money(w.total).replace(/\.\d\d$/,""), 84, 340);
+    x.fillStyle = "#C7D2BC"; x.font = "italic 400 42px Newsreader, Georgia, serif"; x.fillText(`earned across ${w.entries} payment${w.entries===1?"":"s"}`, 90, 410);
+    const rows = [["Your era", w.era], ["Best month", w.bestMonth], ["Top payer", w.brands[0] && w.brands[0][0]], ["Written off", money(w.written).replace(/\.\d\d$/,"")]].filter(r=>r[1]);
+    rows.forEach((r,i)=>{
+      const y = 560 + i*150;
+      x.fillStyle = "#A9BC9C"; x.font = "600 26px Inter, Arial, sans-serif"; x.fillText(r[0].toUpperCase(), 90, y);
+      x.fillStyle = "#F5F3ED"; x.font = "500 52px Inter, Arial, sans-serif"; x.fillText(String(r[1]).slice(0,28), 90, y + 64);
+    });
+    x.fillStyle = "#A9BC9C"; x.font = "500 28px Inter, Arial, sans-serif"; x.fillText("Made with GigBooks", 90, 1260);
+    return new Promise(res=>c.toBlob(res, "image/png"));
+  }
+  async function shareWrappedImage(w, who){
+    const blob = await wrappedImage(w, who);
+    const file = new File([blob], `gigbooks-wrapped-${w.year}.png`, { type:"image/png" });
+    if(navigator.canShare && navigator.canShare({ files:[file] })){
+      try{ await navigator.share({ files:[file], title:"My year on GigBooks" }); return; }catch(e){ if(e && e.name === "AbortError") return; }
+    }
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = file.name;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(a.href), 2000);
+    showToast("Image saved. Post it to your story.");
+  }
+
+  function referralCode(){ return currentUser && currentUser.id ? String(currentUser.id).replace(/-/g,"").slice(0,10) : ""; }
+  function referralLink(){ return `${location.origin}${location.pathname}?ref=${referralCode()}`; }
+  (function captureReferral(){
+    try{
+      const ref = new URLSearchParams(location.search).get("ref");
+      if(ref && /^[a-z0-9]{6,32}$/i.test(ref)) localStorage.setItem("gigbooks_ref", ref);
+    }catch(e){}
+  })();
+  function pendingReferral(){ try{ return localStorage.getItem("gigbooks_ref") || null; }catch(e){ return null; } }
+  async function renderInviteSettings(){
+    const link = referralLink();
+    openSettingsModal(`<h2>Invite a creator</h2>
+      <p class="settings-note">Know someone drowning in receipts? Send them your link.</p>
+      <div class="field"><label>Your invite link</label><input id="refLink" readonly value="${escapeHtml(link)}"></div>
+      <div class="settings-note" id="refCount" style="display:none;"></div>
+      <div class="modal-actions"><button type="button" class="btn-secondary" data-close-settings>Close</button><button type="button" class="btn-primary" id="refShare">Share link</button></div>`);
+    document.getElementById("refShare").addEventListener("click", async ()=>{
+      const text = "I do my creator books in GigBooks. It sorts my money and tells me what to save for taxes.";
+      if(navigator.share){ try{ await navigator.share({ title:"GigBooks", text, url:link }); return; }catch(e){ if(e && e.name === "AbortError") return; } }
+      try{ await navigator.clipboard.writeText(link); showToast("Link copied."); }catch(e){ document.getElementById("refLink").select(); }
+    });
+    const { data, error } = await sb.rpc("my_referral_count");
+    const el = document.getElementById("refCount");
+    if(!error && el && typeof data === "number"){ el.style.display = ""; el.textContent = data ? `${data} creator${data===1?"":"s"} joined with your link. Thank you!` : "No one has joined with your link yet."; }
+  }
+
+  /* ---------- 7. Giggy's weekly note + "Can I afford this?" ---------- */
+  function weekKey(d){ const x = new Date(d); x.setHours(0,0,0,0); x.setDate(x.getDate() - ((x.getDay()+6)%7)); return isoLocal(x); }
+  function weeklyNote(){
+    const today = startOfToday(), wk = addDays(today, -7), pwk = addDays(today, -14);
+    const inRange = (r, a, b) => { const d = parseISODate(r.date); return d > a && d <= b; };
+    const recv = state.income.filter(r=>r.status === "received");
+    const thisW = recv.filter(r=>inRange(r, wk, today)).reduce((a,r)=>a+r.amount,0);
+    const lastW = recv.filter(r=>inRange(r, pwk, wk)).reduce((a,r)=>a+r.amount,0);
+    const spent = state.expenses.filter(r=>inRange(r, wk, today)).reduce((a,r)=>a+r.amount,0);
+    const late = state.invoices.filter(inv=>(inv.status==="sent"||inv.status==="overdue") && effectiveInvoiceStatus(inv)==="overdue");
+    const t = taxSummaryYTD(), nd = nextTaxDue();
+    const { months } = smoothingData();
+    const out = [];
+    out.push(thisW ? `You brought in ${money(thisW)} this week${lastW ? ` (${thisW >= lastW ? "up" : "down"} from ${money(lastW)} last week)` : ""}.` : "No money came in this week. Totally normal for creator income.");
+    if(spent) out.push(`You spent ${money(spent)} on the business.`);
+    if(late.length) out.push(`${late.length} invoice${late.length===1?" is":"s are"} late, worth ${money(late.reduce((a,i)=>a+Number(i.total),0))}. Reminders are ready in For you.`);
+    out.push(`Safe to spend right now: ${money(t.safe)}.`);
+    if(months.length >= 2){ const avg = months.reduce((a,m)=>a+m.after,0)/months.length; const pay = Math.max(0, Math.floor(avg*0.9/50)*50); if(pay) out.push(`A steady paycheck you could pay yourself: ${money(pay)} a month.`); }
+    const dd = Math.round((nd.q.dueDate - today)/DAY_MS);
+    if(nd.suggested > 0 && dd <= 45) out.push(`${nd.q.label} estimated tax: about ${money(nd.suggested)}, due in ${dd} days.`);
+    return out;
+  }
+  function openWeeklyNote(){
+    openSettingsModal(`<div class="giggy-note-head"><span class="giggy-av"></span><div><h2 style="margin:0;">Giggy's weekly note</h2><div class="sa-sub">Week of ${shortDate(weekKey(new Date()))}</div></div></div>
+      <ul class="giggy-note">${weeklyNote().map(l=>`<li>${escapeHtml(l)}</li>`).join("")}</ul>
+      <div class="modal-actions"><button type="button" class="btn-secondary" id="noteAsk">Ask Giggy something</button><button type="button" class="btn-primary" data-close-settings>Got it</button></div>`);
+    document.getElementById("noteAsk").addEventListener("click", ()=>{ closeSettingsModal(); showView("ask"); });
+    state.creatorSettings.noteSeen = weekKey(new Date());
+    renderNudges(); saveCreatorSettings();
+  }
+  function affordAnswer(amount){
+    const t = taxSummaryYTD(), f = forecastData();
+    const left = t.safe - amount;
+    const { months } = smoothingData();
+    const monthly = months.length ? Math.max(0, months.reduce((a,m)=>a+m.after,0)/months.length) : 0;
+    if(amount <= 0) return null;
+    if(left >= t.safe*0.5 && left > 0) return { tone:"yes", head:"Yes, comfortably.", body:`You'd still have ${money(left)} safe to spend after this.` };
+    if(left >= 0){
+      const low = f.cash !== null && f.lowest.balance - amount < 0;
+      return { tone:"maybe", head:"Yes, but it uses most of your cushion.", body:`You'd have ${money(left)} left${low ? `, and your cash forecast dips below zero around ${shortDate(isoLocal(f.lowest.date))}` : ""}. Waiting for your next payment would be safer.` };
+    }
+    const need = -left;
+    const wks = monthly > 0 ? Math.ceil(need / (monthly/4.345)) : null;
+    return { tone:"no", head:"Not yet.", body:`You'd need ${money(need)} more than you have safe to spend.${wks ? ` At your usual pace that's about ${wks} week${wks===1?"":"s"} away.` : ""} Your tax set-aside isn't counted, so that money stays protected.` };
+  }
+  function openAfford(){
+    openSettingsModal(`<h2>Can I afford it?</h2>
+      <p class="settings-note">Giggy checks it against your safe-to-spend money, upcoming bills and taxes.</p>
+      <div class="field"><label>How much is it?</label><input type="number" id="affAmt" min="1" step="1" placeholder="1200" inputmode="decimal"></div>
+      <div id="affOut" class="afford-out"></div>
+      <div class="modal-actions"><button type="button" class="btn-primary" data-close-settings>Done</button></div>`);
+    const inp = document.getElementById("affAmt"), out = document.getElementById("affOut");
+    inp.addEventListener("input", ()=>{
+      const a = affordAnswer(Number(inp.value)||0);
+      out.innerHTML = a ? `<div class="afford ${a.tone}"><b>${a.head}</b><span>${escapeHtml(a.body)}</span></div>` : "";
+    });
+    inp.focus();
+  }
+  document.addEventListener("click", e=>{
+    if(e.target.closest("[data-afford]")) openAfford();
+    if(e.target.closest("[data-weekly-note]")) openWeeklyNote();
+  });
+
+  function decorateGrowthUI(){
+    const exp = document.querySelector("#view-expenses .topbar .actions");
+    if(exp && !document.getElementById("scanReceiptBtn")){
+      exp.insertAdjacentHTML("afterbegin", `<label class="pill-btn" id="scanReceiptBtn" style="cursor:pointer;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="12" r="3"/></svg>Scan receipt<input type="file" id="scanReceiptInput" accept="image/*" capture="environment" hidden></label>`);
+    }
+    const ask = document.querySelector("#view-ask .topbar .actions");
+    if(ask && !document.getElementById("askAfford")){
+      ask.insertAdjacentHTML("afterbegin", `<button type="button" class="pack-btn" id="askAfford" data-afford="1">Can I afford it?</button><button type="button" class="pack-btn" data-weekly-note="1">Weekly note</button>`);
+    }
+  }
+
   /* ---------- Phone layout: nothing scrolls sideways ---------- */
   // Wide tables become stacked cards on phones. Each cell gets its column
   // name so the card can label it; rows re-render often, so watch for that.
@@ -9421,6 +9877,9 @@ input,select,textarea{border-radius:10px;}
     checkMilestones();
     labelTables();
     syncPhoneNav();
+    decorateGrowthUI();
+    contributeRates();
+    renderBenchmark();
   }
 
   function renderCreatorFeatures(){
@@ -10606,6 +11065,9 @@ input,select,textarea{border-radius:10px;}
     displayOptions: renderDisplayOptionsSettings,
     dataPrivacy: renderDataPrivacySettings,
     personalization: renderPersonalizationSettings,
+    getPaid: renderGetPaidSettings,
+    mediaKit: renderMediaKitSettings,
+    invite: renderInviteSettings,
     exportData: renderExportDataSettings,
     deleteAccount: renderDeleteAccountSettings
   };

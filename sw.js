@@ -1,8 +1,8 @@
 /* GigBooks service worker: lets the app install and open instantly.
    Strategy: network-first for the app page (so updates always arrive),
    cached copy as an offline fallback. Never touches Supabase/API calls. */
-const CACHE = "gigbooks-shell-v1";
-const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png"];
+const CACHE = "gigbooks-shell-v2";
+const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icon-192-green.png", "./icon-512-green.png"];
 
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).catch(() => {}));

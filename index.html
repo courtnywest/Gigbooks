@@ -1799,6 +1799,25 @@ body[data-view="ask"] .giggy-fab{display:none;}
   .fy-head{gap:10px;} .fy-count{white-space:nowrap;}
 }
 
+/* ---------- Phase 2: onboarding and empty states ---------- */
+.ob-options{display:flex;flex-direction:column;gap:10px;margin:6px 0 16px;}
+.ob-option{appearance:none;text-align:left;border:1px solid var(--line);background:var(--white);border-radius:14px;padding:14px 16px;min-height:56px;cursor:pointer;display:flex;flex-direction:column;gap:3px;font:inherit;}
+.ob-option b{font-size:15px;color:var(--ink-900);} .ob-option span{font-size:13px;color:var(--ink-500);line-height:1.45;}
+.ob-option:hover{border-color:var(--sage-300);}
+.ob-option.on{border-color:var(--green-800);box-shadow:0 0 0 1px var(--green-800) inset;background:var(--cream-50);}
+.ob-option:focus-visible{outline:2px solid var(--green-700);outline-offset:2px;}
+.ob-dir{margin-bottom:14px;}
+.ob-skip{display:block;margin:12px auto 0;}
+.ob-first{text-align:center;}
+.ob-first .moment-kicker{font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;color:var(--green-700);}
+.ob-big{font-family:var(--font-serif);font-weight:500;font-size:56px;letter-spacing:-0.03em;color:var(--green-800);margin:4px 0 10px;}
+.ob-first .modal-actions{justify-content:center;}
+.empty-state{text-align:center;padding:28px 16px;}
+.empty-state b{display:block;font-family:var(--font-serif);font-weight:500;font-size:20px;color:var(--ink-900);margin-bottom:6px;}
+.empty-state p{margin:0 auto 14px;max-width:420px;color:var(--ink-500);font-size:14px;line-height:1.55;}
+.es-actions{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+table.m-cards td .empty-state{width:100%;}
+
 </style>
 </head>
 <body>
@@ -4038,7 +4057,7 @@ body[data-view="ask"] .giggy-fab{display:none;}
           </div>
         </td>
       </tr>
-    `).join("") : `<tr><td colspan="7" style="text-align:center;color:var(--ink-500);padding:22px 10px;">No income for this period${sourceFilter||typeFilter?" with the selected filters":""}.</td></tr>`;
+    `).join("") : (!state.income.length ? `<tr><td colspan="7">${emptyState("No money in yet", `Add a payment you've received, like a ${escapeHtml(examples().inEx.toLowerCase())}. Or connect your bank and GigBooks brings it in for you.`, `<button type="button" class="btn-primary" data-quick-add="income">Add money in</button><button type="button" class="btn-secondary" data-goto="bank">Connect bank</button>`)}</td></tr>` : `<tr><td colspan="7" style="text-align:center;color:var(--ink-500);padding:22px 10px;">No income for this period${sourceFilter||typeFilter?" with the selected filters":""}.</td></tr>`);
     renderOutstandingPayments();
   }
   function projectName(projectId){
@@ -4092,7 +4111,7 @@ body[data-view="ask"] .giggy-fab{display:none;}
           </div>
         </td>
       </tr>
-    `).join("") : `<tr><td colspan="8" style="text-align:center;color:var(--ink-500);padding:22px 10px;">No expenses for this period${catFilter||payFilter?" with the selected filters":""}.</td></tr>`;
+    `).join("") : (!state.expenses.length ? `<tr><td colspan="8">${emptyState("No money out yet", `Add something you bought for your work, like a ${escapeHtml(examples().outEx.toLowerCase())}. Snap a receipt and GigBooks fills it in.`, `<button type="button" class="btn-primary" data-quick-add="expense">Add money out</button><button type="button" class="btn-secondary" data-scan-empty="1">Scan a receipt</button>`)}</td></tr>` : `<tr><td colspan="8" style="text-align:center;color:var(--ink-500);padding:22px 10px;">No expenses for this period${catFilter||payFilter?" with the selected filters":""}.</td></tr>`);
   }
 
   /* ============================================================
@@ -5521,7 +5540,7 @@ body[data-view="ask"] .giggy-fab{display:none;}
     `;
 
     if(!state.pipelineDeals.length){
-      wrap.innerHTML = `<tr><td colspan="9" style="text-align:center;color:var(--ink-500);padding:18px 10px;">No deals yet. Click "+ Add Deal" to start.</td></tr>`;
+      wrap.innerHTML = `<tr><td colspan="9" style="text-align:center;color:var(--ink-500);padding:18px 10px;">${emptyState("No brand deals yet", "Track a deal from the first chat to getting paid, so nothing slips through.", "")}</td></tr>`;
       return;
     }
     wrap.innerHTML = state.pipelineDeals.map(d=>{
@@ -5660,6 +5679,7 @@ body[data-view="ask"] .giggy-fab{display:none;}
           body: { publicToken: public_token, institutionName: metadata && metadata.institution ? metadata.institution.name : null, institutionId: metadata && metadata.institution ? metadata.institution.institution_id : null }
         });
         if(exErr){ showToast("Couldn't finish connecting your bank.", true); return; }
+        track("bank_connection_completed");
         await refreshBankConnections();
         showToast(`Connected${exData && exData.institutionName ? " to " + exData.institutionName : ""}.`);
       },
@@ -5891,7 +5911,7 @@ body[data-view="ask"] .giggy-fab{display:none;}
     if(!tbody) return;
     const rows = invoiceStatusFilter === "all" ? state.invoices : state.invoices.filter(inv => effectiveInvoiceStatus(inv) === invoiceStatusFilter);
     if(!rows.length){
-      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--ink-500);padding:22px 10px;">${state.invoices.length ? "No invoices with this status." : "No invoices yet."}</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--ink-500);padding:22px 10px;">${state.invoices.length ? "No invoices with this status." : emptyState("No invoices yet", "Send your first one in about a minute. Add your pay links in Settings and brands can pay in one tap.", `<button type="button" class="btn-primary" data-new-invoice="1">Create an invoice</button>`)}</td></tr>`;
       return;
     }
     tbody.innerHTML = rows.map(inv => {
@@ -6095,6 +6115,7 @@ body[data-view="ask"] .giggy-fab{display:none;}
       });
       if(error) return false;
       state.income.unshift({ id:created.id, date:created.date, source:created.source, glyph:created.glyph, type:created.type, status:created.status, amount:Number(created.amount), projectId:created.project_id||null });
+      track("first_transaction_added", { source:"manual" });
     }
     renderIncomeTable(); renderStats();
   });
@@ -6207,6 +6228,7 @@ body[data-view="ask"] .giggy-fab{display:none;}
       if(error) return false;
       const newItem = { id:created.id, date:created.date, description:created.description, glyph:created.glyph, category:created.category, payment:created.payment_method, deductible:created.deductible, amount:Number(created.amount), receiptPath:null, projectId:created.project_id||null };
       state.expenses.unshift(newItem);
+      track("first_transaction_added", { source:"manual" });
       const finalPath = await handleReceiptAfterSave(created.id);
       newItem.receiptPath = finalPath;
       if(answer && answer.review){
@@ -6342,6 +6364,7 @@ body[data-view="ask"] .giggy-fab{display:none;}
   const authPages = document.querySelectorAll(".authpage");
   const appRoot = document.getElementById("page-app");
   function showAuthScreen(name){
+    if(name === "signup") track("signup_started");
     authPages.forEach(p=> p.classList.toggle("active", p.id === "page-"+name));
     if(appRoot) appRoot.classList.remove("active");
     window.scrollTo(0,0);
@@ -6710,6 +6733,7 @@ body[data-view="ask"] .giggy-fab{display:none;}
       }
       signupForm.reset();
       updatePwChecklist();
+      track("signup_completed");
       if(authData.session){
         // Email confirmation is off for this project (or already satisfied) -- go straight in.
         await enterApp(normalizeUser(authData.user));
@@ -7269,73 +7293,6 @@ body[data-view="ask"] .giggy-fab{display:none;}
     if(e.target.closest("#clDismiss")){ state.creatorSettings.checklistDismissed = true; renderNudges(); await saveCreatorSettings(); }
   });
 
-  let wizardStep = 0;
-  function openSetupWizard(){
-    wizardStep = 0;
-    renderWizard();
-  }
-  function renderWizard(){
-    const cs = state.creatorSettings;
-    const dots = `<div class="wiz-dots">${[0,1,2,3].map(i=>`<span class="${i===wizardStep?"on":""}"></span>`).join("")}</div>`;
-    if(wizardStep === 0){
-      openSettingsModal(`${dots}<h2>Welcome to GigBooks</h2>
-        <p class="settings-note">Let's get your books ready in about a minute. ${escapeHtml(quip("welcome"))} First, what should we call your business?</p>
-        <div class="field"><label>Business or creator name</label><input id="wizName" value="${escapeHtml(state.business.name)}" placeholder="e.g. Jess Creates"></div>
-        <div class="modal-actions"><button type="button" class="btn-secondary" id="wizSkip">Skip setup</button><button type="button" class="btn-primary" id="wizNext">Next</button></div>`);
-    } else if(wizardStep === 1){
-      openSettingsModal(`${dots}<h2>Tell us about you</h2>
-        <p class="settings-note">So GigBooks only shows what you need. You can change this any time in Settings.</p>
-        ${personaFormHtml(persona())}
-        <div class="modal-actions"><button type="button" class="btn-secondary" id="wizBack">Back</button><button type="button" class="btn-primary" id="wizNext">Next</button></div>`);
-      bindPersonaForm();
-    } else if(wizardStep === 2){
-      const pct = Math.round(taxPct()*100);
-      openSettingsModal(`${dots}<h2>How much for taxes?</h2>
-        <p class="settings-note">As a creator, nobody takes taxes out of your payments. GigBooks keeps a running number of what to set aside. 30% is a safe starting point and you can change it any time.</p>
-        <div class="preset-row">${[25,30,35,40].map(v=>`<button type="button" class="preset-chip ${v===pct?"on":""}" data-wiz-rate="${v}">${v}%</button>`).join("")}</div>
-        <div class="modal-actions"><button type="button" class="btn-secondary" id="wizBack">Back</button><button type="button" class="btn-primary" id="wizNext">Next</button></div>`);
-      document.querySelectorAll("[data-wiz-rate]").forEach(b=>b.addEventListener("click",()=>{
-        cs.setAsidePct = parseInt(b.dataset.wizRate,10); cs.rateSet = true;
-        document.querySelectorAll("[data-wiz-rate]").forEach(x=>x.classList.toggle("on", x===b));
-      }));
-    } else {
-      openSettingsModal(`${dots}<h2>Add your first money</h2>
-        <p class="settings-note">Pick whichever is easiest. You can always do the rest later from the checklist on Overview.</p>
-        <div class="wiz-actions">
-          <button type="button" class="wiz-action" data-wiz-go="income"><b>Log income</b><span>A brand deal, payout or sale</span></button>
-          <button type="button" class="wiz-action" data-wiz-go="expense"><b>Log an expense</b><span>Gear, software, travel</span></button>
-          <button type="button" class="wiz-action" data-wiz-go="bank"><b>Connect your bank</b><span>Import transactions automatically</span></button>
-        </div>
-        <div class="modal-actions"><button type="button" class="btn-secondary" id="wizBack">Back</button><button type="button" class="btn-primary" id="wizDone">Finish</button></div>`);
-      document.querySelectorAll("[data-wiz-go]").forEach(b=>b.addEventListener("click", async ()=>{
-        await finishWizard();
-        const k = b.dataset.wizGo;
-        if(k === "bank") showView("bank");
-        else document.getElementById(k === "income" ? "openAddIncome" : "openAddExpense").click();
-      }));
-      document.getElementById("wizDone").addEventListener("click", finishWizard);
-    }
-    const next = document.getElementById("wizNext"), back = document.getElementById("wizBack"), skip = document.getElementById("wizSkip");
-    if(next) next.addEventListener("click", async ()=>{
-      if(wizardStep === 0){
-        const name = document.getElementById("wizName").value.trim();
-        if(name && name !== state.business.name){ state.business.name = name; await dbUpdateProfile({ business_name:name }); }
-      }
-      if(wizardStep === 1){
-        const pf = readPersonaForm();
-        if(pf.type || pf.streams.length || pf.focus) state.creatorSettings.persona = Object.assign(pf, { updatedAt: todayISO() });
-      }
-      wizardStep++; renderWizard();
-    });
-    if(back) back.addEventListener("click", ()=>{ wizardStep--; renderWizard(); });
-    if(skip) skip.addEventListener("click", finishWizard);
-  }
-  async function finishWizard(){
-    state.creatorSettings.setupDone = true;
-    closeSettingsModal();
-    renderCreatorFeatures();
-    await saveCreatorSettings();
-  }
   function maybeStartOnboarding(){
     const cs = state.creatorSettings;
     if(!isOwnWorkspace() || cs.setupDone) return;
@@ -8086,7 +8043,7 @@ body[data-view="ask"] .giggy-fab{display:none;}
     const plan = planInfo();
     if(plan.kind === "trial" && plan.daysLeft <= 3)
       rows.push({ title:`Your Pro trial ends in ${plan.daysLeft} day${plan.daysLeft===1?"":"s"}`, sub:"Keep bank sync and Giggy for $12 a month, billed yearly", action:btn("See Pro", `data-fy="${go(()=>openUpgrade())}"`) });
-    if(!persona() && !cs.personaDismissed && isOwnWorkspace())
+    if(!persona() && !cs.personaDismissed && isOwnWorkspace() && (!cs.workKind || cs.workKind === "creator"))
       rows.push({ title:"Tell us what kind of creator you are", sub:"20 seconds. We'll hide what you don't need.", action:btn("Start", `data-fy="${go(openPersonaModal)}"`), later:`<button type="button" class="fy-later" id="pfDismiss">Not now</button>` });
     const next = checklistItems().find(i=>!i.done);
     if(next && !cs.checklistDismissed && writable)
@@ -9623,7 +9580,7 @@ body[data-view="ask"] .giggy-fab{display:none;}
     const params = new URLSearchParams(location.search);
     const b = params.get("billing"), st = params.get("stripe");
     if(!b && !st) return;
-    if(b === "success") showToast("Welcome to Pro! It can take a few seconds to switch on.");
+    if(b === "success"){ showToast("Welcome to Pro! It can take a few seconds to switch on."); track("pro_upgrade_completed"); }
     if(b === "cancel") showToast("No worries. You're still on your current plan.");
     if(st) refreshConnectStatus(true);
     params.delete("billing"); params.delete("stripe");
@@ -9664,6 +9621,7 @@ body[data-view="ask"] .giggy-fab{display:none;}
       document.querySelectorAll(".upg-toggle [data-int]").forEach(b=>b.addEventListener("click", ()=>{ interval = b.dataset.int; render(); }));
       document.getElementById("upgGo").addEventListener("click", async e=>{
         e.target.disabled = true;
+        track("pro_upgrade_started", { interval });
         const d = await callBilling("billing", { action:"checkout", interval, returnUrl: location.origin + location.pathname });
         if(d && d.url) location.href = d.url; else e.target.disabled = false;
       });
@@ -10076,7 +10034,8 @@ body[data-view="ask"] .giggy-fab{display:none;}
   function openWeeklyNote(){
     openSettingsModal(`<div class="giggy-note-head"><span class="giggy-av"></span><div><h2 style="margin:0;">Giggy's weekly note</h2><div class="sa-sub">Week of ${shortDate(weekKey(new Date()))}</div></div></div>
       <ul class="giggy-note">${weeklyNote().map(l=>`<li>${escapeHtml(l)}</li>`).join("")}</ul>
-      <div class="modal-actions"><button type="button" class="btn-secondary" id="noteAsk">Ask Giggy something</button><button type="button" class="btn-primary" data-close-settings>Got it</button></div>`);
+      <div class="modal-actions"><button type="button" class="btn-secondary" id="noteAsk">Ask Giggy something</button><button type="button" class="btn-primary" id="noteDone">Got it</button></div>`);
+    document.getElementById("noteDone").addEventListener("click", ()=>{ closeSettingsModal(); track("weekly_checkin_completed"); });
     document.getElementById("noteAsk").addEventListener("click", ()=>{ closeSettingsModal(); showView("ask"); });
     state.creatorSettings.noteSeen = weekKey(new Date());
     renderNudges(); saveCreatorSettings();
@@ -10236,6 +10195,7 @@ body[data-view="ask"] .giggy-fab{display:none;}
     const r = periodRange(homePeriod);
     const cur = moneyInOut(r), prev = moneyInOut(r.prev);
     const empty = !state.income.length && !state.expenses.length;
+    if(!empty) track("first_money_summary_viewed");
     let trend = "";
     if(prev.moneyIn > 0){
       const d = Math.round((cur.moneyIn - prev.moneyIn) / prev.moneyIn * 100);
@@ -10387,6 +10347,7 @@ body[data-view="ask"] .giggy-fab{display:none;}
       if(ok) delete flags[x.item.id];
     }
     if(ok){
+      if(answer !== "later") track("first_transaction_reviewed", { source:"review" });
       delete reviewLater()[x.key];
       if(answer === "yes"){
         rememberMerchant(x.name, { cat });
@@ -10686,6 +10647,157 @@ body[data-view="ask"] .giggy-fab{display:none;}
     if(qa){ const b = document.getElementById(qa.dataset.quickAdd === "income" ? "openAddIncome" : "openAddExpense"); if(b) b.click(); }
   });
 
+  /* ============================================================
+     Product analytics, first-party and privacy-conscious.
+     Events go to our own `product_events` table. They say *that*
+     something happened, never amounts, names, merchants or notes.
+     Until the table exists, nothing is sent.
+     ============================================================ */
+  const TRACKED_EVENTS = ["signup_started","signup_completed","onboarding_completed","first_transaction_added","first_transaction_reviewed",
+    "bank_connection_completed","first_money_summary_viewed","weekly_checkin_completed","pro_upgrade_started","pro_upgrade_completed"];
+  const FIRST_ONLY = ["first_transaction_added","first_transaction_reviewed","first_money_summary_viewed","onboarding_completed"];
+  // Only these small, non-financial properties are ever sent.
+  const SAFE_PROPS = { source:["manual","bank","import","review"], path:["connect","manual","skipped"], interval:["month","year"], work:["creator","freelancer","business","other"] };
+  let analyticsOff = false;
+  function track(event, props){
+    try{
+      if(analyticsOff || !TRACKED_EVENTS.includes(event)) return;
+      const cs = state && state.creatorSettings;
+      if(FIRST_ONLY.includes(event) && cs){
+        cs.tracked = cs.tracked || {};
+        if(cs.tracked[event]) return;
+        cs.tracked[event] = todayISO();
+        saveCreatorSettings();
+      }
+      const clean = {};
+      Object.entries(props || {}).forEach(([k,v])=>{ if(SAFE_PROPS[k] && SAFE_PROPS[k].includes(v)) clean[k] = v; });
+      sb.from("product_events").insert({ event, props: clean }).then(r=>{ if(r && r.error) analyticsOff = true; }, ()=>{ analyticsOff = true; });
+    }catch(e){ /* analytics must never break the app */ }
+  }
+
+  /* ============================================================
+     Onboarding: three steps to the first useful number.
+     1. What kind of work do you do?
+     2. Connect accounts, or add things myself?
+     3. Do the first useful thing, then see your dashboard.
+     Progress is saved; every step can be skipped.
+     ============================================================ */
+  const WORK_KINDS = {
+    creator:{ label:"Content creator / influencer", sub:"Brand deals, platform payouts, affiliate links", inEx:"Brand deal with Glossier", outEx:"Ring light" },
+    freelancer:{ label:"Freelancer", sub:"Client projects and invoices", inEx:"Logo project for Acme", outEx:"Figma subscription" },
+    business:{ label:"Small business owner", sub:"Selling products or services", inEx:"Order from a customer", outEx:"Packaging supplies" },
+    other:{ label:"Something else", sub:"We'll keep it general", inEx:"Payment for a project", outEx:"Supplies" }
+  };
+  function workKind(){ return state.creatorSettings.workKind || "creator"; }
+  function examples(){ return WORK_KINDS[workKind()] || WORK_KINDS.creator; }
+  function onboardingState(){ const cs = state.creatorSettings; if(!cs.onboarding || typeof cs.onboarding !== "object") cs.onboarding = { step:1 }; return cs.onboarding; }
+  async function finishWizard(path){
+    const cs = state.creatorSettings;
+    cs.setupDone = true;
+    delete cs.onboarding;
+    closeSettingsModal();
+    track("onboarding_completed", { path: path || "skipped", work: cs.workKind });
+    renderAll();
+    await saveCreatorSettings();
+  }
+  function openSetupWizard(){ renderWizard(); }
+  function renderWizard(){
+    const cs = state.creatorSettings, ob = onboardingState();
+    const dots = `<div class="wiz-dots" aria-label="Step ${ob.step} of 3">${[1,2,3].map(i=>`<span class="${i===ob.step?"on":""}"></span>`).join("")}</div>`;
+    const save = ()=>saveCreatorSettings();
+    if(ob.step === 1){
+      openSettingsModal(`${dots}<h2>What kind of work do you do?</h2>
+        <p class="settings-note">So GigBooks can use examples that sound like your work. You'll still get every feature.</p>
+        <div class="ob-options">${Object.entries(WORK_KINDS).map(([k,w])=>`<button type="button" class="ob-option ${cs.workKind===k?"on":""}" data-work="${k}"><b>${w.label}</b><span>${w.sub}</span></button>`).join("")}</div>
+        <div class="modal-actions"><button type="button" class="btn-secondary" id="wizSkip">Skip setup</button><button type="button" class="btn-primary" id="wizNext" ${cs.workKind ? "" : "disabled"}>Next</button></div>`);
+      document.querySelectorAll("[data-work]").forEach(b=>b.addEventListener("click", ()=>{
+        cs.workKind = b.dataset.work;
+        document.querySelectorAll("[data-work]").forEach(x=>x.classList.toggle("on", x === b));
+        document.getElementById("wizNext").disabled = false;
+      }));
+      document.getElementById("wizNext").addEventListener("click", ()=>{ ob.step = 2; save(); renderWizard(); });
+    } else if(ob.step === 2){
+      openSettingsModal(`${dots}<h2>How would you like to get started?</h2>
+        <div class="ob-options">
+          <button type="button" class="ob-option" data-path="connect"><b>Connect my accounts</b><span>Link your bank through Plaid, a secure service thousands of apps use. GigBooks sees your transactions, never your bank password, and nothing counts until you say yes.</span></button>
+          <button type="button" class="ob-option" data-path="manual"><b>Add things myself</b><span>Type in money in and money out as it happens. You can connect a bank any time later.</span></button>
+        </div>
+        <div class="modal-actions"><button type="button" class="btn-secondary" id="wizBack">Back</button><button type="button" class="btn-secondary" id="wizSkip">Skip for now</button></div>`);
+      document.querySelectorAll("[data-path]").forEach(b=>b.addEventListener("click", ()=>{ ob.path = b.dataset.path; ob.step = 3; save(); renderWizard(); }));
+      document.getElementById("wizBack").addEventListener("click", ()=>{ ob.step = 1; save(); renderWizard(); });
+    } else if(ob.path === "connect"){
+      openSettingsModal(`${dots}<h2>Let's organize your money</h2>
+        <p class="settings-note">Your bank opens in a secure Plaid window. When you're back, new transactions show up on Home for a quick yes or no.</p>
+        <div class="modal-actions"><button type="button" class="btn-secondary" id="wizBack">Back</button><button type="button" class="btn-primary" id="wizConnect">Connect my bank</button></div>`);
+      document.getElementById("wizBack").addEventListener("click", ()=>{ ob.step = 2; save(); renderWizard(); });
+      document.getElementById("wizConnect").addEventListener("click", async ()=>{ await finishWizard("connect"); startPlaidConnect(); });
+    } else {
+      const ex = examples();
+      let dir = ob.dir || "in";
+      const draw = ()=>{
+        openSettingsModal(`${dots}<h2>Let's organize your money</h2>
+          <p class="settings-note">Add one thing you were paid or spent recently. That's enough for your first real number.</p>
+          <div class="biz-choice ob-dir"><button type="button" data-dir="in" class="${dir==="in"?"on":""}">Money in</button><button type="button" data-dir="out" class="${dir==="out"?"on":""}">Money out</button></div>
+          <div class="field"><label>${dir === "in" ? "What were you paid for?" : "What did you buy?"}</label><input id="obName" placeholder="e.g. ${escapeHtml(dir === "in" ? ex.inEx : ex.outEx)}" autocomplete="off"></div>
+          <div class="field"><label>How much?</label><input type="number" id="obAmt" min="0.01" step="0.01" inputmode="decimal" placeholder="0.00"></div>
+          <div class="sa-sub" style="margin:-4px 0 14px;">Dated today. ${dir === "in" ? "We'll count it as money you've received." : "We'll count it as a business expense."} You can change anything later.</div>
+          <div class="modal-actions"><button type="button" class="btn-secondary" id="wizBack">Back</button><button type="button" class="btn-primary" id="obSave">Add it</button></div>
+          <button type="button" class="nudge-link ob-skip" id="wizSkip">I'll do this later</button>`);
+        document.querySelectorAll("[data-dir]").forEach(b=>b.addEventListener("click", ()=>{ dir = ob.dir = b.dataset.dir; draw(); }));
+        document.getElementById("wizBack").addEventListener("click", ()=>{ ob.step = 2; save(); renderWizard(); });
+        document.getElementById("obSave").addEventListener("click", async e=>{
+          const name = document.getElementById("obName").value.trim(), amt = Number(document.getElementById("obAmt").value);
+          if(!name || !(amt > 0)){ showToast("Add what it was and how much.", true); return; }
+          e.target.disabled = true;
+          const ok = dir === "in" ? await quickAddIncome(name, amt) : await quickAddExpense(name, amt);
+          if(!ok){ e.target.disabled = false; return; }
+          showFirstLook(dir);
+        });
+        const sk = document.getElementById("wizSkip"); if(sk) sk.addEventListener("click", ()=>finishWizard("skipped"));
+      };
+      draw();
+      return;
+    }
+    const skip = document.getElementById("wizSkip");
+    if(skip) skip.addEventListener("click", ()=>finishWizard("skipped"));
+  }
+  function showFirstLook(dir){
+    const r = periodRange("month"), cur = moneyInOut(r);
+    openSettingsModal(`<div class="ob-first">
+      <div class="moment-kicker">Your first look</div>
+      <h2>Your business profit this month</h2>
+      <div class="ob-big">${cur.profit < 0 ? "−" : ""}${wholeMoney(Math.abs(cur.profit))}</div>
+      <p class="settings-note">Money in ${wholeMoney(cur.moneyIn)} · Money out ${wholeMoney(cur.moneyOut)}. That's what you've earned after business expenses, before taxes. It gets more useful with every ${dir === "in" ? "expense" : "payment"} you add.</p>
+      <div class="modal-actions"><button type="button" class="btn-primary" id="obDone">See my dashboard</button></div></div>`);
+    document.getElementById("obDone").addEventListener("click", ()=>finishWizard("manual"));
+  }
+  async function quickAddIncome(name, amount){
+    const type = guessIncomeType(name) || (state.incomeCategoryList[0] || {}).name || "Other Income";
+    const { data, error } = await dbInsert("income", { user_id:workspaceOwnerId(), date:todayISO(), source:name, glyph:"💰", type, status:"received", amount });
+    if(error) return false;
+    state.income.unshift({ id:data.id, date:data.date, source:data.source, glyph:data.glyph, type:data.type, status:data.status, amount:Number(data.amount), projectId:null });
+    track("first_transaction_added", { source:"manual" });
+    return true;
+  }
+  async function quickAddExpense(name, amount){
+    const g = guessExpenseCategory(name);
+    const category = (g && g.name) || (state.expenseCategoryList[0] || {}).name || "Other";
+    const { data, error } = await dbInsert("expenses", { user_id:workspaceOwnerId(), date:todayISO(), description:name, glyph:"🧾", category, payment_method:"", deductible:true, amount });
+    if(error) return false;
+    state.expenses.unshift({ id:data.id, date:data.date, description:data.description, glyph:data.glyph, category:data.category, payment:data.payment_method, deductible:!!data.deductible, amount:Number(data.amount) });
+    track("first_transaction_added", { source:"manual" });
+    return true;
+  }
+
+  /* ---------- Friendly empty states with a next step ---------- */
+  function emptyState(title, body, actions){
+    return `<div class="empty-state"><b>${title}</b><p>${body}</p>${actions ? `<div class="es-actions">${actions}</div>` : ""}</div>`;
+  }
+
+  document.addEventListener("click", e=>{
+    if(e.target.closest("[data-scan-empty]")){ const i = document.getElementById("scanReceiptInput"); if(i) i.click(); }
+    if(e.target.closest("[data-new-invoice]")) openInvoiceModal(null);
+  });
   function renderPersonalization(){
     applyTailoredNav();
     renderHome();

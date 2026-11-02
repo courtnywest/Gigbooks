@@ -36,7 +36,7 @@ The app is a single static page (`index.html`) backed by Supabase (Postgres with
 
 ## Phases
 
-1. **Core UX**: Home, navigation, terminology, transaction entry and review.
-2. **Activation**: onboarding, empty states, first-value guidance, analytics.
+1. **Core UX**: Home, navigation, terminology, transaction entry and review. *Done (#7).*
+2. **Activation**: onboarding, empty states, first-value guidance, analytics. *Done: three-step onboarding with saved progress, friendly empty states, a "first look" at business profit, and first-party analytics (`supabase/migrations/20261103_product_events.sql`).*
 3. **Retention**: weekly check-in, monthly recap, contextual Giggy.
 4. **Creator tools and marketing**: rate calculator, deal stages, gifted products in the income flow, homepage.

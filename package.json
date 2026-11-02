@@ -1,0 +1,11 @@
+{
+  "name": "gigbooks",
+  "private": true,
+  "description": "GigBooks web app. The app itself is static files; this is only for tests.",
+  "scripts": {
+    "test": "node --test --test-concurrency=1 tests/*.test.js"
+  },
+  "devDependencies": {
+    "playwright": "1.49.1"
+  }
+}

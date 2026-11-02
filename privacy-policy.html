@@ -28,13 +28,10 @@
 <div class="wrap">
 
   <h1>Privacy Policy</h1>
-  <div class="updated">Last updated: [DATE] — see the note at the bottom before publishing this.</div>
+  <div class="updated">Last updated: November 2, 2026</div>
 
   <p>GigBooks ("GigBooks," "we," "us," or "our") provides financial tracking and invoicing tools for creators, freelancers, and small business owners. This Privacy Policy explains what information we collect, how we use it, and the choices you have.</p>
 
-  <div class="placeholder">
-    <strong>Before you publish this:</strong> this draft is written to accurately describe what GigBooks currently does, but it is a starting point, not a substitute for review by a lawyer familiar with your state and the states/countries your users are in. Placeholders in brackets need your actual details filled in.
-  </div>
 
   <h2>1. Information We Collect</h2>
 
@@ -49,7 +46,17 @@
     <li>Client names, email addresses, and billing addresses, if you save them</li>
     <li>Invoices you create, including their contents and payment status</li>
     <li>Receipts and other files you upload, and any logo you upload for invoice branding</li>
+    <li>Answers you give to personalize GigBooks (your creator type, income streams and main focus), goals you set, and the payment handles you add for invoices (for example a PayPal.me username)</li>
   </ul>
+
+  <h3>Bank information, if you connect a bank</h3>
+  <p>If you connect a bank account, our banking partner <strong>Plaid</strong> handles the connection. You sign in to your bank through Plaid; GigBooks never sees or stores your bank username or password. We receive your account names and transactions (dates, descriptions and amounts) so they can be added to your books.</p>
+
+  <h3>Payment information</h3>
+  <p>Payments are processed by <strong>Stripe</strong>. If you subscribe to GigBooks Pro, Stripe collects your card details; we only receive your subscription status and the last details Stripe shares with us (such as plan and renewal date). If you accept card payments on invoices, you create a Stripe account through Stripe's own onboarding, and Stripe collects the identity and bank details it requires. When a client pays an invoice, Stripe tells us the invoice was paid so we can mark it paid and log the income.</p>
+
+  <h3>Receipt photos</h3>
+  <p>When you scan a receipt, the text on it is read <strong>on your own device</strong> to fill in the store, date and total. The photo is attached to the expense like any other receipt you upload.</p>
 
   <h3>Information from Gmail, if you connect it</h3>
   <p>If you choose to connect your Gmail account, GigBooks automatically scans incoming email for messages that look like payment notifications from a small set of known senders (for example, PayPal, Stripe, Venmo, Cash App, and Zelle), so we can surface likely income for you to review and approve. We do not read, store, or display the full contents of your inbox — only the specific dollar amount, sender, and date extracted from a matching message become part of your GigBooks records, and every match is presented to you for approval before it's treated as real income.</p>
@@ -66,10 +73,21 @@
     You can disconnect Gmail access at any time from Settings → Email Settings, and separately revoke GigBooks's access entirely from your <a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener">Google Account permissions page</a>. Disconnecting stops future scans; it does not retroactively delete income entries already created from past matches, which you can delete yourself like any other entry.
   </div>
 
+  <h3>AI features</h3>
+  <p>When you use Ask Giggy or the Contract Reader, your question (or the contract you upload) and a summary of the relevant numbers from your books are sent to a third-party AI model provider to write the answer. Bank logins are never included. We don't keep the uploaded contract file, only the summary shown to you.</p>
+
+  <h3>Anonymous rate benchmarks, if you opt in</h3>
+  <p>If you turn on rate benchmarks, GigBooks shares three things about each signed deal: your creator type, the kind of deliverable (for example "Video / Reel / TikTok") and the price. Your name, the brand and everything else stay private. Individual entries can't be viewed by anyone through the app; other creators only see price ranges built from at least 5 deals from at least 3 different creators. You can turn this off at any time in Settings → Personalization.</p>
+
+  <h3>Invite links</h3>
+  <p>If someone signs up through your invite link, we record that they were referred by you so we can show you how many people joined.</p>
+
   <h2>2. How We Use Your Information</h2>
   <p>We use the information above to:</p>
   <ul>
-    <li>Provide the core features of GigBooks — tracking income and expenses, generating invoices and financial reports, and (if enabled) detecting likely income from your connected Gmail account</li>
+    <li>Provide the core features of GigBooks — tracking income and expenses, generating invoices and financial reports, and (if enabled) detecting likely income from your connected Gmail account or bank</li>
+    <li>Personalize GigBooks to you — for example, sorting tax tips for your kind of work, hiding tools you don't use, and showing reminders and summaries based on your own books</li>
+    <li>Process your Pro subscription and, if you accept card payments, mark invoices paid when clients pay</li>
     <li>Send you account-related emails, such as confirming your email address or helping you reset your password</li>
     <li>Send invoices you create to the clients you specify, when you choose to email them directly from GigBooks</li>
     <li>Maintain the security of your account and investigate suspicious activity</li>
@@ -87,7 +105,11 @@
   <ul>
     <li><strong>Supabase</strong> — hosts our database and handles authentication. Your account information and financial records are stored there.</li>
     <li><strong>Resend</strong> — delivers account emails (like confirmations and password resets) and invoice emails you choose to send to clients.</li>
-    <li><strong>Google</strong> — provides the Gmail API used for the optional income-detection feature described above, if you connect it.</li>
+    <li><strong>Google</strong> — provides the Gmail API used for the optional income-detection feature described above, if you connect it. Google Fonts also serves the app's fonts.</li>
+    <li><strong>Plaid</strong> — connects your bank account, if you choose to.</li>
+    <li><strong>Stripe</strong> — processes Pro subscriptions and card payments on invoices.</li>
+    <li><strong>An AI model provider</strong> — writes Ask Giggy answers and Contract Reader summaries, as described above.</li>
+    <li><strong>Vercel</strong> and <strong>jsDelivr</strong> — host the GigBooks app and some of the code it loads. Like any website host, they see your IP address and browser details when you load the app.</li>
   </ul>
   <p>These providers only receive the information necessary to perform their function for GigBooks, and are not permitted to use it for their own purposes.</p>
 
@@ -102,7 +124,8 @@
   <ul>
     <li><strong>Access and export:</strong> you can export your income, expense, and report data as CSV files at any time from within the app.</li>
     <li><strong>Correct or delete records:</strong> you can edit or delete any income, expense, invoice, or client record you've entered.</li>
-    <li><strong>Disconnect Gmail:</strong> available anytime from Settings → Email Settings.</li>
+    <li><strong>Disconnect Gmail or your bank:</strong> available anytime from Settings → Connections.</li>
+    <li><strong>See and change what personalizes GigBooks:</strong> Settings → Preferences → Personalization lists everything used, with switches and a reset.</li>
     <li><strong>Remove a collaborator, or leave a workspace you've joined:</strong> available from Settings → Team & Access, or the workspace switcher.</li>
     <li><strong>Delete your account:</strong> available from Settings → Delete Account. This permanently deletes your account and all associated data, including any collaborator access to your books. This action cannot be undone.</li>
   </ul>
@@ -111,7 +134,7 @@
   <p>We keep your information for as long as your account is active. If you delete your account, your data is permanently deleted, not just hidden or deactivated.</p>
 
   <h2>7. Cookies and Local Storage</h2>
-  <p>GigBooks uses your browser's local storage to keep you signed in (the "Remember Me" option) and to remember a few display preferences on your device. We do not use tracking cookies or third-party advertising trackers.</p>
+  <p>GigBooks uses your browser's local storage to keep you signed in (the "Remember Me" option), to remember a few display preferences on your device, and to keep a copy of your settings for faster loading. We do not use tracking cookies, analytics trackers, or third-party advertising trackers.</p>
 
   <h2>8. Children's Privacy</h2>
   <p>GigBooks is intended for business use by adults and is not directed at children. We do not knowingly collect information from anyone under 18.</p>
@@ -122,9 +145,6 @@
   <h2>10. Contact Us</h2>
   <p>Questions about this policy or your data can be sent to <strong>[YOUR CONTACT EMAIL]</strong>.</p>
 
-  <footer>
-    GigBooks — this document was drafted to reflect the product's actual features as of [DATE]. Replace all bracketed placeholders and have it reviewed by a lawyer before relying on it publicly, especially if you plan to serve users outside your home state or country (which can trigger additional requirements, e.g. GDPR in the EU/UK or CCPA in California).
-  </footer>
 
 </div>
 </body>

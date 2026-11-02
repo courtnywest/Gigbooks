@@ -55,11 +55,12 @@ async function openApp(overrides = {}, viewport = { width:1280, height:900 }){
 }
 async function closeAll(){ if(browser){ await browser.close(); browser = null; } }
 
+const GROUPS = { overview:"home", income:"money", expenses:"money", gifts:"money", bank:"money", invoices:"getpaid",
+  pipeline:"getpaid", rateCalculator:"getpaid", reports:"reports", taxes:"reports", ask:"more", contracts:"more", settings:"more" };
 async function go(page, view){
-  await page.evaluate(v => {
-    const b = document.querySelector(`.nav-item[data-view="${v}"], .nav-subitem[data-view="${v}"]`);
-    if(b) b.click();
-  }, view);
+  await page.click(`.nav-item[data-group="${GROUPS[view]}"]`);
+  const tab = await page.$(`[data-goto="${view}"]`);
+  if(tab) await tab.click();
   await page.waitForTimeout(150);
 }
 

@@ -1742,6 +1742,63 @@ body[data-view="ask"] .giggy-fab{display:none;}
 .pt-foot a{color:var(--green-800);font-weight:600;text-decoration:underline;}
 @media (max-width:720px){ .plans-teaser{grid-template-columns:1fr;} }
 
+/* ============================================================
+   Phase 1: profit-first Home, safe-to-spend setup, review, All
+   ============================================================ */
+.period-pick{display:inline-flex;background:var(--cream-100);border-radius:999px;padding:4px;margin:0 0 14px;}
+.period-pick button{appearance:none;border:none;background:none;border-radius:999px;padding:8px 14px;min-height:36px;font:inherit;font-size:13px;font-weight:600;color:var(--ink-500);cursor:pointer;}
+.period-pick button.on{background:var(--white);color:var(--ink-900);box-shadow:0 1px 2px rgba(0,0,0,.08);}
+.hh-value.neg{color:var(--down);}
+.home-stat .hs-top{display:flex;align-items:center;gap:8px;}
+.hs-ic{width:28px;height:28px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;flex:none;}
+.hs-ic svg{width:15px;height:15px;}
+.home-stat.in .hs-ic{background:var(--sage-100);color:var(--green-800);}
+.home-stat.out .hs-ic{background:#F3ECE3;color:#8A5A2B;}
+.safe-card{padding:22px 24px;margin-bottom:14px;}
+.safe-card .sc-value{font-family:var(--font-serif);font-weight:500;font-size:38px;letter-spacing:-0.02em;color:var(--green-800);margin:4px 0 4px;font-variant-numeric:tabular-nums;}
+.safe-card .est{display:inline-block;margin-left:6px;font-size:10px;letter-spacing:.06em;padding:2px 7px;border-radius:999px;background:var(--cream-200);color:var(--ink-700);vertical-align:1px;}
+.sc-actions{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:10px;}
+.sc-actions .hh-link{margin-left:0;}
+.safe-card.setup{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;background:var(--cream-100);}
+.sc-title{font-family:var(--font-serif);font-size:20px;margin-bottom:4px;}
+.rv-name .rv-amt{font-family:var(--font-sans);font-size:18px;font-weight:600;color:var(--ink-700);margin-left:6px;white-space:nowrap;}
+.rv-hint{font-size:14px;color:var(--ink-700);margin:-2px 0 12px;}
+.rv-cat{margin-bottom:14px;} .rv-cat select{width:100%;}
+.rv-actions.three{grid-template-columns:1fr 1fr 1fr;}
+.rv-actions button{min-height:44px;}
+.rv-same{display:block;margin:12px auto 0;}
+.date-row{font-size:13px;color:var(--ink-500);margin-top:6px;}
+.all-banner{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;padding:16px 20px;margin-bottom:14px;background:var(--cream-100);}
+.all-card{padding:8px 20px 14px;}
+.all-tools{padding:10px 0 6px;}
+.all-tools input{width:100%;padding:11px 14px;border:1px solid var(--line);border-radius:999px;font:inherit;font-size:14px;background:var(--cream-50);}
+.all-month{font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:600;color:var(--ink-500);padding:16px 0 4px;}
+.all-row{appearance:none;width:100%;display:flex;align-items:center;gap:12px;padding:12px 4px;border:none;border-top:1px solid var(--line);background:none;font:inherit;text-align:left;cursor:pointer;min-height:56px;}
+.all-month + .all-row{border-top:none;}
+.all-row:hover{background:var(--cream-50);}
+.ar-ic{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex:none;font-size:15px;}
+.ar-ic.in{background:var(--sage-100);color:var(--green-800);} .ar-ic.out{background:#F3ECE3;color:#8A5A2B;}
+.ar-main{flex:1;min-width:0;display:flex;flex-direction:column;}
+.ar-name{font-size:14.5px;font-weight:500;color:var(--ink-900);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ar-sub{font-size:12.5px;color:var(--ink-500);}
+.ar-amt{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap;}
+.ar-amt.in{color:var(--up);} .ar-amt.pending{color:var(--ink-400);}
+.all-empty{padding:28px 6px;text-align:center;color:var(--ink-500);}
+.help-card{padding:8px 22px;margin-bottom:14px;}
+.help-card details{border-top:1px solid var(--line);padding:14px 0;}
+.help-card details:first-child{border-top:none;}
+.help-card summary{cursor:pointer;font-weight:600;font-size:15px;min-height:28px;}
+.help-card details p{margin:8px 0 0;color:var(--ink-700);line-height:1.6;font-size:14px;}
+.help-contact{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;padding:18px 22px;}
+.help-actions{display:flex;gap:8px;}
+.help-actions a.btn-primary{text-decoration:none;}
+@media (max-width:720px){
+  .rv-actions.three{grid-template-columns:1fr;}
+  .safe-card .sc-value{font-size:32px;}
+  .period-pick button{white-space:nowrap;padding:8px 11px;font-size:12.5px;}
+  .fy-head{gap:10px;} .fy-count{white-space:nowrap;}
+}
+
 </style>
 </head>
 <body>
@@ -2290,12 +2347,13 @@ body[data-view="ask"] .giggy-fab{display:none;}
       <div class="topbar">
         <div class="titles">
           <h1 id="greetingText">Good morning, Courteney</h1>
-          <p id="greetingSub">Here's where your money stands.</p>
+          <p id="greetingSub">Here's how your money is looking.</p>
         </div>
       </div>
 
       <div id="homeSnapshot"></div>
       <div id="ovNudges"></div>
+      <div id="homeSafe"></div>
       <div id="ovSetAside" hidden></div>
       <div id="ovPersona"></div>
       <div id="ovChecklist"></div>
@@ -2308,8 +2366,8 @@ body[data-view="ask"] .giggy-fab{display:none;}
     <section class="view" id="view-income">
       <div class="topbar">
         <div class="titles">
-          <h1>Income</h1>
-          <p>Track and manage all income from your business.</p>
+          <h1>Money in</h1>
+          <p>Payments for your work, plus what you're still waiting on.</p>
           <a href="#" id="exportIncomeLink" style="display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--ink-500);margin-top:6px;">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><path d="M12 4v11m0 0 4-4m-4 4-4-4"/><path d="M5 19h14"/></svg>
             Export CSV
@@ -2538,8 +2596,8 @@ body[data-view="ask"] .giggy-fab{display:none;}
     <section class="view" id="view-pipeline">
       <div class="topbar">
         <div class="titles">
-          <h1>Pipeline</h1>
-          <p>Keep track of potential brand deals from pitch to payment.</p>
+          <h1>Brand deals</h1>
+          <p>Every deal from first chat to paid, in one place.</p>
         </div>
       </div>
 
@@ -2576,7 +2634,7 @@ body[data-view="ask"] .giggy-fab{display:none;}
 
     <!-- ============ CONTRACT READER ============ -->
     <section class="view" id="view-contracts">
-      <div class="topbar"><div class="titles"><h1>Contract Reader</h1><p>Upload a brand contract and get the money, the dates and the risky clauses in plain English.</p></div></div>
+      <div class="topbar"><div class="titles"><h1>Contract reader</h1><p>Understand what you're agreeing to. Upload a brand contract and get the money, the dates and the clauses to ask about, in plain English. It's a helper, not legal advice.</p></div></div>
       <div class="card feature-card">
         <div class="ct-drop">
           <input type="file" id="contractFile" accept="application/pdf,.pdf">
@@ -2608,8 +2666,8 @@ body[data-view="ask"] .giggy-fab{display:none;}
     <section class="view" id="view-expenses">
       <div class="topbar">
         <div class="titles">
-          <h1>Expenses</h1>
-          <p>Track and manage all business expenses and write-offs.</p>
+          <h1>Money out</h1>
+          <p>What you spent on your business.</p>
           <a href="#" id="exportExpenseLink" style="display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--ink-500);margin-top:6px;">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><path d="M12 4v11m0 0 4-4m-4 4-4-4"/><path d="M5 19h14"/></svg>
             Export CSV
@@ -2675,7 +2733,7 @@ body[data-view="ask"] .giggy-fab{display:none;}
           <table class="data">
             <thead>
               <tr>
-                <th>Date ↓</th><th>Description</th><th>Category</th><th>Payment Method</th><th>Project</th><th>Deductible</th><th class="num">Amount</th><th></th>
+                <th>Date ↓</th><th>Description</th><th>Category</th><th>Paid with</th><th>Project</th><th>Tax write-off</th><th class="num">Amount</th><th></th>
               </tr>
             </thead>
             <tbody id="expenseTableBody"></tbody>
@@ -2691,8 +2749,8 @@ body[data-view="ask"] .giggy-fab{display:none;}
     <section class="view" id="view-bank">
       <div class="topbar">
         <div class="titles">
-          <h1>Bank</h1>
-          <p>Automatically import transactions from your connected bank and reconcile them against what you've logged.</p>
+          <h1>Connected accounts</h1>
+          <p>Connect your bank and new transactions show up for a quick yes or no. It's optional; you can always add things yourself.</p>
         </div>
         <div class="actions">
           <div class="pill-btn dateselect-wrap">
@@ -2721,9 +2779,9 @@ body[data-view="ask"] .giggy-fab{display:none;}
       <div class="card table-card">
         <div class="table-toolbar">
           <div class="tabset" data-tabset="bankTxn">
-            <button class="active" data-tab="unclassified">Needs Review</button>
-            <button data-tab="matched">Approved</button>
-            <button data-tab="dismissed">Dismissed</button>
+            <button class="active" data-tab="unclassified">To review</button>
+            <button data-tab="matched">Added to my books</button>
+            <button data-tab="dismissed">Not business</button>
             <button data-tab="reconciliation">Match to my books</button>
           </div>
         </div>
@@ -3127,6 +3185,42 @@ body[data-view="ask"] .giggy-fab{display:none;}
       </div>
     </section>
 
+
+    <!-- ============ ALL TRANSACTIONS ============ -->
+    <section class="view" id="view-all">
+      <div class="topbar">
+        <div class="titles">
+          <h1>All transactions</h1>
+          <p>Everything that came in and went out, newest first.</p>
+        </div>
+        <div class="actions">
+          <button type="button" class="pill-btn" data-quick-add="income">+ Money in</button>
+          <button type="button" class="btn-primary" data-quick-add="expense">+ Money out</button>
+        </div>
+      </div>
+      <div id="allReviewBanner"></div>
+      <div class="card all-card">
+        <div class="all-tools"><input type="search" id="allSearch" placeholder="Search by name or category" aria-label="Search transactions"></div>
+        <div id="allList"></div>
+      </div>
+    </section>
+
+    <!-- ============ HELP ============ -->
+    <section class="view" id="view-help">
+      <div class="topbar"><div class="titles"><h1>Help</h1><p>Quick answers. Or ask Giggy anything about your money.</p></div></div>
+      <div class="card help-card">
+        <details><summary>What's the difference between business profit and safe to spend?</summary><p>Business profit is what you earned minus what you spent on your business, before taxes. It isn't money in your bank: some income may not have arrived, and taxes and bills still need paying. Safe to spend starts from what's actually in your account and holds back taxes and bills due soon.</p></details>
+        <details><summary>Do I have to connect my bank?</summary><p>No. You can add everything yourself. Connecting a bank just means new transactions show up for a quick yes or no, so you type less. GigBooks never sees your bank login.</p></details>
+        <details><summary>What does "Was this for your business?" mean?</summary><p>Business purchases are things you bought to make content or run your work: gear, software, travel for a shoot. Answer "No" for personal things. If you're not sure, choose "I'm not sure" and it won't count until you decide.</p></details>
+        <details><summary>How does GigBooks estimate my taxes?</summary><p>It sets aside a percentage of your profit (30% unless you change it). That's a rough guide to help you save, not your actual tax bill, which depends on your state, filing status and other income. Check with a tax pro before you pay.</p></details>
+        <details><summary>Are free products from brands income?</summary><p>Products you get in exchange for a post or other promotion are generally taxable at what they'd sell for. Gifts with no strings attached may be treated differently. Log them under More → Gifts &amp; freebies and check edge cases with a tax pro.</p></details>
+        <details><summary>Where are the accountant reports?</summary><p>Reports → Monthly recap, then "For your accountant" under Details. You'll find Profit &amp; Loss, Balance Sheet and Cash Flow, plus exports.</p></details>
+      </div>
+      <div class="card help-card help-contact">
+        <div><b>Still stuck?</b><div class="sa-sub">Ask Giggy, or email us and a real person will reply.</div></div>
+        <div class="help-actions"><button type="button" class="pill-btn" id="helpAsk">Ask Giggy</button><a class="btn-primary" href="mailto:cew13d@gmail.com?subject=GigBooks%20help">Email us</a></div>
+      </div>
+    </section>
     <div class="fab-menu" id="fabMenu">
       <button type="button" data-fab="invoice">Create invoice</button>
       <button type="button" data-fab="expense">Add expense</button>
@@ -3186,13 +3280,14 @@ body[data-view="ask"] .giggy-fab{display:none;}
     <form id="expenseForm">
       <input type="hidden" name="id">
       <div class="field"><label>What did you buy?</label><input type="text" name="description" placeholder="e.g. CapCut Pro subscription" required autocomplete="off"></div>
-      <div class="field"><label>How much?</label><input type="number" name="amount" step="0.01" min="0" placeholder="0.00" required inputmode="decimal"></div>
+      <div class="field"><label>How much was it?</label><input type="number" name="amount" step="0.01" min="0" placeholder="0.00" required inputmode="decimal">
+        <div class="date-row">Date: <b id="expDateLabel">Today</b> <button type="button" class="hh-link" data-change-date="1">Change</button></div></div>
       <div class="field"><label>Was this for your business?</label>
         <input type="hidden" name="business" value="yes">
         <div class="biz-choice"><button type="button" data-biz="yes" class="on">Yes, for work</button><button type="button" data-biz="no">No, personal</button><button type="button" data-biz="unsure">I'm not sure</button></div>
       </div>
       <div class="giggy-suggest" id="expGuess"></div>
-      <details class="more-details" id="expMore"><summary>More details</summary>
+      <details class="more-details" id="expMore"><summary>Add more details</summary>
       <div class="field"><label>Category</label>
         <select name="category" id="expenseCategorySelect"></select>
       </div>
@@ -3514,14 +3609,16 @@ body[data-view="ask"] .giggy-fab{display:none;}
   // not which ledger something lives in.
   const NAV_GROUPS = {
     home:    { label:"Home",     views:["overview"] },
-    money:   { label:"Money",    views:["income","expenses","gifts","bank"] },
+    money:   { label:"Money",    views:["all","income","expenses","bank"] },
     getpaid: { label:"Get Paid", views:["invoices","pipeline","rateCalculator"] },
     reports: { label:"Reports",  views:["reports","taxes"] },
-    more:    { label:"More",     views:["ask","contracts","settings"] }
+    more:    { label:"More",     views:["gifts","contracts","help","settings","ask"] }
   };
-  const VIEW_LABELS = { overview:"Home", income:"Income", expenses:"Expenses", gifts:"Gifts & freebies", bank:"Bank",
+  // Ask Giggy lives in the floating button on every page, so it isn't a tab.
+  const ALWAYS_HIDDEN_TABS = ["ask"];
+  const VIEW_LABELS = { overview:"Home", all:"All", income:"Money in", expenses:"Money out", bank:"Accounts", gifts:"Gifts & freebies",
     invoices:"Invoices", pipeline:"Brand deals", rateCalculator:"What to charge", reports:"Monthly recap", taxes:"Taxes",
-    ask:"Ask Giggy", contracts:"Contract reader", settings:"Settings" };
+    ask:"Ask Giggy", contracts:"Contract reader", help:"Help", settings:"Settings" };
   const groupOf = v => Object.keys(NAV_GROUPS).find(g => NAV_GROUPS[g].views.includes(v)) || "home";
   const lastInGroup = {};
   const navButtons = document.querySelectorAll(".nav-item[data-group]");
@@ -3534,7 +3631,7 @@ body[data-view="ask"] .giggy-fab{display:none;}
     if(!view) return;
     const g = NAV_GROUPS[groupOf(name)];
     let bar = view.querySelector(":scope > .section-tabs");
-    const tabs = g.views.filter(v => !hiddenTabs.has(v));
+    const tabs = g.views.filter(v => !hiddenTabs.has(v) && !ALWAYS_HIDDEN_TABS.includes(v));
     if(tabs.length < 2){ if(bar) bar.remove(); return; }
     if(!bar){ bar = document.createElement("div"); bar.className = "section-tabs"; view.prepend(bar); }
     bar.innerHTML = tabs.map(v => `<button type="button" data-goto="${v}" class="${v === name ? "on" : ""}">${VIEW_LABELS[v]}</button>`).join("");
@@ -3557,13 +3654,14 @@ body[data-view="ask"] .giggy-fab{display:none;}
     if(name === "gifts") renderGifts();
     if(name === "invoices") renderPayerScorecard();
     if(name === "bank") renderBankPage();
+    if(name === "all") renderAllTransactions();
     document.body.dataset.view = name;
     const fabMenu = document.getElementById("fabMenu"); if(fabMenu) fabMenu.classList.remove("open");
     window.scrollTo({top:0});
   }
   navButtons.forEach(b => b.addEventListener("click", () => {
     const g = b.dataset.group;
-    const first = NAV_GROUPS[g].views.find(v => !hiddenTabs.has(v)) || NAV_GROUPS[g].views[0];
+    const first = NAV_GROUPS[g].views.find(v => !hiddenTabs.has(v) && !ALWAYS_HIDDEN_TABS.includes(v)) || NAV_GROUPS[g].views[0];
     showView(lastInGroup[g] && !hiddenTabs.has(lastInGroup[g]) ? lastInGroup[g] : first);
   }));
   document.addEventListener("click", e => { const t = e.target.closest("[data-goto]"); if(t) showView(t.dataset.goto); });
@@ -5662,7 +5760,7 @@ body[data-view="ask"] .giggy-fab{display:none;}
     const t = state.bankTransactions.find(x=>x.id===id);
     if(!t) return;
     const sel = document.querySelector(`[data-bank-category="${id}"]`);
-    const category = sel ? sel.value : "";
+    const category = opts.category || (sel ? sel.value : "");
     if(t.amount < 0){
       const { data, error } = await dbInsert("income", {
         user_id: workspaceOwnerId(), date: t.date, source: t.merchantName || t.description || "Bank transaction",
@@ -6261,7 +6359,7 @@ body[data-view="ask"] .giggy-fab{display:none;}
     const greetEl = document.getElementById("greetingText");
     if(nameEl) nameEl.textContent = "Hey, " + first + "!";
     if(avatarEl) avatarEl.textContent = first.charAt(0).toUpperCase();
-    if(greetEl) greetEl.textContent = "Hey, " + first;
+    if(greetEl) greetEl.textContent = "Hey, " + first + "!";
   }
   // Checks whether the CURRENT session has already satisfied MFA
   // (or doesn't need to, because no factor is enrolled). If a
@@ -7957,11 +8055,18 @@ body[data-view="ask"] .giggy-fab{display:none;}
     const later = attrs => `<button type="button" class="fy-later" ${attrs}>Later</button>`;
     const writable = canWriteInWorkspace();
 
-    const q = reviewQueue();
-    if(q.length && writable){
-      const mins = Math.max(1, Math.round(q.length * 10 / 60));
-      rows.push({ title:`Check ${q.length} transaction${q.length===1?"":"s"}`, sub:`About ${mins} minute${mins===1?"":"s"}`, action:btn("Start", `data-fy="${go(openReviewFlow)}"`) });
+    const q = reviewQueue(), fresh = q.filter(x=>!x.later), unsure = q.filter(x=>x.later);
+    if(fresh.length && writable){
+      const mins = Math.max(1, Math.round(fresh.length * 10 / 60));
+      rows.push({ title:`Review ${fresh.length} transaction${fresh.length===1?"":"s"}`, sub:`About ${mins} minute${mins===1?"":"s"}. Giggy has guessed most of them.`, action:btn("Start", `data-fy="${go(()=>openReviewFlow())}"`) });
     }
+    if(unsure.length && writable)
+      rows.push({ title:`Take another look at ${unsure.length} you weren't sure about`, sub:"No rush. They're not counted until you decide.", action:btn("Review", `data-fy="${go(()=>openReviewFlow(true))}"`) });
+    state.bankConnections.filter(c=>/error|reauth|login|expired|disconnected|pending/i.test(c.status || "")).slice(0,1).forEach(c=>
+      rows.push({ title:`Finish connecting ${c.institutionName}`, sub:"Your bank needs you to sign in again before new transactions come through.", action:btn("Reconnect", `data-goto="bank"`) }));
+    const safe = safeToSpend();
+    if(safe.ready && safe.stale)
+      rows.push({ title:"Update your account balance", sub:"So your safe-to-spend number stays accurate.", action:btn("Update", `data-safe-setup="1"`) });
     const due = remindersDue();
     if(due.length){
       const r = due[0];
@@ -7989,12 +8094,12 @@ body[data-view="ask"] .giggy-fab{display:none;}
 
     const shown = rows.slice(0, 5);
     wrap.innerHTML = `<div class="card fy-card">
-      <div class="fy-head"><span>Your to-do list</span><span class="fy-count">${shown.length ? `${shown.length} thing${shown.length===1?"":"s"}` : ""}</span></div>
+      <div class="fy-head"><span>${shown.length ? "A couple things to check" : "You're all caught up!"}</span><span class="fy-count">${shown.length ? `${shown.length} thing${shown.length===1?"":"s"}` : ""}</span></div>
       ${shown.length ? shown.map(r=>`<div class="fy-row">
           <div class="fy-body"><div class="fy-text">${escapeHtml(r.title)}</div><div class="fy-why">${escapeHtml(r.sub || "")}</div></div>
           <div class="fy-actions">${r.later || ""}${r.action}</div>
         </div>`).join("")
-        : `<div class="fy-row fy-empty"><div class="fy-text">You're all caught up. Nothing needs you right now.</div></div>`}
+        : `<div class="fy-row fy-empty"><div class="fy-text">Nothing needs you right now. Enjoy it.</div></div>`}
     </div>`;
   }
   function openReview(){ openReviewFlow(); }
@@ -8053,7 +8158,7 @@ body[data-view="ask"] .giggy-fab{display:none;}
     return {
       today: isoLocal(todayD), business: state.business.name || null,
       taxSetAsidePercent: Math.round(taxPct()*100),
-      yearToDate: { year:y, incomeReceived:r2(ytdInc.reduce((a,r)=>a+r.amount,0)), expensesTotal:r2(ytdExp.reduce((a,r)=>a+r.amount,0)), profit:r2(t.net), taxSetAside:r2(t.setAside), estimatedTaxPaid:r2(t.paid), setAsideStillToSend:r2(t.remaining), safeToSpend:r2(t.safe) },
+      yearToDate: { year:y, incomeReceived:r2(ytdInc.reduce((a,r)=>a+r.amount,0)), expensesTotal:r2(ytdExp.reduce((a,r)=>a+r.amount,0)), profit:r2(t.net), taxSetAside:r2(t.setAside), estimatedTaxPaid:r2(t.paid), setAsideStillToSend:r2(t.remaining), profitAfterTaxSetAside:r2(t.safe), safeToSpendEstimate:(()=>{ const ss = safeToSpend(); return ss.ready ? r2(ss.amount) : null; })(), safeToSpendNote:"profitAfterTaxSetAside is profit, not cash. safeToSpendEstimate is null when the user hasn't entered a balance; say so instead of guessing." },
       nextEstimatedTaxPayment: { quarter:nd.q.label, due:isoLocal(nd.q.dueDate), suggestedAmount:r2(nd.suggested), alreadyPaidThisQuarter:r2(nd.already) },
       cashOnHand: f.cash, paycheckYouChose: Number(state.creatorSettings.paycheck) || null,
       last12Months: months,
@@ -9961,7 +10066,8 @@ body[data-view="ask"] .giggy-fab{display:none;}
     out.push(thisW ? `You brought in ${money(thisW)} this week${lastW ? ` (${thisW >= lastW ? "up" : "down"} from ${money(lastW)} last week)` : ""}.` : "No money came in this week. Totally normal for creator income.");
     if(spent) out.push(`You spent ${money(spent)} on the business.`);
     if(late.length) out.push(`${late.length} invoice${late.length===1?" is":"s are"} late, worth ${money(late.reduce((a,i)=>a+Number(i.total),0))}. Reminders are ready in For you.`);
-    out.push(`Safe to spend right now: ${money(t.safe)}.`);
+    const ss = safeToSpend();
+    out.push(ss.ready ? `Safe to spend right now: about ${money(ss.amount)} (an estimate from the balance you entered).` : `Your profit so far this year is ${money(t.net)} before taxes. Add your account balance to see what's safe to spend.`);
     if(months.length >= 2){ const avg = months.reduce((a,m)=>a+m.after,0)/months.length; const pay = Math.max(0, Math.floor(avg*0.9/50)*50); if(pay) out.push(`A steady paycheck you could pay yourself: ${money(pay)} a month.`); }
     const dd = Math.round((nd.q.dueDate - today)/DAY_MS);
     if(nd.suggested > 0 && dd <= 45) out.push(`${nd.q.label} estimated tax: about ${money(nd.suggested)}, due in ${dd} days.`);
@@ -9976,19 +10082,21 @@ body[data-view="ask"] .giggy-fab{display:none;}
     renderNudges(); saveCreatorSettings();
   }
   function affordAnswer(amount){
-    const t = taxSummaryYTD(), f = forecastData();
-    const left = t.safe - amount;
+    const s = safeToSpend(), f = forecastData();
+    if(amount <= 0) return null;
+    if(!s.ready) return { tone:"maybe", head:"I need one more number.", body:"Tell me what's in your business account first. Your profit isn't the same as cash, so I won't guess.", needsSetup:true };
+    const left = s.amount - amount;
     const { months } = smoothingData();
     const monthly = months.length ? Math.max(0, months.reduce((a,m)=>a+m.after,0)/months.length) : 0;
     if(amount <= 0) return null;
-    if(left >= t.safe*0.5 && left > 0) return { tone:"yes", head:"Yes, comfortably.", body:`You'd still have ${money(left)} safe to spend after this.` };
+    if(left >= s.amount*0.5 && left > 0) return { tone:"yes", head:"Yes, comfortably.", body:`You'd still have ${money(left)} safe to spend after this.` };
     if(left >= 0){
       const low = f.cash !== null && f.lowest.balance - amount < 0;
       return { tone:"maybe", head:"Yes, but it uses most of your cushion.", body:`You'd have ${money(left)} left${low ? `, and your cash forecast dips below zero around ${shortDate(isoLocal(f.lowest.date))}` : ""}. Waiting for your next payment would be safer.` };
     }
     const need = -left;
     const wks = monthly > 0 ? Math.ceil(need / (monthly/4.345)) : null;
-    return { tone:"no", head:"Not yet.", body:`You'd need ${money(need)} more than you have safe to spend.${wks ? ` At your usual pace that's about ${wks} week${wks===1?"":"s"} away.` : ""} Your tax set-aside isn't counted, so that money stays protected.` };
+    return { tone:"no", head:"Not yet.", body:`You'd need ${money(need)} more than you have safe to spend.${wks ? ` At your usual pace that's about ${wks} week${wks===1?"":"s"} away.` : ""} Money for taxes and bills due soon is already held back.` };
   }
   function openAfford(){
     openSettingsModal(`<h2>Can I afford it?</h2>
@@ -9997,6 +10105,12 @@ body[data-view="ask"] .giggy-fab{display:none;}
       <div id="affOut" class="afford-out"></div>
       <div class="modal-actions"><button type="button" class="btn-primary" data-close-settings>Done</button></div>`);
     const inp = document.getElementById("affAmt"), out = document.getElementById("affOut");
+    if(!safeToSpend().ready){
+      document.getElementById("affOut").innerHTML = `<div class="afford maybe"><b>One quick thing first.</b><span>To check, Giggy needs to know what's in your business account.</span></div>`;
+      inp.closest(".field").hidden = true;
+      document.querySelector("#settingsModalBox .modal-actions").innerHTML = `<button type="button" class="btn-secondary" data-close-settings>Not now</button><button type="button" class="btn-primary" data-safe-setup="1">Add my balance</button>`;
+      return;
+    }
     inp.addEventListener("input", ()=>{
       const a = affordAnswer(Number(inp.value)||0);
       out.innerHTML = a ? `<div class="afford ${a.tone}"><b>${a.head}</b><span>${escapeHtml(a.body)}</span></div>` : "";
@@ -10052,65 +10166,139 @@ body[data-view="ask"] .giggy-fab{display:none;}
   })();
 
   /* ============================================================
-     Home: three answers in 30 seconds.
-     What have I made? What can I safely spend? Anything to do?
+     Home: how much have I made, how much have I spent, what's next.
      ============================================================ */
   const wholeMoney = n => money(Math.round(Number(n)||0)).replace(/\.00$/, "");
   function monthReceived(key){ return state.income.filter(r=>r.status === "received" && r.date.slice(0,7) === key).reduce((a,r)=>a+r.amount,0); }
   function monthSpent(key){ return state.expenses.filter(r=>r.date.slice(0,7) === key).reduce((a,r)=>a+r.amount,0); }
+  const HOME_PERIODS = { month:"This month", last:"Last month", year:"This year" };
+  let homePeriod = "month";
+  try{ homePeriod = localStorage.getItem("gigbooks_home_period") || "month"; }catch(e){}
+  if(!HOME_PERIODS[homePeriod]) homePeriod = "month";
+  function periodRange(p){
+    const now = new Date(), y = now.getFullYear(), m = now.getMonth();
+    if(p === "year") return { start:`${y}-01-01`, end:`${y}-12-31`, prev:{ start:`${y-1}-01-01`, end:`${y-1}-12-31` }, label:"this year", prevLabel:"last year" };
+    const d = p === "last" ? new Date(y, m-1, 1) : new Date(y, m, 1);
+    const pd = new Date(d.getFullYear(), d.getMonth()-1, 1);
+    const span = x => ({ start:isoLocal(x), end:isoLocal(new Date(x.getFullYear(), x.getMonth()+1, 0)) });
+    return Object.assign(span(d), { prev:span(pd), label: p === "last" ? "last month" : "this month", prevLabel: p === "last" ? "the month before" : "last month" });
+  }
+  const inRange = (iso, r) => iso >= r.start && iso <= r.end;
+  // Money In = income that has actually arrived. Money Out = business expenses recorded.
+  function moneyInOut(r){
+    const moneyIn = state.income.filter(x=>x.status === "received" && inRange(x.date, r)).reduce((a,x)=>a+x.amount,0);
+    const moneyOut = state.expenses.filter(x=>inRange(x.date, r)).reduce((a,x)=>a+x.amount,0);
+    const pending = state.income.filter(x=>x.status !== "received" && inRange(x.date, r)).reduce((a,x)=>a+x.amount,0);
+    return { moneyIn, moneyOut, profit: moneyIn - moneyOut, pending };
+  }
+
+  /* ---------- Safe to spend: only from a real balance ----------
+     Profit isn't cash. So this starts from what's actually in the account
+     (entered by the user; bank sync doesn't return balances), adjusts for
+     what's been logged since, and holds back taxes and upcoming bills. */
+  function safeToSpend(){
+    const cs = state.creatorSettings;
+    const raw = cs.cashOnHand;
+    if(raw === null || raw === undefined || raw === "" || isNaN(Number(raw))) return { ready:false };
+    const cash = Number(raw), asOf = cs.cashAsOf || null;
+    const sinceIn = asOf ? state.income.filter(x=>x.status === "received" && x.date > asOf).reduce((a,x)=>a+x.amount,0) : 0;
+    const sinceOut = asOf ? state.expenses.filter(x=>x.date > asOf).reduce((a,x)=>a+x.amount,0) : 0;
+    const balance = cash + sinceIn - sinceOut;
+    const taxReserve = cs.taxSeparate ? 0 : taxSummaryYTD().remaining;
+    const today = startOfToday(), in30 = addDays(today, 30);
+    const bills = forecastData().events.filter(e=>(e.kind === "bill" || e.kind === "pay") && e.date >= today && e.date <= in30).reduce((a,e)=>a - e.amount, 0);
+    const ageDays = asOf ? Math.round((today - parseISODate(asOf)) / DAY_MS) : null;
+    return { ready:true, amount: Math.max(0, balance - taxReserve - bills), cash, asOf, sinceIn, sinceOut, balance, taxReserve, bills,
+      taxSeparate: !!cs.taxSeparate, stale: ageDays === null || ageDays > 30, ageDays };
+  }
+  function openSafeSetup(){
+    const cs = state.creatorSettings;
+    openSettingsModal(`<h2>What can you safely spend?</h2>
+      <p class="settings-note">Your profit isn't the same as cash in the bank, so GigBooks needs one number from you. Check your banking app and type in what's there.</p>
+      <div class="field"><label>How much is in your business account right now?</label><input type="number" id="ssCash" min="0" step="0.01" inputmode="decimal" value="${cs.cashOnHand ?? ""}" placeholder="0.00"></div>
+      <div class="field"><label>Do you keep money for taxes in a separate account?</label>
+        <div class="biz-choice" id="ssSep"><button type="button" data-v="no" class="${cs.taxSeparate ? "" : "on"}">No, it's all together</button><button type="button" data-v="yes" class="${cs.taxSeparate ? "on" : ""}">Yes, it's separate</button></div></div>
+      <p class="sa-sub">We'll hold back what you'll owe in taxes and bills due in the next 30 days. Update the balance whenever you like; we'll ask again in a month.</p>
+      <div class="modal-actions"><button type="button" class="btn-secondary" data-close-settings>Cancel</button><button type="button" class="btn-primary" id="ssSave">Show me</button></div>`);
+    let sep = !!cs.taxSeparate;
+    document.querySelectorAll("#ssSep [data-v]").forEach(b=>b.addEventListener("click", ()=>{ sep = b.dataset.v === "yes"; document.querySelectorAll("#ssSep [data-v]").forEach(x=>x.classList.toggle("on", x === b)); }));
+    document.getElementById("ssSave").addEventListener("click", async ()=>{
+      const v = document.getElementById("ssCash").value;
+      if(v === "" || isNaN(Number(v)) || Number(v) < 0){ showToast("Type in the amount in your account.", true); return; }
+      cs.cashOnHand = Math.round(Number(v)*100)/100; cs.cashAsOf = todayISO(); cs.taxSeparate = sep;
+      closeSettingsModal(); renderAll();
+      await saveCreatorSettings();
+    });
+  }
   function renderHome(){
     const wrap = document.getElementById("homeSnapshot");
     if(!wrap) return;
-    const now = new Date();
-    const key = monthKey(now.getFullYear(), now.getMonth());
-    const prev = new Date(now.getFullYear(), now.getMonth()-1, 1);
-    const pkey = monthKey(prev.getFullYear(), prev.getMonth());
-    const earned = monthReceived(key), lastEarned = monthReceived(pkey), spent = monthSpent(key);
-    const t = taxSummaryYTD(), nd = nextTaxDue();
-    const dueLabel = nd.q.dueDate.toLocaleDateString("en-US",{ month:"short", day:"numeric" });
+    const r = periodRange(homePeriod);
+    const cur = moneyInOut(r), prev = moneyInOut(r.prev);
     const empty = !state.income.length && !state.expenses.length;
-    let trend = "This month";
-    if(lastEarned > 0){
-      const d = Math.round((earned - lastEarned) / lastEarned * 100);
-      trend = `<span class="${d >= 0 ? "up" : "down"}">${d >= 0 ? "↑" : "↓"} ${Math.abs(d)}%</span> vs. last month`;
+    let trend = "";
+    if(prev.moneyIn > 0){
+      const d = Math.round((cur.moneyIn - prev.moneyIn) / prev.moneyIn * 100);
+      trend = `<span class="${d >= 0 ? "up" : "down"}">${d >= 0 ? "↑" : "↓"} ${Math.abs(d)}%</span> vs. ${r.prevLabel}`;
     }
+    const s = safeToSpend();
+    const arrowIn = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 7 7 17M7 9v8h8"/></svg>`;
+    const arrowOut = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg>`;
     wrap.innerHTML = `
+      <div class="period-pick" role="tablist" aria-label="Period">${Object.entries(HOME_PERIODS).map(([k,l])=>`<button type="button" role="tab" aria-selected="${k===homePeriod}" data-home-period="${k}" class="${k===homePeriod?"on":""}">${l}</button>`).join("")}</div>
       <div class="card home-hero">
-        <div class="hh-label">Safe to spend</div>
-        <div class="hh-value">${wholeMoney(t.safe)}</div>
-        <div class="hh-sub">${empty ? "Add your first income and this fills in." : `After setting aside ${wholeMoney(Math.max(t.setAside, t.paid))} for taxes.`}
-          <button type="button" class="hh-link" data-explain-safe="1">How we work this out</button></div>
-        <button type="button" class="afford-link" data-afford="1">Can I afford something?</button>
+        <div class="hh-label">Your business profit</div>
+        <div class="hh-value ${cur.profit < 0 ? "neg" : ""}">${cur.profit < 0 ? "−" : ""}${wholeMoney(Math.abs(cur.profit))}</div>
+        <div class="hh-sub">${empty ? "Add your first income or expense and this fills in." : "What you've earned after business expenses, before taxes."}</div>
       </div>
       <div class="home-pair">
-        <div class="card home-stat"><div class="hs-label">Money earned</div><div class="hs-value">${wholeMoney(earned)}</div><div class="hs-sub">${trend}</div></div>
-        <div class="card home-stat"><div class="hs-label">Money spent</div><div class="hs-value">${wholeMoney(spent)}</div><div class="hs-sub">This month</div></div>
-      </div>
-      ${empty ? "" : `<div class="home-tax">
-        <span>Taxes: <b>${wholeMoney(t.remaining)}</b> set aside so far this year${nd.suggested > 0 ? ` · next payment about <b>${wholeMoney(nd.suggested)}</b>, due ${dueLabel}` : ""}</span>
-        <button type="button" class="hh-link" data-goto="taxes">Details</button>
-      </div>`}`;
+        <div class="card home-stat in"><div class="hs-top"><span class="hs-ic">${arrowIn}</span><span class="hs-label">Money In</span></div>
+          <div class="hs-value">${wholeMoney(cur.moneyIn)}</div><div class="hs-sub">${trend || HOME_PERIODS[homePeriod]}${cur.pending ? ` · ${wholeMoney(cur.pending)} more on the way` : ""}</div></div>
+        <div class="card home-stat out"><div class="hs-top"><span class="hs-ic">${arrowOut}</span><span class="hs-label">Money Out</span></div>
+          <div class="hs-value">${wholeMoney(cur.moneyOut)}</div><div class="hs-sub">Business expenses, ${r.label}</div></div>
+      </div>`;
+    const safe = document.getElementById("homeSafe");
+    if(safe) safe.innerHTML = s.ready ? `
+      <div class="card safe-card">
+        <div class="sc-row"><div>
+          <div class="hh-label">Safe to spend <span class="est">Estimate</span></div>
+          <div class="sc-value">${wholeMoney(s.amount)}</div>
+          <div class="hh-sub">${s.asOf ? `From your balance on ${shortDate(s.asOf)}` : "From the balance you entered"}, after taxes${s.bills ? " and upcoming bills" : ""}.</div>
+        </div></div>
+        <div class="sc-actions"><button type="button" class="hh-link" data-explain-safe="1">How we worked this out</button><button type="button" class="hh-link" data-safe-setup="1">${s.stale ? "Update your balance" : "Change balance"}</button><button type="button" class="hh-link" data-afford="1">Can I afford something?</button></div>
+      </div>` : `
+      <div class="card safe-card setup">
+        <div><div class="sc-title">Let's figure out what you can safely spend.</div>
+          <div class="hh-sub">Your profit isn't the same as money in the bank. Tell us what's in your account and we'll hold back taxes and bills for you.</div></div>
+        <button type="button" class="btn-primary" data-safe-setup="1">Set it up</button>
+      </div>`;
   }
+  document.addEventListener("click", e=>{
+    const p = e.target.closest("[data-home-period]");
+    if(p){ homePeriod = p.dataset.homePeriod; try{ localStorage.setItem("gigbooks_home_period", homePeriod); }catch(err){} renderHome(); }
+    if(e.target.closest("[data-safe-setup]")) openSafeSetup();
+  });
   function explainSafe(){
-    const t = taxSummaryYTD(), f = forecastData();
-    const y = t.year;
-    const received = state.income.filter(r=>r.status === "received" && r.date.startsWith(String(y))).reduce((a,r)=>a+r.amount,0);
-    const spent = state.expenses.filter(r=>r.date.startsWith(String(y))).reduce((a,r)=>a+r.amount,0);
-    const reserve = Math.max(t.setAside, t.paid);
-    const missing = [];
-    if(!state.bankConnections.length) missing.push("No bank is connected, so this only counts what's been logged in GigBooks.");
-    if(f.cash === null) missing.push("Money you've already saved elsewhere isn't included. Add it under Reports → Plan ahead.");
-    if(state.income.some(r=>r.status !== "received")) missing.push("Payments you're still waiting for aren't counted until they arrive.");
-    openSettingsModal(`<h2>How safe to spend works</h2>
+    const s = safeToSpend();
+    if(!s.ready){ openSafeSetup(); return; }
+    const row = (label, val, cls) => `<div class="${cls||""}"><span>${label}</span><b>${val}</b></div>`;
+    openSettingsModal(`<h2>How we worked this out</h2>
       <div class="explain-math">
-        <div><span>Money received in ${y}</span><b>${money(received)}</b></div>
-        <div><span>Minus what you spent</span><b>−${money(spent)}</b></div>
-        <div><span>Minus your tax set-aside (${Math.round(taxPct()*100)}% of profit${t.paid > t.setAside ? ", or what you've paid if that's more" : ""})</span><b>−${money(reserve)}</b></div>
-        <div class="total"><span>Safe to spend</span><b>${money(t.safe)}</b></div>
+        ${row(`Your balance${s.asOf ? ` on ${shortDate(s.asOf)}` : ""}`, money(s.cash))}
+        ${s.sinceIn ? row("Plus money in you've logged since", "+" + money(s.sinceIn)) : ""}
+        ${s.sinceOut ? row("Minus money out you've logged since", "−" + money(s.sinceOut)) : ""}
+        ${s.taxSeparate ? "" : row(`Minus taxes still to pay this year (${Math.round(taxPct()*100)}% of profit)`, "−" + money(s.taxReserve))}
+        ${s.bills ? row("Minus bills and your paycheck due in the next 30 days", "−" + money(s.bills)) : ""}
+        ${row("Safe to spend (estimate)", money(s.amount), "total")}
       </div>
-      ${missing.length ? `<div class="settings-note"><b>Good to know</b><ul class="explain-list">${missing.map(m=>`<li>${escapeHtml(m)}</li>`).join("")}</ul></div>` : ""}
-      <p class="sa-sub">This is an estimate to help you plan, not tax advice. Change your tax % any time under Taxes.</p>
-      <div class="modal-actions"><button type="button" class="btn-primary" data-close-settings>Got it</button></div>`);
+      <div class="settings-note"><b>Not included</b><ul class="explain-list">
+        ${state.bankConnections.length ? "" : "<li>Spending you haven't logged in GigBooks since your balance date.</li>"}
+        <li>Payments you're still waiting for. They count once they arrive.</li>
+        <li>Personal bills, and anything we don't know about.</li>
+        ${s.taxSeparate ? "<li>Your tax money, since you keep it in a separate account.</li>" : ""}
+      </ul></div>
+      <p class="sa-sub">An estimate to help you plan, not financial or tax advice.</p>
+      <div class="modal-actions"><button type="button" class="btn-secondary" data-safe-setup="1">Update balance</button><button type="button" class="btn-primary" data-close-settings>Got it</button></div>`);
   }
   document.addEventListener("click", e=>{ if(e.target.closest("[data-explain-safe]")) explainSafe(); });
 
@@ -10126,6 +10314,8 @@ body[data-view="ask"] .giggy-fab{display:none;}
     [/accountant|lawyer|attorney|cpa|bookkeep|insurance|bank fee/i, /professional|fees|insurance/i]
   ];
   function guessExpenseCategory(text){
+    const rule = (state.creatorSettings.merchantRules || {})[normText(text)];
+    if(rule && rule.cat && state.expenseCategoryList.some(c=>c.name === rule.cat)) return { name:rule.cat, from:"history" };
     const hist = suggestExpenseCategory(text);
     if(hist) return { name:hist, from:"history" };
     for(const [re, catRe] of CATEGORY_HINTS){
@@ -10143,61 +10333,133 @@ body[data-view="ask"] .giggy-fab{display:none;}
     return null;
   }
 
-  /* ---------- Review new transactions, one at a time ---------- */
+  /* ---------- Review transactions, one card at a time ----------
+     Covers imported email/CSV items, bank transactions and anything the
+     user wasn't sure about. Nothing becomes income or a write-off without
+     a "Yes". Confirmed merchants are remembered for next time. */
+  function merchantRules(){ const cs = state.creatorSettings; if(!cs.merchantRules || typeof cs.merchantRules !== "object") cs.merchantRules = {}; return cs.merchantRules; }
+  function rememberMerchant(name, rule){ const k = normText(name); if(k) merchantRules()[k] = rule; }
+  function reviewLater(){ const cs = state.creatorSettings; if(!cs.reviewLater || typeof cs.reviewLater !== "object") cs.reviewLater = {}; return cs.reviewLater; }
   function reviewQueue(){
-    const flagged = Object.keys(state.creatorSettings.expenseReview || {});
-    return state.unclassifiedIncome.map(i=>({ kind:"income", item:i }))
-      .concat(state.unclassifiedExpenses.map(i=>({ kind:"expense", item:i })))
-      .concat(state.expenses.filter(e=>flagged.includes(e.id)).map(e=>({ kind:"flagged", item:e })))
-      .sort((a,b)=>a.item.date < b.item.date ? 1 : -1);
+    const flagged = state.creatorSettings.expenseReview || {}, later = reviewLater();
+    const items = [];
+    state.unclassifiedIncome.forEach(i=>items.push({ key:"ui:"+i.id, kind:"income", src:"import", item:i, name:i.source, amount:i.amount, date:i.date }));
+    state.unclassifiedExpenses.forEach(i=>items.push({ key:"ue:"+i.id, kind:"expense", src:"import", item:i, name:i.description, amount:i.amount, date:i.date }));
+    state.bankTransactions.filter(t=>t.status === "unclassified").forEach(t=>items.push({ key:"bt:"+t.id, kind: t.amount < 0 ? "income" : "expense", src:"bank", item:t,
+      name: t.merchantName || t.description || "Bank transaction", amount: Math.abs(t.amount), date:t.date }));
+    state.expenses.filter(e=>flagged[e.id]).forEach(e=>items.push({ key:"fx:"+e.id, kind:"expense", src:"flagged", item:e, name:e.description, amount:e.amount, date:e.date, reason:flagged[e.id] }));
+    items.forEach(x=>{ x.later = !!later[x.key]; });
+    return items.sort((a,b)=> (a.later - b.later) || (a.date < b.date ? 1 : -1));
   }
-  function openReviewFlow(){
-    let queue = reviewQueue(), i = 0, done = 0;
+  // A money-in item that matches a payment already in the books (same amount, within a week).
+  function possibleDuplicate(x){
+    if(x.kind !== "income") return null;
+    const d = parseISODate(x.date);
+    const near = iso => iso && Math.abs((parseISODate(iso) - d) / DAY_MS) <= 7;
+    const inc = state.income.find(r=>r.status === "received" && Math.abs(r.amount - x.amount) < 0.01 && near(r.date));
+    if(inc) return { label:`${inc.source} on ${shortDate(inc.date)}`, incomeId:inc.id };
+    const inv = state.invoices.find(i=>i.status === "paid" && Math.abs(Number(i.total) - x.amount) < 0.01 && near((i.paidAt || "").slice(0,10)));
+    if(inv) return { label:`${inv.clientName}'s invoice #${String(inv.number).padStart(4,"0")}`, incomeId:null };
+    return null;
+  }
+  function suggestFor(x){
+    const rule = merchantRules()[normText(x.name)];
+    if(rule && rule.personal) return { personal:true };
+    if(rule && rule.cat) return { cat:rule.cat, why:"You picked this last time." };
+    if(x.kind === "income"){ const t = guessIncomeType(x.name); return t ? { cat:t } : {}; }
+    const g = guessExpenseCategory(x.name);
+    return g ? { cat:g.name, why: g.from === "history" ? "Based on similar ones you've logged." : "" } : {};
+  }
+  async function resolveItem(x, answer, cat){
+    // answer: "yes" | "no" | "later" | "same"
+    if(answer === "later"){ reviewLater()[x.key] = todayISO(); return true; }
+    let ok = false;
+    if(x.src === "import"){
+      ok = await approveAttnItem(x.kind, x.item.id, answer === "yes" ? cat : null);
+    } else if(x.src === "bank"){
+      if(answer === "yes"){ await approveBankTxn(x.item.id, { silent:true, category:cat }); ok = x.item.status === "matched"; }
+      else if(answer === "same" && x.dup && x.dup.incomeId){ const r = await dbUpdate("bank_transactions", x.item.id, { status:"matched", matched_income_id:x.dup.incomeId }); ok = !r.error; if(ok){ x.item.status = "matched"; x.item.matchedIncomeId = x.dup.incomeId; } }
+      else { await dismissBankTxn(x.item.id, { silent:true }); ok = x.item.status === "dismissed"; }
+    } else if(x.src === "flagged"){
+      const flags = state.creatorSettings.expenseReview;
+      if(answer === "yes"){ const r = await dbUpdate("expenses", x.item.id, { deductible:true, ...(cat ? { category:cat } : {}) }); ok = !r.error; if(ok){ x.item.deductible = true; if(cat) x.item.category = cat; } }
+      else { const r = await sb.from("expenses").delete().eq("id", x.item.id); ok = !r.error; if(ok) state.expenses = state.expenses.filter(e=>e.id !== x.item.id); }
+      if(ok) delete flags[x.item.id];
+    }
+    if(ok){
+      delete reviewLater()[x.key];
+      if(answer === "yes"){
+        rememberMerchant(x.name, { cat });
+        if(x.kind === "expense" && /meal|food|entertain/i.test(cat || "")){
+          const cs = state.creatorSettings, e = state.expenses.find(r=>normText(r.description) === normText(x.name) && Math.abs(r.amount - x.amount) < 0.01);
+          if(e) cs.expenseReview = Object.assign({}, cs.expenseReview, { [e.id]: "Meals are usually only 50% deductible. Check this one with your tax pro." });
+        }
+      }
+      if(answer === "no" && x.kind === "expense") rememberMerchant(x.name, { personal:true });
+    }
+    return ok;
+  }
+  function openReviewFlow(onlyLater){
+    let queue = reviewQueue().filter(x=>onlyLater ? x.later : true), i = 0, done = 0, later = 0;
     const next = ()=>{ i++; render(); };
     const render = ()=>{
       if(i >= queue.length){
-        openSettingsModal(`<div class="rv-done"><h2>All done</h2><p class="settings-note">${done ? `You sorted ${done} transaction${done===1?"":"s"}. Your numbers are up to date.` : "Nothing was changed."}${wittyOn() && done ? " " + escapeHtml(pick(QUIPS.upMonth)) : ""}</p>
+        saveCreatorSettings();
+        openSettingsModal(`<div class="rv-done"><h2>${done ? "Nice, all sorted" : "All done"}</h2><p class="settings-note">${done ? `You sorted ${done} transaction${done===1?"":"s"}.` : "Nothing was changed."}${later ? ` ${later} saved for later.` : ""} Your numbers are up to date.</p>
           <div class="modal-actions"><button type="button" class="btn-primary" data-close-settings>Back to Home</button></div></div>`);
-        renderAll();
+        refreshBooksViews();
         return;
       }
-      const { kind, item } = queue[i];
-      const isIn = kind === "income";
-      const name = isIn ? item.source : item.description;
+      const x = queue[i];
+      const isIn = x.kind === "income";
+      const sug = suggestFor(x);
+      x.dup = possibleDuplicate(x);
       const opts = isIn ? state.incomeCategoryList : state.expenseCategoryList;
-      const guess = kind === "flagged" ? item.category : isIn ? guessIncomeType(name) : (guessExpenseCategory(name) || {}).name;
-      const reason = kind === "flagged" ? (state.creatorSettings.expenseReview[item.id] || "You weren't sure if this was for work.") : "";
+      const cat = sug.cat || (opts[0] || {}).name || (isIn ? "Other Income" : "Other");
+      const noun = c => c ? c.toLowerCase().replace(/^other( income)?$/, "other") : "";
+      const guessLine = sug.personal ? `<div class="rv-hint">You said <b>${escapeHtml(x.name)}</b> was personal last time.</div>`
+        : sug.cat ? `<div class="rv-hint">Giggy thinks this is ${isIn ? "" : (/^[aeiou]/i.test(noun(sug.cat)) ? "an" : "a")} <b>${escapeHtml(noun(sug.cat))}</b> ${isIn ? "income" : "expense"}. <button type="button" class="hh-link" id="rvChange">Change</button>${sug.why ? `<span class="sa-sub"> ${escapeHtml(sug.why)}</span>` : ""}</div>`
+        : `<div class="rv-hint">Pick what it was:</div>`;
       openSettingsModal(`<div class="rv">
-        <div class="rv-top"><span>${i+1} of ${queue.length}</span><button type="button" class="nudge-link" id="rvSkip">Skip</button></div>
+        <div class="rv-top"><span>${i+1} of ${queue.length}</span><button type="button" class="nudge-link" id="rvClose">Finish later</button></div>
         <div class="rv-bar"><span style="width:${Math.round(i/queue.length*100)}%"></span></div>
-        <div class="rv-kind ${isIn ? "in" : "out"}">${isIn ? "Money in" : "Money out"}</div>
-        <div class="rv-name">${escapeHtml(name)}</div>
-        <div class="rv-meta">${shortDate(item.date)} · <b>${money(item.amount)}</b></div>
-        ${reason ? `<div class="rv-reason">${escapeHtml(reason)}</div>` : ""}
-        <div class="rv-q">${isIn ? "Is this business income?" : "Was this for your business?"}</div>
-        ${kind === "flagged" ? "" : `<div class="rv-guess"><span>${guess ? "Giggy thinks it's" : "Pick a category"}</span>
-          <select id="rvCat">${opts.map(o=>`<option ${o.name === guess ? "selected" : ""}>${escapeHtml(o.name)}</option>`).join("")}</select></div>`}
-        <div class="rv-actions">
-          <button type="button" class="btn-secondary" id="rvNo">${isIn ? "No, not income" : "No, personal"}</button>
-          <button type="button" class="btn-primary" id="rvYes">Yes${isIn ? "" : ", for work"}</button>
+        <div class="rv-kind ${isIn ? "in" : "out"}">${isIn ? "Money in" : "Money out"}${x.src === "bank" ? " · from your bank" : ""}</div>
+        <div class="rv-name">${escapeHtml(x.name)} <span class="rv-amt">${money(x.amount)}</span></div>
+        <div class="rv-meta">${shortDate(x.date)}</div>
+        ${x.reason ? `<div class="rv-reason">${escapeHtml(x.reason)}</div>` : x.later ? `<div class="rv-reason">You weren't sure about this one last time.</div>` : ""}
+        ${x.dup ? `<div class="rv-reason">This might be the same payment as <b>${escapeHtml(x.dup.label)}</b>, which is already in your books. Counting it twice would overstate your income.</div>` : ""}
+        <div class="rv-q">${isIn ? "Was this payment for work you did?" : "Was this purchase for your business?"}</div>
+        ${guessLine}
+        <div class="rv-cat" id="rvCatWrap" ${sug.cat && !sug.personal ? "hidden" : ""}><select id="rvCat" aria-label="Category">${opts.map(o=>`<option ${o.name === cat ? "selected" : ""}>${escapeHtml(o.name)}</option>`).join("")}</select></div>
+        <div class="rv-actions three">
+          <button type="button" class="btn-primary" id="rvYes">Yes</button>
+          <button type="button" class="btn-secondary" id="rvNo">${isIn ? "No, something else" : "No, personal"}</button>
+          <button type="button" class="btn-secondary" id="rvLater">I'm not sure</button>
+        </div>
+        ${x.dup && x.src === "bank" && x.dup.incomeId ? `<button type="button" class="nudge-link rv-same" id="rvSame">It's the same payment, don't count it again</button>` : ""}
+        <div class="rv-other" id="rvOther" hidden>
+          <div class="rv-q" style="margin-top:14px;">What was it?</div>
+          <div class="rv-actions">
+            ${["A refund","A transfer between my accounts","A reimbursement","Personal (a gift, family)"].map(l=>`<button type="button" class="btn-secondary" data-rv-other="${escapeHtml(l)}">${escapeHtml(l)}</button>`).join("")}
+          </div>
+          <p class="sa-sub">It won't count as income.</p>
         </div>
       </div>`);
-      document.getElementById("rvSkip").addEventListener("click", next);
-      const act = async (yes)=>{
-        document.querySelectorAll(".rv-actions button").forEach(b=>b.disabled = true);
-        let ok;
-        if(kind === "flagged"){
-          if(yes){ const r = await dbUpdate("expenses", item.id, { deductible:true }); ok = !r.error; if(ok) item.deductible = true; }
-          else { const r = await sb.from("expenses").delete().eq("id", item.id); ok = !r.error; if(ok) state.expenses = state.expenses.filter(x=>x.id !== item.id); }
-          if(ok){ delete state.creatorSettings.expenseReview[item.id]; saveCreatorSettings(); }
-        } else {
-          ok = await approveAttnItem(kind, item.id, yes ? document.getElementById("rvCat").value : null);
-        }
-        if(ok) done++;
+      const btns = ()=>document.querySelectorAll(".rv button");
+      const act = async (answer)=>{
+        btns().forEach(b=>b.disabled = true);
+        const ok = await resolveItem(x, answer, document.getElementById("rvCat").value);
+        if(ok && answer === "later") later++; else if(ok) done++;
+        if(!ok) showToast("Couldn't save that one. It's still in your list.", true);
         next();
       };
-      document.getElementById("rvYes").addEventListener("click", ()=>act(true));
-      document.getElementById("rvNo").addEventListener("click", ()=>act(false));
+      const ch = document.getElementById("rvChange"); if(ch) ch.addEventListener("click", ()=>{ document.getElementById("rvCatWrap").hidden = false; document.getElementById("rvCat").focus(); });
+      document.getElementById("rvYes").addEventListener("click", ()=>act("yes"));
+      document.getElementById("rvLater").addEventListener("click", ()=>act("later"));
+      document.getElementById("rvNo").addEventListener("click", ()=>{ if(isIn){ document.getElementById("rvOther").hidden = false; } else act("no"); });
+      document.querySelectorAll("[data-rv-other]").forEach(b=>b.addEventListener("click", ()=>act("no")));
+      const same = document.getElementById("rvSame"); if(same) same.addEventListener("click", ()=>act("same"));
+      document.getElementById("rvClose").addEventListener("click", ()=>{ i = queue.length; render(); });
     };
     if(!queue.length){ showToast("Nothing to check right now."); return; }
     render();
@@ -10217,10 +10479,14 @@ body[data-view="ask"] .giggy-fab{display:none;}
     };
     form.elements.description.addEventListener("input", showGuess);
     form.addEventListener("click", e=>{ if(e.target.closest("[data-open-more]")){ document.getElementById("expMore").open = true; cat.focus(); } });
+    const dateLabel = ()=>{ const v = form.elements.date.value, el = document.getElementById("expDateLabel"); if(el) el.textContent = !v || v === todayISO() ? "Today" : shortDate(v); };
+    form.elements.date.addEventListener("change", dateLabel);
+    form.addEventListener("click", e=>{ if(e.target.closest("[data-change-date]")){ document.getElementById("expMore").open = true; form.elements.date.focus(); if(form.elements.date.showPicker) try{ form.elements.date.showPicker(); }catch(err){} } });
     const reset = ()=>{
       setBiz("yes"); guessEl.innerHTML = ""; delete cat.dataset.touched;
       document.getElementById("expMore").open = false;
       if(!form.elements.date.value) form.elements.date.value = todayISO();
+      dateLabel();
     };
     const opener = document.getElementById("openAddExpense");
     if(opener) opener.addEventListener("click", ()=>setTimeout(reset, 0));
@@ -10240,7 +10506,7 @@ body[data-view="ask"] .giggy-fab{display:none;}
      missing spelled out, plus a button for the next step. Anything
      else goes to the AI (a Pro feature).
      ============================================================ */
-  const GIGGY_CHIPS = ["Can I afford to buy a new camera?", "How much should I save for taxes?", "Which brands still owe me money?", "How much did I actually make this month?"];
+  const GIGGY_CHIPS = ["How much did I make this month?", "Who still owes me money?", "Where did most of my money go?", "How much should I set aside for taxes?", "What should I charge for this project?"];
   let askActions = [];
   function askAction(label, fn){ askActions.push(fn); return `<button type="button" class="ask-act" data-ask-act="${askActions.length-1}">${escapeHtml(label)}</button>`; }
   function localAnswerHtml(a){
@@ -10267,11 +10533,14 @@ body[data-view="ask"] .giggy-fab{display:none;}
     // 1. Affordability
     if(/afford|can i (buy|get|spend)|should i (buy|get)/i.test(q)){
       const amt = amountIn(q);
-      if(!amt) return { lines:[`Happy to check. How much does it cost? Right now you have <b>${money(t.safe)}</b> safe to spend.`],
+      const ss = safeToSpend();
+      if(!ss.ready) return { lines:["I can check, but I need one number first: what's in your business account right now. Your profit isn't the same as cash, so I won't guess."],
+        missing:["Your current account balance."], actions:[askAction("Add my balance", openSafeSetup)] };
+      if(!amt) return { lines:[`Happy to check. How much does it cost? Right now about <b>${money(ss.amount)}</b> is safe to spend.`],
         missing:["The price. Tap below and type it in."], actions:[askAction("Check a price", openAfford)] };
       const a = affordAnswer(amt);
       return { lines:[`<b>${a.head}</b> ${escapeHtml(a.body)}`],
-        basis:[`${money(t.safe)} safe to spend (money received this year, minus spending, minus your ${pct}% tax set-aside)`, "Bills and taxes coming up in your cash forecast"],
+        basis:[`About ${money(ss.amount)} safe to spend: your balance${ss.asOf ? ` from ${shortDate(ss.asOf)}` : ""}, plus or minus what you've logged since${ss.taxSeparate ? "" : ", minus taxes still to pay"}${ss.bills ? ", minus bills due in 30 days" : ""}`],
         missing:knownGaps(), actions:[askAction("Try another price", openAfford), askAction("How safe to spend works", explainSafe)] };
     }
     // 2. Taxes
@@ -10294,6 +10563,23 @@ body[data-view="ask"] .giggy-fab{display:none;}
       const firstLate = open.find(i=>effectiveInvoiceStatus(i) === "overdue");
       return { lines:[`${open.length + pending.length === 1 ? "One payment is" : `${open.length + pending.length} payments are`} still on the way, <b>${money(total)}</b> in total:`, `<ul class="ask-list">${rows.join("")}</ul>`],
         actions:[...(firstLate ? [askAction(`Remind ${firstLate.clientName}`, ()=>{ closeGiggy(); openChaseModal(firstLate.id); })] : []), askAction("See invoices", ()=>{ closeGiggy(); showView("invoices"); })] };
+    }
+    // Where did the money go
+    if(/where.*(money|spend|spent)|biggest (expense|spend)|most of my money/i.test(q)){
+      const now = new Date(), key = monthKey(now.getFullYear(), now.getMonth());
+      const rows = state.expenses.filter(r=>r.date.slice(0,7) === key);
+      if(!rows.length) return { lines:["You haven't logged any business spending this month yet."], actions:[askAction("Add an expense", ()=>{ closeGiggy(); document.getElementById("openAddExpense").click(); })] };
+      const total = rows.reduce((a,r)=>a+r.amount,0);
+      const cats = groupSum(rows, "category").slice(0,4);
+      return { lines:[`This month you spent <b>${money(total)}</b> on your business. Most of it went to:`,
+          `<ul class="ask-list">${cats.map(c=>`<li><b>${escapeHtml(c.name || "Other")}</b>: ${money(c.amount)} (${Math.round(c.amount/total*100)}%)</li>`).join("")}</ul>`],
+        basis:["Business expenses you've logged this month"], missing: state.bankConnections.length ? [] : ["Anything you haven't logged yet. Connecting a bank fills this in for you."],
+        actions:[askAction("See Money out", ()=>{ closeGiggy(); showView("expenses"); })] };
+    }
+    // What to charge
+    if(/what should i charge|how much (should|do) i charge|price (for|this)|quote/i.test(q)){
+      return { lines:["Let's work it out together. The rate calculator asks what you're making, how long it'll take and what it'll cost you, then suggests a price and shows the math."],
+        missing:["The details of this project."], actions:[askAction("Open What to charge", ()=>{ closeGiggy(); showView("rateCalculator"); })] };
     }
     // 4. What did I make
     if(/(make|made|earn|earned|bring in|brought in|take home|kept|profit)/i.test(q) && /(month|so far|this)/i.test(q)){
@@ -10365,9 +10651,45 @@ body[data-view="ask"] .giggy-fab{display:none;}
     t.setAttribute("aria-expanded", String(open));
     t.textContent = open ? "For your accountant ▴" : "For your accountant ▾";
   });
+  /* ---------- Money → All: one simple list of everything ---------- */
+  function renderAllTransactions(){
+    const list = document.getElementById("allList"), banner = document.getElementById("allReviewBanner");
+    if(!list) return;
+    const q = reviewQueue().filter(x=>!x.later);
+    if(banner) banner.innerHTML = q.length ? `<div class="card all-banner"><div><b>${q.length} transaction${q.length===1?"":"s"} waiting for a quick yes or no</b><div class="sa-sub">They're not in your totals until you confirm them.</div></div><button type="button" class="btn-primary" id="allReview">Review</button></div>` : "";
+    const term = normText((document.getElementById("allSearch") || {}).value || "");
+    const rows = state.income.map(r=>({ id:r.id, in:true, name:r.source, date:r.date, sub: r.status === "received" ? (r.type || "Income") : "Still waiting to be paid", amt:r.amount, pending: r.status !== "received" }))
+      .concat(state.expenses.map(r=>({ id:r.id, in:false, name:r.description, date:r.date, sub:r.category || "Expense", amt:r.amount })))
+      .filter(r=>!term || normText(r.name + " " + r.sub).includes(term))
+      .sort((a,b)=>a.date < b.date ? 1 : -1).slice(0, 150);
+    if(!rows.length){
+      list.innerHTML = `<div class="all-empty">${term ? "Nothing matches that search." : "Nothing here yet. Add money in or money out, or connect your bank."}</div>`;
+      return;
+    }
+    let lastMonth = "";
+    list.innerHTML = rows.map(r=>{
+      const m = r.date.slice(0,7);
+      const head = m !== lastMonth ? `<div class="all-month">${new Date(m + "-01T00:00:00").toLocaleDateString("en-US",{ month:"long", year:"numeric" })}</div>` : "";
+      lastMonth = m;
+      return head + `<button type="button" class="all-row" ${r.in ? `data-edit-income="${r.id}"` : `data-edit-expense="${r.id}"`}>
+        <span class="ar-ic ${r.in ? "in" : "out"}" aria-hidden="true">${r.in ? "↙" : "↗"}</span>
+        <span class="ar-main"><span class="ar-name">${escapeHtml(r.name)}</span><span class="ar-sub">${shortDate(r.date)} · ${escapeHtml(r.sub)}</span></span>
+        <span class="ar-amt ${r.in ? "in" : ""} ${r.pending ? "pending" : ""}">${r.in ? "+" : "−"}${money(r.amt)}</span>
+      </button>`;
+    }).join("");
+  }
+  document.addEventListener("input", e=>{ if(e.target && e.target.id === "allSearch") renderAllTransactions(); });
+  document.addEventListener("click", e=>{
+    if(e.target.closest("#allReview")) openReviewFlow();
+    if(e.target.closest("#helpAsk")) openGiggy();
+    const qa = e.target.closest("[data-quick-add]");
+    if(qa){ const b = document.getElementById(qa.dataset.quickAdd === "income" ? "openAddIncome" : "openAddExpense"); if(b) b.click(); }
+  });
+
   function renderPersonalization(){
     applyTailoredNav();
     renderHome();
+    if(document.body.dataset.view === "all") renderAllTransactions();
     renderGreetingQuip();
     renderPersonaPrompt();
     renderInsight();

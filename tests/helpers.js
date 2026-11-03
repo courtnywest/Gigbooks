@@ -48,7 +48,7 @@ async function openApp(overrides = {}, viewport = { width:1280, height:900 }){
   page.on("pageerror", e => errors.push(e.message));
   await page.clock.setFixedTime(TODAY);
   await page.goto("file://" + path.join(ROOT, "index.html"));
-  await page.waitForSelector("#page-app.active");
+  if(!fx.loggedOut) await page.waitForSelector("#page-app.active"); else await page.waitForSelector("#page-landing.active");
   await page.waitForTimeout(300);
   page.errors = errors;
   return page;

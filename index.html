@@ -1857,6 +1857,35 @@ table.m-cards td .empty-state{width:100%;}
 .ask-kind{margin-top:10px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:600;color:var(--ink-400);}
 @media (max-width:720px){ .recap-trio{grid-template-columns:1fr;} .ci-pair b{font-size:22px;} }
 
+/* ---------- Phase 4: homepage ---------- */
+.preview-stage{position:relative;}
+.pv-review{position:absolute;right:-18px;bottom:-34px;width:230px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 14px;box-shadow:0 18px 40px -20px rgba(30,51,32,.45);}
+.pv-kind{display:inline-block;font-size:7.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;background:var(--cream-200);color:var(--ink-700);padding:2px 7px;border-radius:999px;}
+.pv-rname{font-family:var(--font-serif);font-size:16px;margin:6px 0 2px;} .pv-rname span{font-family:var(--font-sans);font-size:11px;font-weight:600;color:var(--ink-700);margin-left:4px;}
+.pv-q{font-size:9.5px;font-weight:600;margin-top:6px;}
+.pv-hint{font-size:8.5px;color:var(--ink-700);margin:3px 0 8px;}
+.pv-btns{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;}
+.pv-btns i{font-style:normal;font-size:8px;font-weight:600;text-align:center;border:1px solid var(--line);border-radius:999px;padding:4px 0;color:var(--ink-700);}
+.pv-btns i.on{background:var(--green-800);border-color:var(--green-800);color:#fff;}
+.how{max-width:960px;margin:20px auto 30px;padding:0 24px;scroll-margin-top:24px;}
+.how h2{font-family:var(--font-serif);font-weight:500;font-size:30px;text-align:center;margin:0 0 20px;}
+.how-steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+.how-steps li{background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px;}
+.how-steps span{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;background:var(--green-800);color:#fff;font-weight:600;margin-bottom:10px;}
+.how-steps b{display:block;font-size:15.5px;line-height:1.35;margin-bottom:6px;}
+.how-steps p{margin:0;font-size:14px;color:var(--ink-500);line-height:1.5;}
+.pt-foot b{color:var(--ink-900);font-weight:600;}
+@media (max-width:900px){ .pv-review{display:none;} }
+@media (max-width:720px){ .how-steps{grid-template-columns:1fr;} }
+
+@media (max-width:480px){
+  .preview-stage,.preview-card{max-width:100%;min-width:0;}
+  .preview-card{overflow:hidden;}
+  .preview-nav{display:none;}
+  .preview-side{display:block;min-width:0;}
+  .preview-main{min-width:0;width:100%;}
+}
+
 </style>
 </head>
 <body>
@@ -1881,15 +1910,15 @@ table.m-cards td .empty-state{width:100%;}
 
     <div class="hero">
       <div>
-        <h1>Know what you can spend.<br><em>In 30 seconds.</em></h1>
-        <p>GigBooks sorts your creator income, sets aside your taxes and tells you what's safe to spend. No accounting know-how needed. Start free, upgrade when you want it to do more.</p>
+        <h1>Make money.<br><em>Not spreadsheets.</em></h1>
+        <p>GigBooks keeps track of what you earn, what you spend, and what you keep — so you can focus on doing what you love.</p>
         <div class="hero-cta">
           <button type="button" class="btn-primary" data-auth-nav="signup">Get Started Free</button>
-          <button type="button" class="watch-demo" id="watchDemoBtn"><span class="play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span>Watch Demo</button>
+          <button type="button" class="watch-demo" id="watchDemoBtn" data-how="1"><span class="play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span>See How It Works</button>
         </div>
         <div class="hero-trust"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>Your data is private and secure.</div>
       </div>
-      <div class="preview-card">
+      <div class="preview-stage"><div class="preview-card">
         <div class="preview-side">
           <div class="preview-nav">
             <div class="p-brand"><span class="dot"></span>GIGBOOKS</div>
@@ -1904,31 +1933,39 @@ table.m-cards td .empty-state{width:100%;}
             </div>
           </div>
           <div class="preview-main">
-            <div class="p-hello">Hey, Courteney</div>
-            <div class="p-title">Here's where your money stands.</div>
+            <div class="p-hello">Hey, Courteney!</div>
+            <div class="p-title">Here's how your money is looking.</div>
             <div class="pv-hero">
-              <div class="pv-label">Safe to spend</div>
-              <div class="pv-big">$7,820</div>
-              <div class="pv-sub">After setting aside $2,410 for taxes</div>
+              <div class="pv-label">Your business profit</div>
+              <div class="pv-big">$12,459</div>
+              <div class="pv-sub">What you've earned after business expenses, before taxes</div>
             </div>
             <div class="pv-pair">
-              <div class="pv-card"><div class="pv-label">Money earned</div><div class="pv-val">$18,742</div><div class="pv-delta">↑ 18% vs. last month</div></div>
-              <div class="pv-card"><div class="pv-label">Money spent</div><div class="pv-val">$6,283</div><div class="pv-delta muted">This month</div></div>
+              <div class="pv-card"><div class="pv-label">Money In</div><div class="pv-val">$18,742</div><div class="pv-delta">↑ 18% vs. last month</div></div>
+              <div class="pv-card"><div class="pv-label">Money Out</div><div class="pv-val">$6,283</div><div class="pv-delta muted">Business expenses, this month</div></div>
             </div>
             <div class="pv-todo">
-              <div class="pv-todo-head">Your to-do list <span>2 things</span></div>
-              <div class="pv-row"><div><b>Check 6 transactions</b><span>About 1 minute</span></div><i>Start</i></div>
+              <div class="pv-todo-head">A couple things to check <span>2 things</span></div>
+              <div class="pv-row"><div><b>Review 6 transactions</b><span>About 1 minute. Giggy has guessed most of them.</span></div><i>Start</i></div>
               <div class="pv-row"><div><b>Follow up on 1 unpaid invoice</b><span>The reminder is written for you</span></div><i>Send</i></div>
             </div>
           </div>
         </div>
+      </div>
+      <div class="pv-review" aria-hidden="true">
+        <div class="pv-kind">Money out</div>
+        <div class="pv-rname">Adobe <span>$24.99</span></div>
+        <div class="pv-q">Was this purchase for your business?</div>
+        <div class="pv-hint">Giggy thinks this is a <b>software</b> expense.</div>
+        <div class="pv-btns"><i class="on">Yes</i><i>No</i><i>I'm not sure</i></div>
+      </div>
       </div>
     </div>
     <div class="feature-strip">
       <div class="feature-strip-item">
         <div class="icon-circle"><img src="assets/icon-horseshoe.png" alt="Track Income"></div>
         <div class="t1">Safe to spend</div>
-        <div class="t2">One number that already takes out your spending and taxes.</div>
+        <div class="t2">Add your balance and GigBooks holds back taxes and bills, so you know what's really yours.</div>
       </div>
       <div class="feature-strip-item">
         <div class="icon-circle"><img src="assets/icon-boot.png" alt="Manage Expenses"></div>
@@ -1946,18 +1983,26 @@ table.m-cards td .empty-state{width:100%;}
         <div class="t2">Ask about your money in your own words, from any page.</div>
       </div>
     </div>
+    <div class="how" id="howItWorks">
+      <h2>How it works</h2>
+      <ol class="how-steps">
+        <li><span>1</span><b>Connect your accounts or add transactions yourself.</b><p>Linking a bank is optional. You can type things in as they happen.</p></li>
+        <li><span>2</span><b>GigBooks helps organize your money.</b><p>New transactions arrive with Giggy's best guess. You just answer yes, no or not sure.</p></li>
+        <li><span>3</span><b>Know where you stand, without the accounting headache.</b><p>See what you earned, what you spent and what you kept, in plain English.</p></li>
+      </ol>
+    </div>
     <div class="plans-teaser">
       <div class="pt-col">
         <div class="pt-name">Free</div>
         <div class="pt-price">$0, forever</div>
-        <p>Safe to spend, tax set-aside, receipt scanning, 3 invoices a month and Giggy's weekly note.</p>
+        <p>Business profit, money in and out, safe to spend, tax set-aside, receipt scanning, 3 invoices a month, the weekly check-in, and Giggy's everyday answers.</p>
       </div>
       <div class="pt-col pro">
         <div class="pt-name">Pro</div>
         <div class="pt-price">$12/month, billed yearly</div>
-        <p>GigBooks does the busywork: bank sync, unlimited invoices emailed for you, no fee on card payments, and Giggy for any question.</p>
+        <p>GigBooks does the busywork: bank sync, unlimited invoices emailed for you, no GigBooks fee on card payments, and Giggy for any question.</p>
       </div>
-      <div class="pt-foot">Every account starts with 14 days of Pro, no card needed. <a href="#" data-auth-nav="pricing">Compare plans</a></div>
+      <div class="pt-foot"><b>Free helps you understand your money. Pro saves you the time of managing it.</b><br>Every account starts with 14 days of Pro, no card needed. <a href="#" data-auth-nav="pricing">Compare plans</a></div>
     </div>
     <div class="built-for">Built for Creators</div>
   </div>
@@ -1988,7 +2033,7 @@ table.m-cards td .empty-state{width:100%;}
           <p>GigBooks makes it easy for creators and entrepreneurs to track income, manage expenses, and stay organized—all in one simple platform.</p>
           <div class="hero-cta">
             <button type="button" class="btn-primary" data-auth-nav="signup">Get Started Free</button>
-            <button type="button" class="watch-demo" id="watchDemoBtnFeatures"><span class="play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span>Watch Demo</button>
+            <button type="button" class="watch-demo" id="watchDemoBtnFeatures" data-how="1"><span class="play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span>See How It Works</button>
           </div>
           <div class="feature-list">
             <div class="feature-list-item">
@@ -2028,20 +2073,20 @@ table.m-cards td .empty-state{width:100%;}
             </div>
           </div>
           <div class="preview-main">
-            <div class="p-hello">Hey, Courteney</div>
-            <div class="p-title">Here's where your money stands.</div>
+            <div class="p-hello">Hey, Courteney!</div>
+            <div class="p-title">Here's how your money is looking.</div>
             <div class="pv-hero">
-              <div class="pv-label">Safe to spend</div>
-              <div class="pv-big">$7,820</div>
-              <div class="pv-sub">After setting aside $2,410 for taxes</div>
+              <div class="pv-label">Your business profit</div>
+              <div class="pv-big">$12,459</div>
+              <div class="pv-sub">What you've earned after business expenses, before taxes</div>
             </div>
             <div class="pv-pair">
-              <div class="pv-card"><div class="pv-label">Money earned</div><div class="pv-val">$18,742</div><div class="pv-delta">↑ 18% vs. last month</div></div>
-              <div class="pv-card"><div class="pv-label">Money spent</div><div class="pv-val">$6,283</div><div class="pv-delta muted">This month</div></div>
+              <div class="pv-card"><div class="pv-label">Money In</div><div class="pv-val">$18,742</div><div class="pv-delta">↑ 18% vs. last month</div></div>
+              <div class="pv-card"><div class="pv-label">Money Out</div><div class="pv-val">$6,283</div><div class="pv-delta muted">Business expenses, this month</div></div>
             </div>
             <div class="pv-todo">
-              <div class="pv-todo-head">Your to-do list <span>2 things</span></div>
-              <div class="pv-row"><div><b>Check 6 transactions</b><span>About 1 minute</span></div><i>Start</i></div>
+              <div class="pv-todo-head">A couple things to check <span>2 things</span></div>
+              <div class="pv-row"><div><b>Review 6 transactions</b><span>About 1 minute. Giggy has guessed most of them.</span></div><i>Start</i></div>
               <div class="pv-row"><div><b>Follow up on 1 unpaid invoice</b><span>The reminder is written for you</span></div><i>Send</i></div>
             </div>
           </div>
@@ -2090,7 +2135,7 @@ table.m-cards td .empty-state{width:100%;}
     <div class="pricing-hero">
       <div class="eyebrow">Simple Pricing</div>
       <h1>Start free. Upgrade when it saves you time.</h1>
-      <p>Every account starts with a 14-day Pro trial. No card needed.</p>
+      <p>Free helps you understand your money. Pro saves you the time of managing it. Every account starts with a 14-day Pro trial, no card needed.</p>
     </div>
     <div class="pricing-wrap pricing-two">
       <div class="pricing-card">
@@ -2102,7 +2147,7 @@ table.m-cards td .empty-state{width:100%;}
           <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>Scan receipts with your phone</li>
           <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>3 invoices a month with pay links</li>
           <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>Take card payments (Stripe fee + 1%)</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>Weekly money note and Wrapped</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>Weekly check-in, Wrapped and Giggy's everyday answers</li>
         </ul>
         <button type="button" class="btn-secondary" data-auth-nav="signup">Start free</button>
       </div>
@@ -2116,7 +2161,7 @@ table.m-cards td .empty-state{width:100%;}
           <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>Bank sync and income spotted in your email</li>
           <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>Unlimited invoices, emailed for you</li>
           <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>No GigBooks fee on card payments</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>Ask Giggy and the Contract Reader</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>Ask Giggy anything, plus the Contract Reader</li>
           <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>Media kit and rate benchmarks</li>
           <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>Accountant package and team access</li>
         </ul>
@@ -2439,6 +2484,7 @@ table.m-cards td .empty-state{width:100%;}
             <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><path d="m6 9 6 6 6-6"/></svg>
           </div>
           <button type="button" class="pack-btn" id="openPayoutImport" style="margin-right:8px;">Import payouts</button>
+          <button type="button" class="pack-btn" data-new-gift="1" style="margin-right:8px;">Got a free product?</button>
           <button class="btn-primary" id="openAddIncome">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
             Add Income
@@ -2600,6 +2646,8 @@ table.m-cards td .empty-state{width:100%;}
           </div>
           <div class="field"><label>How many hours will it take?</label><input type="number" id="rcHours" min="0" step="0.5" value="10">
             <div style="font-size:11.5px;color:var(--ink-500);margin-top:4px;">Count planning, filming, editing and revisions.</div></div>
+          <div class="field"><label>What do you want to earn for your time, per hour?</label><input type="number" id="rcHourlyRate" min="0" step="1" value="75" inputmode="decimal">
+            <div style="font-size:11.5px;color:var(--ink-500);margin-top:4px;">Pick what your time is worth to you. You can change it for every project.</div></div>
           <div class="field">
             <label>Anything you'll need to buy or pay for?</label>
             <input type="number" id="rcExpenses" min="0" step="1" value="0">
@@ -2608,10 +2656,9 @@ table.m-cards td .empty-state{width:100%;}
 
           <button type="button" id="rcToggleAdditional" style="background:none;border:none;color:var(--green-700);font-weight:700;font-size:13px;padding:6px 0;cursor:pointer;display:flex;align-items:center;gap:6px;">
             <svg id="rcToggleChevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" style="transition:transform .15s;"><path d="m9 6 6 6-6 6"/></svg>
-            Advanced: hourly rate, manager fee, margin, licensing
+            Advanced: manager fee, licensing, exclusivity, margin
           </button>
           <div id="rcAdditionalCosts" style="display:none;padding-top:6px;">
-          <div class="field"><label>Your hourly rate</label><input type="number" id="rcHourlyRate" min="0" step="1" value="75"></div>
           <div class="field"><label>Manager or agent fee (%)</label><input type="number" id="rcManagerFee" min="0" max="95" step="1" value="0"></div>
           <div class="field"><label>Profit margin (%)</label><input type="number" id="rcProfitMargin" min="0" max="95" step="1" value="20"></div>
             <div class="field"><label>Usage / Licensing Fee</label><input type="number" id="rcUsageFee" min="0" step="1" value="0"></div>
@@ -5424,9 +5471,10 @@ table.m-cards td .empty-state{width:100%;}
   }
   function syncRcExplain(){
     const el = document.getElementById("rcExplain"), r = document.getElementById("rcHourlyRate");
-    if(el && r) el.textContent = `Covers your time, your costs and a little profit. Uses ${money(Number(r.value)||0).replace(/\.00$/,"")} an hour for your time unless you change it under Advanced.`;
+    const h = document.getElementById("rcHours"), m = document.getElementById("rcProfitMargin");
+    if(el && r) el.textContent = `How we got this: ${Number(h && h.value)||0} hours × ${money(Number(r.value)||0).replace(/\.00$/,"")} for your time, plus your costs, plus a ${Number(m && m.value)||0}% profit cushion and any manager fee. It's a starting point for your quote, not a market rate.`;
   }
-  document.addEventListener("input", e=>{ if(e.target && e.target.id === "rcHourlyRate") syncRcExplain(); });
+  document.addEventListener("input", e=>{ if(e.target && /^rc(HourlyRate|Hours|ProfitMargin)$/.test(e.target.id)) syncRcExplain(); });
   function renderRateCalculator(){
     syncRcExplain();
     const rateEl = document.getElementById("rcRecommendedRate");
@@ -5539,11 +5587,12 @@ table.m-cards td .empty-state{width:100%;}
   });
 
   const PIPELINE_STAGES = [
-    { key:"lead", label:"Lead" },
-    { key:"pitched", label:"Pitched" },
-    { key:"negotiating", label:"Negotiating" },
-    { key:"signed", label:"Contract Signed" },
-    { key:"delivered", label:"Delivered" },
+    // Stored keys are unchanged; only what people see is plainer.
+    { key:"lead", label:"Potential" },
+    { key:"pitched", label:"In Talks" },
+    { key:"negotiating", label:"In Talks: agreeing terms" },
+    { key:"signed", label:"Agreed: in progress" },
+    { key:"delivered", label:"Waiting for Payment" },
     { key:"paid", label:"Paid" },
   ];
   const DEAL_INVOICE_STAGES = ["signed","delivered"];
@@ -5562,21 +5611,21 @@ table.m-cards td .empty-state{width:100%;}
     statRow.innerHTML = `
       <div class="card stat-card">
         <div class="icon-circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg></div>
-        <div class="label">Pipeline Value</div>
+        <div class="label">Possible deal money</div>
         <div class="value">${money(pipelineValue)}</div>
         <div class="delta" style="color:var(--ink-500);"><span class="delta-period">Not yet paid</span></div>
       </div>
       <div class="card stat-card">
         <div class="icon-circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/></svg></div>
-        <div class="label">Active Deals</div>
+        <div class="label">Deals in progress</div>
         <div class="value">${activeDeals.length}</div>
         <div class="delta" style="color:var(--ink-500);"><span class="delta-period">Currently in progress</span></div>
       </div>
       <div class="card stat-card">
         <div class="icon-circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12.5l2 2 4-4.5"/><circle cx="12" cy="12" r="9"/></svg></div>
-        <div class="label">Contracted Value</div>
+        <div class="label">Agreed, not paid yet</div>
         <div class="value">${money(contractedValue)}</div>
-        <div class="delta" style="color:var(--ink-500);"><span class="delta-period">Signed, awaiting payment</span></div>
+        <div class="delta" style="color:var(--ink-500);"><span class="delta-period">Money you're owed once you deliver or invoice</span></div>
       </div>
     `;
 
@@ -8033,8 +8082,11 @@ table.m-cards td .empty-state{width:100%;}
       if(d.stage === "delivered" && !d.linkedInvoiceId)
         out.push({ id:`inv-${d.id}`, type:"invoice", pri:2, text:`You delivered ${d.brandName}${d.deliverable ? " (" + d.deliverable + ")" : ""}. Time to invoice it.`, why:"The deal is marked delivered and has no invoice yet.", cta:{ label:"Go to Pipeline", view:"pipeline" } });
     });
-    const unc = csList("gifts").filter(g=>!g.counted && g.status !== "returned");
-    if(unc.length) out.push({ id:`gifts-${unc.length}`, type:"gifts", pri:4, text:`${unc.length} gifted product${unc.length===1?"":"s"} worth ${money(unc.reduce((a,g)=>a+(g.value||0),0))} ${unc.length===1?"isn't":"aren't"} counted as income yet.`, why:"Free products from brands are usually taxable at their retail value.", cta:{ label:"Review gifts", view:"gifts" } });
+    // Promotion-for-product gifts not yet counted (older entries have no answer; treat them as unsure).
+    const live = csList("gifts").filter(g=>!g.counted && g.status !== "returned");
+    const promo = live.filter(g=>g.terms === "promo"), unsure = live.filter(g=>g.terms === "unsure" || !g.terms);
+    if(promo.length) out.push({ id:`gifts-${promo.length}`, type:"gifts", pri:4, text:`${promo.length} gift${promo.length===1?"":"s"} you promoted ${promo.length===1?"isn't":"aren't"} counted as income yet.`, why:"Products given in exchange for promotion are generally taxable at what they sell for.", cta:{ label:"Review gifts", view:"gifts" } });
+    if(unsure.length) out.push({ id:`giftsq-${unsure.length}`, type:"gifts", pri:5, text:`Decide on ${unsure.length} gift${unsure.length===1?"":"s"} you weren't sure about`, why:"Was it in exchange for promotion? Then it usually counts as income. No strings? It may not.", cta:{ label:"Review gifts", view:"gifts" } });
     return out.concat(personalNudges()).filter(n=>!muted[n.type] && !nudgeQuieted(n.type) && !(snoozed[n.id] && snoozed[n.id] > todayStr)).sort((a,b)=>a.pri-b.pri).slice(0,3);
   }
   const NUDGE_NAMES = { tax:"tax reminders", late:"late-payment reminders", cash:"cash warnings", terms:"deal-date reminders", invoice:"invoice reminders", gifts:"gift reminders", bigpay:"set-aside reminders", goal:"goal reminders" };
@@ -8592,7 +8644,7 @@ table.m-cards td .empty-state{width:100%;}
         <td class="num">${money(g.value||0)}</td>
         <td>${g.postBy ? shortDate(g.postBy) : "—"}${overdue ? ' <span class="chase-late">overdue</span>' : (soon ? ' <span class="chase-late">soon</span>' : "")}</td>
         <td>${statusLabel}</td>
-        <td>${g.counted ? '<span class="rating-pill good">Counted</span>' : '<span class="rating-pill warn">Not counted</span>'}</td>
+        <td>${g.counted ? '<span class="rating-pill good">Counted as income</span>' : g.terms === "nostrings" ? '<span class="rating-pill muted">No strings, not counted</span>' : g.terms === "promo" ? '<span class="rating-pill warn">Not counted yet</span>' : '<span class="rating-pill warn">Decide</span>'}</td>
         <td class="gift-actions">
           ${g.counted ? `<button type="button" class="mli-action" data-gift-uncount="${g.id}">Undo income</button>` : (g.status!=="returned" ? `<button type="button" class="mli-action" data-gift-count="${g.id}">Count as income</button>` : "")}
           <button type="button" class="mli-action" data-gift-edit="${g.id}">Edit</button>
@@ -8606,7 +8658,7 @@ table.m-cards td .empty-state{width:100%;}
     const brands = [...new Set([...state.pipelineDeals.map(d=>d.brandName), ...state.clients.map(c=>c.name)].filter(Boolean))];
     openSettingsModal(`
       <h2>${g ? "Edit gifted product" : "Log a gifted product"}</h2>
-      <p class="settings-note">Free products a brand sends you in exchange for content generally count as income at fair market value, which is what the item sells for. Counting it now means no surprise at tax time. If you're unsure about a specific gift, ask a tax pro.</p>
+      <p class="settings-note">Tell us what you got and whether it came with strings attached. GigBooks counts it as income only when it was in exchange for promotion.</p>
       <form id="giftForm" style="display:flex;flex-direction:column;gap:10px;">
         <div style="display:flex;gap:10px;">
           <div class="field" style="flex:1"><label>Brand</label><input name="brand" list="giftBrands" required value="${escapeHtml(g?g.brand:"")}"><datalist id="giftBrands">${brands.map(b=>`<option value="${escapeHtml(b)}">`).join("")}</datalist></div>
@@ -8621,29 +8673,42 @@ table.m-cards td .empty-state{width:100%;}
           <div class="field" style="flex:1"><label>Status</label><select name="status">
             ${[["received","Need to post"],["posted","Posted"],["returned","Returned"]].map(([k,l])=>`<option value="${k}"${g&&g.status===k?" selected":""}>${l}</option>`).join("")}</select></div>
         </div>
-        ${g ? "" : `<label class="check-row"><input type="checkbox" name="countNow" checked> Count it as income now</label>`}
+        ${g ? "" : `<div class="field"><label>Did you agree to post or promote it in exchange?</label>
+          <input type="hidden" name="terms" value="">
+          <div class="biz-choice" id="giftTerms"><button type="button" data-terms="promo">Yes, I promised content</button><button type="button" data-terms="nostrings">No strings attached</button><button type="button" data-terms="unsure">I'm not sure</button></div>
+          <div class="sa-sub" id="giftTermsNote" style="margin-top:6px;"></div></div>`}
         <div class="modal-actions">
           <button type="button" class="btn-secondary" data-close-settings>Cancel</button>
           <button type="submit" class="btn-primary">${g ? "Save" : "Add gift"}</button>
         </div>
       </form>`);
+    const TERMS_NOTE = { promo:"Counted as income at what it sells for. That's generally how promotion-for-product deals are taxed.",
+      nostrings:"Logged, not counted as income. Gifts with no promotion attached may be treated differently, so ask a tax pro if it was valuable.",
+      unsure:"Logged, not counted yet. It'll wait in your to-do list so you can decide later." };
+    document.querySelectorAll("#giftTerms [data-terms]").forEach(b=>b.addEventListener("click", ()=>{
+      document.querySelector("#giftForm [name=terms]").value = b.dataset.terms;
+      document.querySelectorAll("#giftTerms [data-terms]").forEach(x=>x.classList.toggle("on", x === b));
+      document.getElementById("giftTermsNote").textContent = TERMS_NOTE[b.dataset.terms];
+    }));
     document.getElementById("giftForm").addEventListener("submit", async e=>{
       e.preventDefault();
       const f = e.target.elements;
+      if(!g && !f.terms.value){ showToast("Let us know if it came with strings attached.", true); return; }
       const val = Math.round(parseFloat(f.worth.value)*100)/100;
       if(!(val >= 0)) return;
       const rec = g || { id:rid(), counted:false, incomeId:null };
       rec.brand = f.brand.value.trim(); rec.item = f.what.value.trim(); rec.value = val;
       rec.date = f.date.value; rec.postBy = f.postBy.value || null; rec.status = f.status.value;
       if(!g){
+        rec.terms = f.terms.value;
         csList("gifts").push(rec);
-        if(f.countNow && f.countNow.checked && rec.status !== "returned"){
+        if(rec.terms === "promo" && rec.status !== "returned"){
           if(await countGiftAsIncome(rec)){ refreshBooksViews(); showToast(`Logged and counted ${money(rec.value)} as income.`); }
-        } else showToast("Gift logged.");
+        } else showToast(rec.terms === "unsure" ? "Logged. It's in your to-do list for later." : "Logged, not counted as income.");
       } else showToast("Saved.");
       await saveCreatorSettings();
       closeSettingsModal();
-      renderGifts();
+      renderGifts(); renderNudges();
     });
   }
   document.addEventListener("click", async e=>{
@@ -10580,7 +10645,7 @@ table.m-cards td .empty-state{width:100%;}
         <div class="gp-head"><span class="giggy-av"></span><div><b>Ask Giggy</b><div class="sa-sub">Your money sidekick</div></div><button type="button" class="gp-close" data-giggy-close="1" aria-label="Close">✕</button></div>
         <div class="gp-quick">
           <button type="button" data-gq="income">+ Income</button><button type="button" data-gq="expense">+ Expense</button>
-          <button type="button" data-gq="scan">Scan receipt</button><button type="button" data-gq="invoice">New invoice</button>
+          <button type="button" data-gq="scan">Scan receipt</button><button type="button" data-gq="invoice">New invoice</button><button type="button" data-gq="gift">Free product</button>
         </div>
         <div class="gp-body"></div></div>`;
       document.body.appendChild(panel);
@@ -10606,6 +10671,7 @@ table.m-cards td .empty-state{width:100%;}
     if(gq){
       closeGiggy();
       const k = gq.dataset.gq;
+      if(k === "gift"){ openGiftModal(null); return; }
       if(k === "scan"){ showView("expenses"); setTimeout(()=>{ const i = document.getElementById("scanReceiptInput"); if(i) i.click(); }, 50); }
       else { const id = { income:"openAddIncome", expense:"openAddExpense", invoice:"openCreateInvoice" }[k]; const b = document.getElementById(id); if(b) b.click(); }
       return;
@@ -10810,6 +10876,7 @@ table.m-cards td .empty-state{width:100%;}
   document.addEventListener("click", e=>{
     if(e.target.closest("[data-scan-empty]")){ const i = document.getElementById("scanReceiptInput"); if(i) i.click(); }
     if(e.target.closest("[data-new-invoice]")) openInvoiceModal(null);
+    if(e.target.closest("[data-new-gift]")) openGiftModal(null);
   });
   /* ============================================================
      Your Weekly Money Check-In: a two-minute look at the week.
@@ -10942,6 +11009,12 @@ table.m-cards td .empty-state{width:100%;}
     return ctx ? [ctx].concat(GIGGY_CHIPS.filter(c=>c !== ctx)) : GIGGY_CHIPS.slice();
   }
 
+  document.addEventListener("click", e=>{
+    if(!e.target.closest("[data-how]")) return;
+    if(!document.getElementById("page-landing").classList.contains("active")) showAuthScreen("landing");
+    const how = document.getElementById("howItWorks");
+    if(how) how.scrollIntoView({ behavior:"smooth", block:"start" });
+  });
   function renderPersonalization(){
     applyTailoredNav();
     renderHome();

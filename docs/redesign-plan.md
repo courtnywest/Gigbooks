@@ -38,5 +38,5 @@ The app is a single static page (`index.html`) backed by Supabase (Postgres with
 
 1. **Core UX**: Home, navigation, terminology, transaction entry and review. *Done (#7).*
 2. **Activation**: onboarding, empty states, first-value guidance, analytics. *Done: three-step onboarding with saved progress, friendly empty states, a "first look" at business profit, and first-party analytics (`supabase/migrations/20261103_product_events.sql`).*
-3. **Retention**: weekly check-in, monthly recap, contextual Giggy.
+3. **Retention**: weekly check-in, monthly recap, contextual Giggy. *Done: "Your Weekly Money Check-In" (week's money in/out, review, unpaid invoices, one data-backed insight, Finish), "Your Monthly Money Recap" (earned / spent / left, spending by simple category, factual insights, Advanced reports with explanations), and Giggy suggestions that follow the page you're on with answers labelled "From your records" or "Estimate".*
 4. **Creator tools and marketing**: rate calculator, deal stages, gifted products in the income flow, homepage.

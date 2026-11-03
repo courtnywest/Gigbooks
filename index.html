@@ -1886,6 +1886,12 @@ table.m-cards td .empty-state{width:100%;}
   .preview-main{min-width:0;width:100%;}
 }
 
+/* ---------- Invoices: final status, menus that can't be clipped ---------- */
+.status.final{color:var(--green-800);} .status.final .sdot{background:var(--green-700);}
+@media (min-width:721px){
+  #view-invoices .tbl-scroll{overflow-y:hidden;}
+}
+
 </style>
 </head>
 <body>
@@ -3458,6 +3464,7 @@ table.m-cards td .empty-state{width:100%;}
     <div class="modal-actions">
       <button type="button" class="btn-secondary" data-close-modal>Cancel</button>
       <button type="button" class="btn-secondary" id="downloadInvoicePdfBtn">Download PDF</button>
+      <button type="button" class="btn-secondary" id="saveFinalInvoiceBtn">Save &amp; finalize</button>
       <button type="button" class="btn-primary" id="saveInvoiceBtn">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
         Save Invoice
@@ -4213,7 +4220,24 @@ table.m-cards td .empty-state{width:100%;}
         if(m.dataset.rowMenuPanel !== toggle.dataset.rowMenu) m.classList.remove("open");
       });
       const panel = document.querySelector(`[data-row-menu-panel="${toggle.dataset.rowMenu}"]`);
-      if(panel) panel.classList.toggle("open");
+      if(panel){
+        const open = panel.classList.toggle("open");
+        if(open){
+          // Lifted to the top of the page and fixed to the window, so a scrolling
+          // table can't cut the menu off, grow a scrollbar, or sit on top of it.
+          document.querySelectorAll("body > .row-menu").forEach(m=>{ if(m !== panel) m.remove(); });
+          document.body.appendChild(panel);
+          panel.style.zIndex = "1000";
+          const r = toggle.getBoundingClientRect();
+          panel.style.position = "fixed";
+          panel.style.right = Math.max(8, window.innerWidth - r.right) + "px";
+          panel.style.left = "auto";
+          const h = panel.offsetHeight;
+          const below = r.bottom + 4 + h <= window.innerHeight - 8;
+          panel.style.top = (below ? r.bottom + 4 : Math.max(8, r.top - 4 - h)) + "px";
+          panel.style.marginTop = "0";
+        }
+      }
       return;
     }
     if(e.target.closest(".row-menu")){
@@ -4226,6 +4250,8 @@ table.m-cards td .empty-state{width:100%;}
     // Click was genuinely outside everything -- close all open menus.
     document.querySelectorAll(".row-menu.open").forEach(m=>m.classList.remove("open"));
   });
+  // A floating menu shouldn't drift away from its row.
+  ["scroll","resize"].forEach(ev=>window.addEventListener(ev, ()=>document.querySelectorAll(".row-menu.open").forEach(m=>m.classList.remove("open")), { passive:true, capture:true }));
 
   /* ============================================================
      AI suggestions (email-parsed income)
@@ -5268,6 +5294,8 @@ table.m-cards td .empty-state{width:100%;}
     if(!form.reportValidity()) return;
     const fd = new FormData(form);
     const id = fd.get("id");
+    let savedId = id;
+    const finalizeAfter = finalizeAfterSave; finalizeAfterSave = false;
     const { subtotal, total } = computeInvoiceTotals();
     saveInvoiceBtn.disabled = true;
 
@@ -5299,6 +5327,7 @@ table.m-cards td .empty-state{width:100%;}
       const { data, error } = await dbInsert("invoices", { user_id: workspaceOwnerId(), invoice_number: nextNum, status: "draft", ...payload });
       saveInvoiceBtn.disabled = false;
       if(error) return;
+      savedId = data.id;
       state.invoices.unshift({
         id:data.id, number:data.invoice_number, clientName:data.client_name, clientEmail:data.client_email,
         clientAddress:data.client_address, issueDate:data.issue_date, dueDate:data.due_date, status:data.status,
@@ -5327,7 +5356,11 @@ table.m-cards td .empty-state{width:100%;}
       }
     }
     document.getElementById("invoiceModal").classList.remove("open");
+    if(finalizeAfter) finalizeInvoice(state.invoices.find(i=>i.id === savedId));
   });
+  let finalizeAfterSave = false;
+  const saveFinalInvoiceBtn = document.getElementById("saveFinalInvoiceBtn");
+  if(saveFinalInvoiceBtn) saveFinalInvoiceBtn.addEventListener("click", ()=>{ finalizeAfterSave = true; saveInvoiceBtn.click(); });
 
   // The PDF library is large, so it loads the first time someone makes a PDF.
   let html2pdfLoading = null;
@@ -5981,7 +6014,56 @@ table.m-cards td .empty-state{width:100%;}
   });
 
 
+  // A finalized invoice is locked against accidental edits. Kept in the owner's
+  // settings so no database change is needed; sending an invoice finalizes it too.
+  function finalInvoices(){ const cs = state.creatorSettings; if(!cs.finalInvoices || typeof cs.finalInvoices !== "object") cs.finalInvoices = {}; return cs.finalInvoices; }
+  function isFinalDraft(inv){ return inv.status === "draft" && !!finalInvoices()[inv.id]; }
+  async function finalizeInvoice(inv, quiet){
+    if(!inv || inv.status !== "draft" || finalInvoices()[inv.id]) return;
+    finalInvoices()[inv.id] = todayISO();
+    renderInvoicesTable();
+    await saveCreatorSettings();
+    if(!quiet) openFinalizedNext(inv);
+  }
+  function openFinalizedNext(inv){
+    openSettingsModal(`<h2>Invoice #${String(inv.number).padStart(4,"0")} is final</h2>
+      <p class="settings-note">It's locked so it can't be changed by accident. Send it to ${escapeHtml(inv.clientName)} now, or download it to send yourself.</p>
+      <div class="modal-actions"><button type="button" class="btn-secondary" id="finDownload">Download PDF</button><button type="button" class="btn-primary" id="finEmail">Email to client</button></div>`);
+    document.getElementById("finDownload").addEventListener("click", ()=>{ closeSettingsModal(); downloadInvoicePdf(invoiceToViewModel(inv), inv.number); });
+    document.getElementById("finEmail").addEventListener("click", ()=>{ closeSettingsModal(); sendInvoiceEmail(inv); });
+  }
+  function confirmFinalize(inv){
+    openSettingsModal(`<h2>Finalize invoice #${String(inv.number).padStart(4,"0")}?</h2>
+      <p class="settings-note">${escapeHtml(inv.clientName)} · ${money(inv.total)}. Once it's final, it's locked so nothing changes by accident. You can still reopen it as a draft until you send it.</p>
+      <div class="modal-actions"><button type="button" class="btn-secondary" data-close-settings>Not yet</button><button type="button" class="btn-primary" id="finYes">Finalize</button></div>`);
+    document.getElementById("finYes").addEventListener("click", ()=>{ closeSettingsModal(); finalizeInvoice(inv); });
+  }
+  // Editing a final or sent invoice asks first, instead of silently changing what the client has.
+  function guardInvoiceEdit(inv){
+    if(inv.status === "draft" && !isFinalDraft(inv)){ openInvoiceModal(inv); return; }
+    const num = String(inv.number).padStart(4,"0");
+    if(isFinalDraft(inv)){
+      openSettingsModal(`<h2>Invoice #${num} is final</h2>
+        <p class="settings-note">It's locked so it doesn't change by accident. Reopen it as a draft to make changes, then finalize it again.</p>
+        <div class="modal-actions"><button type="button" class="btn-secondary" data-close-settings>Keep it final</button><button type="button" class="btn-primary" id="finReopen">Reopen as draft</button></div>`);
+      document.getElementById("finReopen").addEventListener("click", async ()=>{ delete finalInvoices()[inv.id]; await saveCreatorSettings(); closeSettingsModal(); renderInvoicesTable(); openInvoiceModal(inv); });
+      return;
+    }
+    const what = inv.status === "paid" ? "has been paid" : inv.status === "void" ? "has been voided" : "has already been sent";
+    openSettingsModal(`<h2>Invoice #${num} ${what}</h2>
+      <p class="settings-note">Changes here won't reach ${escapeHtml(inv.clientName)} unless you send it again. Usually it's clearer to void it and send a new one.</p>
+      <div class="modal-actions"><button type="button" class="btn-secondary" data-close-settings>Cancel</button><button type="button" class="btn-primary" id="finEditAnyway">Edit anyway</button></div>`);
+    document.getElementById("finEditAnyway").addEventListener("click", ()=>{ closeSettingsModal(); openInvoiceModal(inv); });
+  }
+  document.addEventListener("click", e=>{
+    const f = e.target.closest("[data-finalize-invoice]");
+    if(!f) return;
+    document.querySelectorAll(".row-menu.open").forEach(m=>m.classList.remove("open"));
+    const inv = state.invoices.find(i=>i.id === f.dataset.finalizeInvoice);
+    if(inv) confirmFinalize(inv);
+  });
   function invoiceStatusBadge(inv){
+    if(isFinalDraft(inv)) return `<span class="status final"><span class="sdot"></span>Final</span><div class="status-sub">Ready to send</div>`;
     const status = effectiveInvoiceStatus(inv);
     const labels = { draft:"Draft", sent:"Sent", paid:"Paid", overdue:"Overdue", void:"Void" };
     let sub = "";
@@ -6018,7 +6100,8 @@ table.m-cards td .empty-state{width:100%;}
         <td class="row-action">
           <button type="button" class="row-action-btn" data-row-menu="inv-${inv.id}">···</button>
           <div class="row-menu" data-row-menu-panel="inv-${inv.id}">
-            <button type="button" data-edit-invoice="${inv.id}">Edit</button>
+            ${inv.status==="draft" && !isFinalDraft(inv) ? `<button type="button" data-finalize-invoice="${inv.id}">Finalize</button>` : ""}
+            <button type="button" data-edit-invoice="${inv.id}">${inv.status==="draft" && !isFinalDraft(inv) ? "Edit" : "View or edit"}</button>
             <button type="button" data-download-invoice="${inv.id}">Download PDF</button>
             ${inv.status!=="void" ? `<button type="button" data-send-invoice-email="${inv.id}">Email to Client</button>` : ""}
             ${inv.status==="draft"||inv.status==="sent" ? `<button type="button" data-mark-sent="${inv.id}">Mark as Sent</button>` : ""}
@@ -6044,7 +6127,8 @@ table.m-cards td .empty-state{width:100%;}
     const editBtn = e.target.closest("[data-edit-invoice]");
     if(editBtn){
       const inv = state.invoices.find(i=>i.id===editBtn.dataset.editInvoice);
-      if(inv) openInvoiceModal(inv);
+      document.querySelectorAll(".row-menu.open").forEach(m=>m.classList.remove("open"));
+      if(inv) guardInvoiceEdit(inv);
       return;
     }
     const downloadBtn = e.target.closest("[data-download-invoice]");
@@ -6071,7 +6155,7 @@ table.m-cards td .empty-state{width:100%;}
     if(!inv) return;
     btn.disabled = true;
     let patch = {};
-    if(sentBtn) patch = { status:"sent", sent_at: new Date().toISOString() };
+    if(sentBtn){ patch = { status:"sent", sent_at: new Date().toISOString() }; if(inv.status === "draft") finalInvoices()[inv.id] = todayISO(); }
     if(paidBtn) patch = { status:"paid", paid_at: new Date().toISOString() };
     if(voidBtn) patch = { status:"void" };
     const { data, error } = await dbUpdate("invoices", id, patch);

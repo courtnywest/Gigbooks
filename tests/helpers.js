@@ -36,7 +36,7 @@ function fixture(overrides = {}){
 }
 
 let browser;
-async function openApp(overrides = {}, viewport = { width:1280, height:900 }){
+async function openApp(overrides = {}, viewport = { width:1280, height:900 }, opts = {}){
   browser = browser || await chromium.launch();
   const context = await browser.newContext({ viewport, isMobile: viewport.width < 800, hasTouch: viewport.width < 800 });
   const fx = fixture(overrides);
@@ -47,6 +47,7 @@ async function openApp(overrides = {}, viewport = { width:1280, height:900 }){
   const errors = [];
   page.on("pageerror", e => errors.push(e.message));
   await page.clock.setFixedTime(TODAY);
+  if(opts.init) await page.addInitScript(opts.init);
   await page.goto("file://" + path.join(ROOT, "index.html"));
   if(!fx.loggedOut) await page.waitForSelector("#page-app.active"); else await page.waitForSelector("#page-landing.active");
   await page.waitForTimeout(300);
@@ -55,7 +56,7 @@ async function openApp(overrides = {}, viewport = { width:1280, height:900 }){
 }
 async function closeAll(){ if(browser){ await browser.close(); browser = null; } }
 
-const GROUPS = { overview:"home", income:"money", expenses:"money", gifts:"money", bank:"money", invoices:"getpaid",
+const GROUPS = { overview:"home", all:"money", help:"more", income:"money", expenses:"money", gifts:"more", bank:"money", invoices:"getpaid",
   pipeline:"getpaid", rateCalculator:"getpaid", reports:"reports", taxes:"reports", ask:"more", contracts:"more", settings:"more" };
 async function go(page, view){
   await page.click(`.nav-item[data-group="${GROUPS[view]}"]`);

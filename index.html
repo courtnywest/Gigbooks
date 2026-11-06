@@ -3521,6 +3521,40 @@ table.m-cards td .empty-state{width:100%;}
   });
 
   /* ============================================================
+     Error reports: when something breaks for someone, record what
+     broke (message, where, which page) in our own app_errors table.
+     Never amounts, names or other financial details: messages are
+     trimmed and scrubbed of emails and long numbers. At most 10 per
+     visit, duplicates skipped. Until the table exists, nothing is sent.
+     ============================================================ */
+  const errorReports = { sent:new Set(), count:0, off:false };
+  function scrub(text, max){
+    return String(text || "").replace(/[\w.+-]+@[\w-]+\.[\w.-]+/g, "[email]").replace(/\d[\d,.]{3,}/g, "[n]").slice(0, max);
+  }
+  // `label` is for fixed, safe text such as "insert expenses: 42501"; everything else is scrubbed.
+  function reportError(kind, message, source, label){
+    try{
+      if(errorReports.off || errorReports.count >= 10) return;
+      const safe = /^[\w .:-]{0,60}$/.test(label || "") ? (label ? label + " " : "") : "";
+      const msg = (safe + scrub(message, 300)).slice(0, 300), src = scrub(source, 160);
+      const key = kind + "|" + msg + "|" + src;
+      if(!msg || errorReports.sent.has(key)) return;
+      errorReports.sent.add(key); errorReports.count++;
+      sb.from("app_errors").insert({ kind, message: msg, source: src, view: String(document.body.dataset.view || "start").slice(0, 40),
+        browser: scrub(navigator.userAgent, 160) }).then(r=>{ if(r && r.error) errorReports.off = true; }, ()=>{ errorReports.off = true; });
+    }catch(e){ /* reporting must never cause another error */ }
+  }
+  window.addEventListener("error", e=>{
+    if(!e || (!e.message && !e.error)) return; // e.g. an image that didn't load
+    const at = e.filename ? `${String(e.filename).split("/").pop()}:${e.lineno || 0}:${e.colno || 0}` : "";
+    reportError("error", (e.error && e.error.message) || e.message, at);
+  });
+  window.addEventListener("unhandledrejection", e=>{
+    const r = e && e.reason;
+    reportError("rejection", (r && r.message) || String(r || "unknown"), r && r.stack ? String(r.stack).split("\n")[1] || "" : "");
+  });
+
+  /* ============================================================
      Data layer — Supabase-backed. Each account's books live in
      real Postgres tables (see 001_gigbooks_schema.sql), isolated
      per-account by Row Level Security, not just by convention.
@@ -3662,17 +3696,17 @@ table.m-cards td .empty-state{width:100%;}
   /* ---- generic write helpers used by every mutation below ---- */
   async function dbInsert(table, row){
     const { data, error } = await sb.from(table).insert(row).select().single();
-    if(error) showToast("Couldn't save that — " + error.message, true);
+    if(error){ showToast("Couldn't save that — " + error.message, true); reportError("save_failed", error.message || "", "", `insert ${table}: ${error.code || ""}`); }
     return { data, error };
   }
   async function dbUpdate(table, id, patch){
     const { data, error } = await sb.from(table).update(patch).eq("id", id).select().single();
-    if(error) showToast("Couldn't save that — " + error.message, true);
+    if(error){ showToast("Couldn't save that — " + error.message, true); reportError("save_failed", error.message || "", "", `update ${table}: ${error.code || ""}`); }
     return { data, error };
   }
   async function dbDelete(table, id){
     const { error } = await sb.from(table).delete().eq("id", id);
-    if(error) showToast("Couldn't delete that — " + error.message, true);
+    if(error){ showToast("Couldn't delete that — " + error.message, true); reportError("save_failed", error.message || "", "", `delete ${table}: ${error.code || ""}`); }
     return { error };
   }
   async function dbUpdateProfile(patch){
@@ -3688,6 +3722,11 @@ table.m-cards td .empty-state{width:100%;}
      Formatting helpers
      ============================================================ */
   const CURRENCY_SYMBOLS = { USD:"$", EUR:"€", GBP:"£", CAD:"CA$", AUD:"A$" };
+  // Only web addresses or embedded images may be used as an image or link source.
+  function safeUrl(u){
+    const v = String(u || "").trim();
+    return /^(https?:\/\/|data:image\/(png|jpe?g|gif|webp);base64,)/i.test(v) ? escapeHtml(v) : "";
+  }
   function escapeHtml(str){
     return String(str ?? "").replace(/[&<>"']/g, ch => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[ch]));
   }
@@ -4012,7 +4051,7 @@ table.m-cards td .empty-state{width:100%;}
     }).join(", ");
     donut.style.background = `conic-gradient(${stops})`;
     legend.innerHTML = groups.map(g=>`
-      <li><span class="dot" style="background:${g.color}"></span><span class="name">${g.name}</span><span class="pct">${Math.round(g.pct)}%</span></li>
+      <li><span class="dot" style="background:${g.color}"></span><span class="name">${escapeHtml(g.name)}</span><span class="pct">${Math.round(g.pct)}%</span></li>
     `).join("");
   }
 
@@ -4023,7 +4062,7 @@ table.m-cards td .empty-state{width:100%;}
     if(!sel) return;
     const current = sel.value;
     const unique = Array.from(new Set(values)).sort();
-    sel.innerHTML = `<option value="">${allLabel}</option>` + unique.map(v=>`<option value="${v}">${v}</option>`).join("");
+    sel.innerHTML = `<option value="">${allLabel}</option>` + unique.map(v=>`<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join("");
     if(unique.includes(current)) sel.value = current;
   }
 
@@ -4091,8 +4130,8 @@ table.m-cards td .empty-state{width:100%;}
       wrap.innerHTML = items.map(it=>`
         <div class="mini-list-item">
           <div class="mli-body">
-            <div class="mli-name">${it.label}</div>
-            <div class="mli-sub">${it.sub}</div>
+            <div class="mli-name">${escapeHtml(it.label)}</div>
+            <div class="mli-sub">${escapeHtml(it.sub)}</div>
           </div>
           <div style="text-align:right;">
             <div style="font-weight:700;color:var(--ink-900);">${money(it.amount)}</div>
@@ -4138,10 +4177,10 @@ table.m-cards td .empty-state{width:100%;}
     body.innerHTML = rows.length ? rows.map(r=>`
       <tr data-id="${r.id}">
         <td>${shortDate(r.date)}</td>
-        <td><div class="cell-name"><span class="glyph">${r.glyph}</span>${r.source}</div></td>
-        <td><span class="tag">${r.type}</span></td>
+        <td><div class="cell-name"><span class="glyph">${escapeHtml(r.glyph)}</span>${escapeHtml(r.source)}</div></td>
+        <td><span class="tag">${escapeHtml(r.type)}</span></td>
         <td><span class="status ${r.status==='pending'?'pending':''}"><span class="sdot"></span>${r.status==='pending'?'Pending':'Received'}</span></td>
-        <td>${projectName(r.projectId)}</td>
+        <td>${escapeHtml(projectName(r.projectId))}</td>
         <td class="num amount-pos">+${money(r.amount)}</td>
         <td class="row-action">
           <button type="button" class="row-edit-btn" data-edit-income="${r.id}" title="Edit" aria-label="Edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
@@ -4188,10 +4227,10 @@ table.m-cards td .empty-state{width:100%;}
     body.innerHTML = rows.length ? rows.map(r=>`
       <tr data-id="${r.id}">
         <td>${shortDate(r.date)}</td>
-        <td><div class="cell-name"><span class="glyph">${r.glyph}</span>${r.description}${r.receiptPath ? ' <span class="receipt-indicator" data-view-receipt="'+r.receiptPath+'" title="View receipt" style="cursor:pointer;opacity:.6;">📎</span>' : ''}</div></td>
-        <td><span class="tag">${r.category}</span></td>
-        <td>${r.payment}</td>
-        <td>${projectName(r.projectId)}</td>
+        <td><div class="cell-name"><span class="glyph">${escapeHtml(r.glyph)}</span>${escapeHtml(r.description)}${r.receiptPath ? ' <span class="receipt-indicator" data-view-receipt="'+r.receiptPath+'" title="View receipt" style="cursor:pointer;opacity:.6;">📎</span>' : ''}</div></td>
+        <td><span class="tag">${escapeHtml(r.category)}</span></td>
+        <td>${escapeHtml(r.payment)}</td>
+        <td>${escapeHtml(projectName(r.projectId))}</td>
         <td>${r.deductible
               ? '<svg class="dcheck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>'
               : '<svg class="dcross" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6 6 18"/></svg>'}</td>
@@ -4267,13 +4306,13 @@ table.m-cards td .empty-state{width:100%;}
     const guess = attnSuggestion(item, kind);
     return `
       <div class="attn-item" data-attn-item="${item.id}" data-attn-kind="${kind}">
-        <div class="glyph">${item.glyph||"•"}</div>
+        <div class="glyph">${escapeHtml(item.glyph||"•")}</div>
         <div class="itxt">
-          <div class="n1">${nameField}</div>
+          <div class="n1">${escapeHtml(nameField)}</div>
           <div class="n2">${shortDate(item.date)}</div>
         </div>
         <select data-attn-pick="${item.id}">
-          ${options.map(o=>`<option ${o.name===guess?"selected":""}>${o.name}</option>`).join("")}
+          ${options.map(o=>`<option ${o.name===guess?"selected":""}>${escapeHtml(o.name)}</option>`).join("")}
         </select>
         <div class="iamt">${money(item.amount)}</div>
         <button type="button" class="iabtn approve" data-attn-approve="${item.id}" data-attn-kind="${kind}">Approve</button>
@@ -4347,7 +4386,7 @@ table.m-cards td .empty-state{width:100%;}
           <div class="icon-circle">${mailIcon}</div>
           <div class="txt">
             <div class="t1">Email connected</div>
-            <div class="t2">${state.gmailConnection.email}</div>
+            <div class="t2">${escapeHtml(state.gmailConnection.email)}</div>
           </div>
           <button type="button" class="manage" id="aiPanelManageBtn">Manage <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4L19 7"/></svg></button>
         `;
@@ -4390,8 +4429,8 @@ table.m-cards td .empty-state{width:100%;}
         <div class="attn-item" data-opportunity-item="${o.id}">
           <div class="glyph">🌱</div>
           <div class="itxt">
-            <div class="n1">${o.brandName}</div>
-            <div class="n2">${o.summary}</div>
+            <div class="n1">${escapeHtml(o.brandName)}</div>
+            <div class="n2">${escapeHtml(o.summary)}</div>
           </div>
           <div class="iamt">${o.amount!==null ? "~"+money(o.amount) : "—"}</div>
           <button type="button" class="iabtn dismiss" data-dismiss-opportunity="${o.id}">Dismiss</button>
@@ -4594,11 +4633,11 @@ table.m-cards td .empty-state{width:100%;}
       return `
         <div class="mini-list-item">
           <div class="mli-body">
-            <div class="mli-name">${brand}</div>
+            <div class="mli-name">${escapeHtml(brand)}</div>
             <div class="mli-sub">${money(total)} paid in ${tax1099SelectedYear}</div>
           </div>
           <label style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ink-600);cursor:pointer;">
-            <input type="checkbox" data-tax1099-brand="${brand}" ${received?"checked":""}>
+            <input type="checkbox" data-tax1099-brand="${escapeHtml(brand)}" ${received?"checked":""}>
             1099 Received
           </label>
         </div>
@@ -4746,17 +4785,17 @@ table.m-cards td .empty-state{width:100%;}
       return;
     }
     const chev = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>`;
-    const head = title => `<tr class="group-head"><td colspan="5"><div class="gtitle">${chev}${title}</div></td></tr>`;
+    const head = title => `<tr class="group-head"><td colspan="5"><div class="gtitle">${chev}${escapeHtml(title)}</div></td></tr>`;
     const plural = n => `${n} transaction${n===1?"":"s"}`;
     const dash = `<td class="num dash">—</td>`;
     const amt = v => v ? `<td class="num">${money(v)}</td>` : dash;
     const summaryRow = (label, t, status) =>
-      `<tr class="sub"><td class="cat" colspan="2">${label}</td>${amt(t.in)}${amt(t.out)}<td style="color:var(--ink-500);">${status}</td></tr>`;
+      `<tr class="sub"><td class="cat" colspan="2">${escapeHtml(label)}</td>${amt(t.in)}${amt(t.out)}<td style="color:var(--ink-500);">${status}</td></tr>`;
     const detailRows = (rows, statusHtml, emptyMsg) => rows.length
       ? rows.map(r=>`<tr class="sub"><td>${shortDate(r.date)}</td><td>${escapeHtml(r.description)}</td>${amt(r.moneyIn)}${amt(r.moneyOut)}<td>${statusHtml}</td></tr>`).join("")
       : `<tr class="sub"><td colspan="5" style="color:var(--ink-500);">${emptyMsg}</td></tr>`;
     const totalRow = (label, rows) =>
-      `<tr class="total"><td colspan="2">${label}</td><td class="num">${money(rows.reduce((a,r)=>a+r.moneyIn,0))}</td><td class="num">${money(rows.reduce((a,r)=>a+r.moneyOut,0))}</td><td></td></tr>`;
+      `<tr class="total"><td colspan="2">${escapeHtml(label)}</td><td class="num">${money(rows.reduce((a,r)=>a+r.moneyIn,0))}</td><td class="num">${money(rows.reduce((a,r)=>a+r.moneyOut,0))}</td><td></td></tr>`;
 
     const pctText = data.pct === null ? "Nothing to reconcile yet" : `${data.pct}% reconciled`;
     let rows = head("Summary");
@@ -4815,7 +4854,7 @@ table.m-cards td .empty-state{width:100%;}
       tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;color:var(--ink-500);padding:22px 10px;">No paid or outstanding client activity yet.</td></tr>`;
       return;
     }
-    tbody.innerHTML = rows.map(r=>`<tr><td class="cat">${r.name}</td><td class="num">${money(r.paid)}</td><td class="num">${money(r.outstanding)}</td></tr>`).join("");
+    tbody.innerHTML = rows.map(r=>`<tr><td class="cat">${escapeHtml(r.name)}</td><td class="num">${money(r.paid)}</td><td class="num">${money(r.outstanding)}</td></tr>`).join("");
   }
   // Built from actual income sources and invoice client names, not just
   // the saved-Clients convenience list -- a brand you never bothered to
@@ -4849,7 +4888,7 @@ table.m-cards td .empty-state{width:100%;}
     }
     tbody.innerHTML = rows.map(r=>{
       const roi = r.expenses>0 ? (r.income/r.expenses).toFixed(1)+"x" : "—";
-      return `<tr><td class="cat">${r.name}</td><td class="num">${money(r.income)}</td><td class="num">${money(r.expenses)}</td><td class="num">${money(r.net)}</td><td class="num">${roi}</td></tr>`;
+      return `<tr><td class="cat">${escapeHtml(r.name)}</td><td class="num">${money(r.income)}</td><td class="num">${money(r.expenses)}</td><td class="num">${money(r.net)}</td><td class="num">${roi}</td></tr>`;
     }).join("");
   }
 
@@ -4899,7 +4938,7 @@ table.m-cards td .empty-state{width:100%;}
     let rows = `<tr class="group-head"><td colspan="4"><div class="gtitle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>Income</div></td></tr>`;
     if(incGroups.length){
       incGroups.forEach(r=>{
-        rows += `<tr class="sub"><td class="cat">${r.name}</td><td class="num">${money(r.amount)}</td><td class="num dash">—</td><td class="num">${money(r.amount)}</td></tr>`;
+        rows += `<tr class="sub"><td class="cat">${escapeHtml(r.name)}</td><td class="num">${money(r.amount)}</td><td class="num dash">—</td><td class="num">${money(r.amount)}</td></tr>`;
       });
     } else {
       rows += `<tr class="sub"><td colspan="4" style="color:var(--ink-500);">No income for this period.</td></tr>`;
@@ -4908,7 +4947,7 @@ table.m-cards td .empty-state{width:100%;}
     rows += `<tr class="group-head"><td colspan="4"><div class="gtitle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>Expenses</div></td></tr>`;
     if(expGroups.length){
       expGroups.forEach(r=>{
-        rows += `<tr class="sub"><td class="cat">${r.name}</td><td class="num dash">—</td><td class="num">${money(r.amount)}</td><td class="num">-${money(r.amount)}</td></tr>`;
+        rows += `<tr class="sub"><td class="cat">${escapeHtml(r.name)}</td><td class="num dash">—</td><td class="num">${money(r.amount)}</td><td class="num">-${money(r.amount)}</td></tr>`;
       });
     } else {
       rows += `<tr class="sub"><td colspan="4" style="color:var(--ink-500);">No expenses for this period.</td></tr>`;
@@ -5100,7 +5139,7 @@ table.m-cards td .empty-state{width:100%;}
     const items = vm.lineItems.length ? vm.lineItems : [{description:"",quantity:0,rate:0}];
     const lineRows = items.map(li=>`
       <tr style="border-bottom:1px solid #eee;">
-        <td style="padding:7px 4px;">${(li.description||"—").replace(/</g,"&lt;")}</td>
+        <td style="padding:7px 4px;">${escapeHtml(li.description||"—")}</td>
         <td style="padding:7px 4px;text-align:right;">${li.quantity||0}</td>
         <td style="padding:7px 4px;text-align:right;">${money(li.rate||0)}</td>
         <td style="padding:7px 4px;text-align:right;">${money((li.quantity||0)*(li.rate||0))}</td>
@@ -5110,9 +5149,9 @@ table.m-cards td .empty-state{width:100%;}
       <div class="invoice-doc" id="invoicePdfTarget" style="font-family:Arial,Helvetica,sans-serif;color:#20221D;padding:26px;font-size:13px;background:#fff;">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:26px;">
           <div>
-            ${br.logoUrl ? `<img src="${br.logoUrl}" style="max-width:120px;max-height:56px;object-fit:contain;margin-bottom:8px;display:block;">` : ""}
-            <div style="font-weight:700;font-size:15px;">${state.business.name || "Your Business Name"}</div>
-            <div style="font-size:11.5px;color:#777;white-space:pre-line;">${state.business.address || ""}</div>
+            ${safeUrl(br.logoUrl) ? `<img src="${safeUrl(br.logoUrl)}" style="max-width:120px;max-height:56px;object-fit:contain;margin-bottom:8px;display:block;">` : ""}
+            <div style="font-weight:700;font-size:15px;">${escapeHtml(state.business.name || "Your Business Name")}</div>
+            <div style="font-size:11.5px;color:#777;white-space:pre-line;">${escapeHtml(state.business.address || "")}</div>
           </div>
           <div style="text-align:right;">
             <div style="font-size:22px;font-weight:800;color:${accent};letter-spacing:.03em;">INVOICE</div>
@@ -5122,8 +5161,8 @@ table.m-cards td .empty-state{width:100%;}
         <div style="display:flex;justify-content:space-between;margin-bottom:22px;gap:20px;">
           <div>
             <div style="color:#999;font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px;">Bill To</div>
-            <div style="font-weight:600;">${vm.clientName || "Client Name"}</div>
-            <div style="white-space:pre-line;color:#666;font-size:12px;">${vm.clientAddress || ""}</div>
+            <div style="font-weight:600;">${escapeHtml(vm.clientName || "Client Name")}</div>
+            <div style="white-space:pre-line;color:#666;font-size:12px;">${escapeHtml(vm.clientAddress || "")}</div>
           </div>
           <div style="text-align:right;font-size:12px;">
             <div style="margin-bottom:3px;"><span style="color:#999;">Issue Date:</span> ${safeShortDate(vm.issueDate)}</div>
@@ -5147,7 +5186,7 @@ table.m-cards td .empty-state{width:100%;}
           </div>
         </div>
         ${invoicePayHtml(vm)}
-        ${vm.notes ? `<div style="font-size:11.5px;color:#777;border-top:1px solid #eee;padding-top:12px;white-space:pre-line;">${vm.notes}</div>` : ""}
+        ${vm.notes ? `<div style="font-size:11.5px;color:#777;border-top:1px solid #eee;padding-top:12px;white-space:pre-line;">${escapeHtml(vm.notes)}</div>` : ""}
       </div>
     `;
   }
@@ -5212,7 +5251,7 @@ table.m-cards td .empty-state{width:100%;}
     form.reset();
     const title = document.getElementById("invoiceModalTitle");
     const picker = document.getElementById("clientPickerSelect");
-    if(picker) picker.innerHTML = `<option value="">— New client —</option>` + state.clients.map(c=>`<option value="${c.id}">${c.name}</option>`).join("");
+    if(picker) picker.innerHTML = `<option value="">— New client —</option>` + state.clients.map(c=>`<option value="${c.id}">${escapeHtml(c.name)}</option>`).join("");
     if(existingInvoice){
       invoiceModalDealId = null;
       title.textContent = "Edit Invoice";
@@ -5530,7 +5569,7 @@ table.m-cards td .empty-state{width:100%;}
     const breakdownEl = document.getElementById("rcBreakdown");
     breakdownEl.innerHTML = rows.map(([label,val])=>`
       <div style="display:flex;justify-content:space-between;color:var(--ink-700);">
-        <span>${label}</span><span>${money(val)}</span>
+        <span>${escapeHtml(label)}</span><span>${money(val)}</span>
       </div>
     `).join("") + `
       <div style="display:flex;justify-content:space-between;font-weight:700;color:var(--ink-900);border-top:1px solid var(--line);padding-top:9px;margin-top:2px;">
@@ -6092,7 +6131,7 @@ table.m-cards td .empty-state{width:100%;}
       return `
       <tr>
         <td>#${String(inv.number).padStart(4,"0")}</td>
-        <td>${inv.clientName}${dealTag}</td>
+        <td>${escapeHtml(inv.clientName)}${dealTag}</td>
         <td>${shortDate(inv.issueDate)}</td>
         <td>${inv.dueDate ? shortDate(inv.dueDate) : "—"}</td>
         <td class="num">${money(inv.total)}</td>
@@ -6309,7 +6348,7 @@ table.m-cards td .empty-state{width:100%;}
     if(!wrap) return;
     if(pendingReceiptFile){
       wrap.innerHTML = `
-        <span style="font-size:13px;color:var(--ink-700);">${pendingReceiptFile.name}</span>
+        <span style="font-size:13px;color:var(--ink-700);">${escapeHtml(pendingReceiptFile.name)}</span>
         <button type="button" class="btn-secondary" id="chooseReceiptBtn" style="padding:6px 12px;font-size:12px;">Change</button>
       `;
     } else if(existingPath && !removeExistingReceiptFlag){
@@ -6670,7 +6709,7 @@ table.m-cards td .empty-state{width:100%;}
     wrap.style.display = "";
     const ownLabel = (state.business.name || (currentUser && currentUser.name) || "My Business") + " (You)";
     const options = [`<option value="own">${ownLabel}</option>`]
-      .concat(myWorkspaces.map(w => `<option value="${w.ownerId}|${w.role}" ${activeWorkspaceOwnerId===w.ownerId?"selected":""}>${w.ownerBusinessName || "Untitled Business"} (${w.role==="read_only"?"View only":"Full access"})</option>`));
+      .concat(myWorkspaces.map(w => `<option value="${w.ownerId}|${w.role}" ${activeWorkspaceOwnerId===w.ownerId?"selected":""}>${escapeHtml(w.ownerBusinessName || "Untitled Business")} (${w.role==="read_only"?"View only":"Full access"})</option>`));
     const leaveBtnHtml = !isOwnWorkspace()
       ? `<button type="button" id="leaveWorkspaceBtn" class="btn-secondary" style="margin-top:6px;width:100%;font-size:11.5px;padding:6px;">Leave this workspace</button>`
       : "";
@@ -6985,7 +7024,7 @@ table.m-cards td .empty-state{width:100%;}
       }
       forgotModalBox.innerHTML = `
         <h2>Check your email</h2>
-        <p style="font-size:13px;color:var(--ink-700);line-height:1.6;">If an account exists for <strong>${email}</strong>, a password reset link is on its way. Open it from this browser to set a new password.</p>
+        <p style="font-size:13px;color:var(--ink-700);line-height:1.6;">If an account exists for <strong>${escapeHtml(email)}</strong>, a password reset link is on its way. Open it from this browser to set a new password.</p>
         <div class="modal-actions"><button type="button" class="btn-primary" data-close-modal>Done</button></div>
       `;
     });
@@ -7095,25 +7134,25 @@ table.m-cards td .empty-state{width:100%;}
     const incSel = document.getElementById("incomeTypeSelect");
     if(incSel){
       const cur = incSel.value;
-      incSel.innerHTML = state.incomeCategoryList.map(c=>`<option>${c.name}</option>`).join("");
+      incSel.innerHTML = state.incomeCategoryList.map(c=>`<option>${escapeHtml(c.name)}</option>`).join("");
       if(state.incomeCategoryList.some(c=>c.name===cur)) incSel.value = cur;
       updateBarterIncomeHint();
     }
     const expSel = document.getElementById("expenseCategorySelect");
     if(expSel){
       const cur = expSel.value;
-      expSel.innerHTML = state.expenseCategoryList.map(c=>`<option>${c.name}</option>`).join("");
+      expSel.innerHTML = state.expenseCategoryList.map(c=>`<option>${escapeHtml(c.name)}</option>`).join("");
       if(state.expenseCategoryList.some(c=>c.name===cur)) expSel.value = cur;
     }
     const payList = document.getElementById("paymentMethodOptions");
     if(payList){
-      payList.innerHTML = state.paymentMethodList.map(p=>`<option value="${p.name}"></option>`).join("");
+      payList.innerHTML = state.paymentMethodList.map(p=>`<option value="${escapeHtml(p.name)}"></option>`).join("");
     }
     const incClientSel = document.getElementById("incomeClientSelect");
     if(incClientSel){
-      incClientSel.innerHTML = `<option value="">— Type source manually —</option>` + state.clients.map(c=>`<option value="${c.id}">${c.name}</option>`).join("");
+      incClientSel.innerHTML = `<option value="">— Type source manually —</option>` + state.clients.map(c=>`<option value="${c.id}">${escapeHtml(c.name)}</option>`).join("");
     }
-    const projectOptions = `<option value="">— No project —</option>` + state.projects.map(p=>`<option value="${p.id}">${p.name}${p.status==="completed"?" (completed)":""}</option>`).join("");
+    const projectOptions = `<option value="">— No project —</option>` + state.projects.map(p=>`<option value="${p.id}">${escapeHtml(p.name)}${p.status==="completed"?" (completed)":""}</option>`).join("");
     const incProjSel = document.getElementById("incomeProjectSelect");
     if(incProjSel){ const cur = incProjSel.value; incProjSel.innerHTML = projectOptions; incProjSel.value = cur; }
     const expProjSel = document.getElementById("expenseProjectSelect");
@@ -7559,7 +7598,7 @@ table.m-cards td .empty-state{width:100%;}
   }
   function dedFieldsHtml(key){
     const t = todayISO();
-    const amt = (label,id) => `<div class="field"><label>${label}</label><input type="number" id="${id||"dedAmount"}" step="0.01" min="0.01" required></div>`;
+    const amt = (label,id) => `<div class="field"><label>${escapeHtml(label)}</label><input type="number" id="${id||"dedAmount"}" step="0.01" min="0.01" required></div>`;
     const desc = (ph) => `<div class="field"><label>What was it?</label><input id="dedDesc" required placeholder="${ph}"></div>`;
     const date = `<div class="field"><label>Date</label><input type="date" id="dedDate" value="${t}" required></div>`;
     switch(key){
@@ -8185,7 +8224,7 @@ table.m-cards td .empty-state{width:100%;}
     const rows = [];
     forYouGo = [];
     const go = fn => { forYouGo.push(fn); return forYouGo.length - 1; };
-    const btn = (label, attrs) => `<button type="button" class="fy-btn" ${attrs}>${label}</button>`;
+    const btn = (label, attrs) => `<button type="button" class="fy-btn" ${attrs}>${escapeHtml(label)}</button>`;
     const later = attrs => `<button type="button" class="fy-later" ${attrs}>Later</button>`;
     const writable = canWriteInWorkspace();
 
@@ -8988,7 +9027,7 @@ table.m-cards td .empty-state{width:100%;}
     const p = PAYOUT_PRESETS[payoutImport.platform];
     const headers = payoutImport.rows[payoutImport.headerIdx];
     const m = payoutImport.map;
-    const colSel = (key, label, optional) => `<div class="field" style="flex:1;min-width:140px;"><label>${label}</label><select data-po-col="${key}">
+    const colSel = (key, label, optional) => `<div class="field" style="flex:1;min-width:140px;"><label>${escapeHtml(label)}</label><select data-po-col="${key}">
       ${optional ? '<option value="-1">— none —</option>' : ""}${headers.map((h,i)=>`<option value="${i}"${m[key]===i?" selected":""}>${escapeHtml(String(h).trim()||("Column "+(i+1)))}</option>`).join("")}</select></div>`;
     const prevSource = document.getElementById("poSource") ? document.getElementById("poSource").value : (p.source || "");
     const prevType = document.getElementById("poType") ? document.getElementById("poType").value : p.type;
@@ -9901,7 +9940,7 @@ table.m-cards td .empty-state{width:100%;}
   }
   function renderGetPaidSettings(){
     const h = payHandles();
-    const f = (id, label, val, ph, hint) => `<div class="field"><label>${label}${hint ? ` <span class="field-hint">${hint}</span>` : ""}</label><input id="${id}" value="${escapeHtml(val||"")}" placeholder="${ph}"></div>`;
+    const f = (id, label, val, ph, hint) => `<div class="field"><label>${escapeHtml(label)}${hint ? ` <span class="field-hint">${hint}</span>` : ""}</label><input id="${id}" value="${escapeHtml(val||"")}" placeholder="${ph}"></div>`;
     openSettingsModal(`<h2>Getting paid</h2>
       ${connectBlockHtml()}
       <p class="settings-note">Add any of these and every invoice and payment reminder gets "pay now" links with the amount filled in. Brands pay in one tap.</p>
@@ -10401,7 +10440,7 @@ table.m-cards td .empty-state{width:100%;}
   function explainSafe(){
     const s = safeToSpend();
     if(!s.ready){ openSafeSetup(); return; }
-    const row = (label, val, cls) => `<div class="${cls||""}"><span>${label}</span><b>${val}</b></div>`;
+    const row = (label, val, cls) => `<div class="${cls||""}"><span>${escapeHtml(label)}</span><b>${val}</b></div>`;
     openSettingsModal(`<h2>How we worked this out</h2>
       <div class="explain-math">
         ${row(`Your balance${s.asOf ? ` on ${shortDate(s.asOf)}` : ""}`, money(s.cash))}
@@ -10954,7 +10993,7 @@ table.m-cards td .empty-state{width:100%;}
 
   /* ---------- Friendly empty states with a next step ---------- */
   function emptyState(title, body, actions){
-    return `<div class="empty-state"><b>${title}</b><p>${body}</p>${actions ? `<div class="es-actions">${actions}</div>` : ""}</div>`;
+    return `<div class="empty-state"><b>${escapeHtml(title)}</b><p>${body}</p>${actions ? `<div class="es-actions">${actions}</div>` : ""}</div>`;
   }
 
   document.addEventListener("click", e=>{
@@ -11071,7 +11110,7 @@ table.m-cards td .empty-state{width:100%;}
     const inv = openInvoices();
     if(inv.length) insights.push(`You have ${inv.length} invoice${inv.length===1?"":"s"} waiting for payment.`);
     const empty = !cur.moneyIn && !cur.moneyOut && !cur.pending;
-    wrap.innerHTML = empty ? `<div class="card">${emptyState(`Nothing recorded ${label} yet`, "Once money comes in or goes out, your recap shows up here.", `<button type="button" class="btn-primary" data-goto="all">Go to Money</button>`)}</div>` : `
+    wrap.innerHTML = empty ? `<div class="card">${emptyState(`Nothing recorded ${escapeHtml(label)} yet`, "Once money comes in or goes out, your recap shows up here.", `<button type="button" class="btn-primary" data-goto="all">Go to Money</button>`)}</div>` : `
       <div class="recap-trio">
         <div class="card"><span>Money earned</span><b>${wholeMoney(cur.moneyIn)}</b><em>Business income you received</em></div>
         <div class="card"><span>Money spent</span><b>${wholeMoney(cur.moneyOut)}</b><em>Business expenses</em></div>
@@ -11205,7 +11244,7 @@ table.m-cards td .empty-state{width:100%;}
   function chipListHtml(listKey, items){
     if(!items.length) return `<div class="settings-note" data-chip-list="${listKey}">Nothing added yet.</div>`;
     return `<div class="chip-list" data-chip-list="${listKey}">` + items.map((v)=>`
-      <span class="chip">${v.name}<button type="button" data-chip-remove="${listKey}" data-chip-id="${v.id}">✕</button></span>
+      <span class="chip">${escapeHtml(v.name)}<button type="button" data-chip-remove="${listKey}" data-chip-id="${v.id}">✕</button></span>
     `).join("") + `</div>`;
   }
   const LIST_TABLE_MAP = { incomeCategoryList:"income_categories", expenseCategoryList:"expense_categories", paymentMethodList:"payment_methods" };
@@ -11231,8 +11270,8 @@ table.m-cards td .empty-state{width:100%;}
       <h2>Profile Information</h2>
       <p style="font-size:12.5px;color:var(--ink-500);margin:-8px 0 4px;">Update your name and email.</p>
       <form id="profileSettingsForm">
-        <div class="field"><label>Full name</label><input type="text" name="name" value="${u.name}" required></div>
-        <div class="field"><label>Email address</label><input type="email" name="email" value="${u.email}" required></div>
+        <div class="field"><label>Full name</label><input type="text" name="name" value="${escapeHtml(u.name)}" required></div>
+        <div class="field"><label>Email address</label><input type="email" name="email" value="${escapeHtml(u.email)}" required></div>
         <div class="field-error" id="profileSettingsError"></div>
         <div class="field-success" id="profileSettingsSuccess"></div>
         <div class="settings-form-actions">
@@ -11464,7 +11503,7 @@ table.m-cards td .empty-state{width:100%;}
       <h2>Business Details</h2>
       <p style="font-size:12.5px;color:var(--ink-500);margin:-8px 0 4px;">Update your business name, type, and industry.</p>
       <form id="businessSettingsForm">
-        <div class="field"><label>Business name</label><input type="text" name="name" value="${b.name||""}" placeholder="e.g. Rivers Creative Studio"></div>
+        <div class="field"><label>Business name</label><input type="text" name="name" value="${escapeHtml(b.name||"")}" placeholder="e.g. Rivers Creative Studio"></div>
         <div class="field"><label>Business type</label>
           <select name="type">
             <option value="" ${!b.type?"selected":""} disabled>Select an option</option>
@@ -11476,7 +11515,7 @@ table.m-cards td .empty-state{width:100%;}
           </select>
         </div>
         <div class="field"><label>Industry</label><input type="text" name="industry" value="${b.industry||""}" placeholder="e.g. Beauty &amp; Lifestyle"></div>
-        <div class="field"><label>Business address</label><textarea name="address" rows="2" placeholder="Used on invoices">${b.address||""}</textarea></div>
+        <div class="field"><label>Business address</label><textarea name="address" rows="2" placeholder="Used on invoices">${escapeHtml(b.address||"")}</textarea></div>
         <div class="settings-form-actions">
           <button type="button" class="btn-secondary" data-close-settings>Cancel</button>
           <button type="submit" class="btn-primary">Save Changes</button>
@@ -11529,7 +11568,7 @@ table.m-cards td .empty-state{width:100%;}
       <div style="display:flex;gap:10px;align-items:flex-start;padding:10px 4px;border-bottom:1px solid var(--cream-100);">
         <div style="font-size:16px;">${activityIcon(a.entity_type, a.action)}</div>
         <div style="flex:1;">
-          <div style="font-size:13px;color:var(--ink-900);">${a.summary}</div>
+          <div style="font-size:13px;color:var(--ink-900);">${escapeHtml(a.summary)}</div>
           <div style="font-size:11.5px;color:var(--ink-400);">${new Date(a.created_at).toLocaleString("en-US",{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"})}</div>
         </div>
       </div>
@@ -11856,7 +11895,7 @@ table.m-cards td .empty-state{width:100%;}
       <div class="field"><label>Logo</label>
         <div id="logoPreviewWrap" style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
           ${br.logoUrl
-            ? `<img src="${br.logoUrl}" alt="Logo" style="width:56px;height:56px;object-fit:contain;border:1px solid var(--cream-200);border-radius:8px;background:#fff;">`
+            ? `<img src="${safeUrl(br.logoUrl)}" alt="Logo" style="width:56px;height:56px;object-fit:contain;border:1px solid var(--cream-200);border-radius:8px;background:#fff;">`
             : `<div style="width:56px;height:56px;border:1px dashed var(--cream-300);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--ink-400);font-size:11px;text-align:center;">No logo</div>`}
           <div>
             <input type="file" id="logoFileInput" accept="image/png,image/jpeg,image/svg+xml" style="display:none;">
@@ -12030,7 +12069,7 @@ table.m-cards td .empty-state{width:100%;}
     return `
       <div class="mini-list-item">
         <div class="mli-icon">${ICON_LOCK_SVG}</div>
-        <div class="mli-body"><div class="mli-name">${gc.email}</div><div class="mli-sub">Last scanned: ${lastScanned}</div></div>
+        <div class="mli-body"><div class="mli-name">${escapeHtml(gc.email)}</div><div class="mli-sub">Last scanned: ${lastScanned}</div></div>
         <button type="button" class="mli-action danger" id="disconnectGmailBtn">Disconnect</button>
       </div>
     `;
@@ -12069,7 +12108,7 @@ table.m-cards td .empty-state{width:100%;}
     return `<div class="mini-list" id="integrationsList">` + state.integrations.map(i=>`
       <div class="mini-list-item">
         <div class="mli-icon">${ICON_BOLT_SVG}</div>
-        <div class="mli-body"><div class="mli-name">${i.name}</div><div class="mli-sub">${i.desc}</div></div>
+        <div class="mli-body"><div class="mli-name">${escapeHtml(i.name)}</div><div class="mli-sub">${i.desc}</div></div>
         <button type="button" class="mli-action ${i.connected?"danger":""}" data-toggle-integration="${i.id}">${i.connected?"Disconnect":"Connect"}</button>
       </div>
     `).join("") + `</div>`;
@@ -12248,7 +12287,7 @@ table.m-cards td .empty-state{width:100%;}
       ${warningHtml}
       <div class="danger-zone">
         <div class="t1">Type your email to confirm</div>
-        <p>${u.email}</p>
+        <p>${escapeHtml(u.email)}</p>
         <input type="text" id="deleteConfirmEmail" placeholder="Type your email address" style="width:100%;border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-size:13.5px;font-family:inherit;background:var(--white);margin-bottom:12px;">
         <div class="field-error" id="deleteAccountError"></div>
         <button type="button" class="btn-danger" id="confirmDeleteBtn">Permanently Delete My Account</button>

@@ -15,7 +15,9 @@
     const chain = new Proxy(function(){}, {
       get(_, k){
         if(k === "then"){ const p = Promise.resolve(result()); return p.then.bind(p); }
-        if(k === "maybeSingle" || k === "single") return () => Promise.resolve(missing ? result() : { data: inserted || rows[0] || null, error:null });
+        if(k === "maybeSingle" || k === "single") return () => Promise.resolve(missing ? result()
+          : (inserted && F.failInserts && F.failInserts.includes(table)) ? { data:null, error:{ code:"42501", message:`permission denied for table ${table}` } }
+          : { data: inserted || rows[0] || null, error:null });
         if(k === "insert") return (row) => {
           (window.__inserts = window.__inserts || []).push({ table, row });
           inserted = Object.assign({ id:"row-" + Math.random().toString(36).slice(2) }, Array.isArray(row) ? row[0] : row);

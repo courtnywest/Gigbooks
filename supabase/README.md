@@ -11,6 +11,7 @@ Run each file in `migrations/` once, in order, in **Supabase → SQL Editor**:
 | `20261030_rate_benchmarks_and_referrals.sql` | Rate benchmarks, invite counts |
 | `20261102_billing_and_card_payments.sql` | Free / Pro plans, card payments on invoices |
 | `20261103_product_events.sql` | First-party product analytics (no financial details) |
+| `20261106_app_errors.sql` | Error reports when something breaks (no financial details) |
 
 After the billing migration, the app starts showing plans:
 - Everyone who already has an account becomes a founding member, with Pro free through 2027 (change the date in the file first if you want).

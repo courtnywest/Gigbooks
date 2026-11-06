@@ -30,7 +30,9 @@ Deno.serve(async (req) => {
 
     const cents = Math.round(Number(inv.total) * 100);
     if (!(cents >= 50)) return page("Can't pay this online", "This invoice amount can't be paid by card. Please contact the sender.");
-    const fee = pro ? 0 : Math.round(cents * 0.01); // Free plan: 1% GigBooks fee, on top of Stripe's own fee
+    // Card payments are part of Pro. GigBooks never takes a fee; only Stripe's own fee applies.
+    if (!pro) return page("Card payments aren't available", "The sender hasn't turned on card payments. Please use another payment option on the invoice.");
+    const fee = 0;
     const num = String(inv.invoice_number ?? "").padStart(4, "0");
     const from = profile?.business_name || "your creator";
 

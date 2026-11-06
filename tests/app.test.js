@@ -56,8 +56,8 @@ test("adding an expense takes three answers, with the date defaulting to today",
   await page.fill("#expenseForm [name=amount]", "59.99");
   assert.match(await page.textContent("#expGuess"), /Category: Software/);
   await page.click("#expenseSubmitBtn");
-  await page.waitForTimeout(200);
-  assert.match(await page.textContent("#view-expenses tbody"), /Adobe Creative Cloud/);
+  await page.waitForSelector("#view-expenses tbody tr:has-text('Adobe Creative Cloud')", { timeout:5000 });
+  assert.equal(await page.$("#remYes"), null); // the suggested category was kept, so nothing to remember
 });
 
 test("'No, personal' keeps it out of the books; 'I'm not sure' saves it and asks later", async () => {
@@ -109,6 +109,15 @@ test("Free accounts see the upgrade sheet for Pro features", async () => {
   await askAi(page);
   await page.waitForSelector(".upg");
   assert.match(await page.textContent(".upg h2"), /Ask Giggy is a Pro feature/);
+  assert.match(await page.textContent(".upg-price"), /\$12\/month, everything included/);
+  assert.equal(await page.$(".upg-toggle"), null); // one plan, no monthly/yearly choice
+});
+
+test("pricing everywhere says one plan at $12 a month, with no fees on payments", async () => {
+  const page = await openApp({ loggedOut:true });
+  const html = await page.content();
+  assert.doesNotMatch(html, /\$15|\$144|billed yearly|1% for GigBooks|Stripe fee \+ 1%/);
+  assert.match(await page.textContent("#page-pricing .pricing-hero h1"), /One plan\. \$12 a month\. Everything included\./);
 });
 
 test("new accounts get Pro during the 14-day trial", async () => {

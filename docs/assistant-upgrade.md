@@ -36,6 +36,20 @@ The goal of this upgrade: GigBooks understands how you make money, keeps your fi
 2. **Monthly check-in, income goal, insights.** *Done.*
 3. **Deal profit, rate calculator defaults, invoice heads-ups.** *Done.*
 
-## Open decision: pricing
+## Pricing
 
-The brief asks for one $12/month tier with no feature restrictions. Today the code has Free plus Pro ($15/month or $144/year, a 14-day trial, some Pro-only features, and a 1% card fee on Free). Billing isn't live, so no subscriptions exist yet. The change needs a product decision before the code and `20261102_billing_and_card_payments.sql` are updated. The main question is what happens after the trial without a subscription.
+There's one paid plan: **Pro, $12/month, with everything included**. Every account starts with a 14-day Pro trial and no card is needed. After the trial, users stay on a free version where they add money in and out themselves. Their data is never deleted.
+
+| | Free version | Pro ($12/month) |
+| --- | --- | --- |
+| Adding income and expenses by hand, review, Money Moves, insights, check-in, tax set-aside, receipt scanning | ✓ | ✓ |
+| Invoices | 3 a month | Unlimited, emailed for you |
+| Bank sync, income from Gmail, Ask Giggy, Contract Reader, media kit, benchmarks, accountant package, team | | ✓ |
+| Card payments on invoices | | ✓ (Stripe's fee only, no GigBooks fee) |
+
+What changed from the earlier setup:
+- The yearly price is gone.
+- The 1% GigBooks fee on Free card payments is gone, and card payments are now part of Pro.
+- In Stripe, create a single $12/month price and set only `STRIPE_PRICE_MONTHLY`.
+- `20261102_billing_and_card_payments.sql` is unchanged: prices live in Stripe, not in the database.
+- Billing isn't live, so there are no existing subscriptions to migrate.

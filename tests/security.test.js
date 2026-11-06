@@ -67,7 +67,7 @@ test("no stored text runs as code, on any page or in any panel", async () => {
   await closeModals();
   // Home flows
   await step(() => go(page, "overview"));
-  await step(() => page.click("#ovNudges .fy-btn:has-text('Start')"));
+  await step(() => page.click("#ovNudges .fy-btn:has-text('Review transactions')"));
   for(let i = 0; i < 4; i++) await step(() => page.click("#rvLater"));
   await closeModals();
   await step(() => page.click("[data-weekly-note]"));
@@ -153,7 +153,7 @@ test("names with & and apostrophes show up normally, not as &amp; or &#39;", asy
     seen.push(await page.evaluate(() => document.querySelector(".view.active").innerText));
   }
   await go(page, "overview");
-  await page.click("#ovNudges .fy-btn:has-text('Start')");
+  await page.click("#ovNudges .fy-btn:has-text('Review transactions')");
   seen.push(await page.textContent(".rv"));
   await page.evaluate(() => document.querySelectorAll(".modal-overlay.open").forEach(m => m.classList.remove("open")));
   await page.click("#giggyBtn");

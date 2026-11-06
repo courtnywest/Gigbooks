@@ -23,7 +23,7 @@
           inserted = Object.assign({ id:"row-" + Math.random().toString(36).slice(2) }, Array.isArray(row) ? row[0] : row);
           return chain;
         };
-        if(k === "update") return (patch) => { inserted = Object.assign({}, rows[0] || {}, patch); return chain; };
+        if(k === "update") return (patch) => { (window.__updates = window.__updates || []).push({ table, values: JSON.parse(JSON.stringify(patch)) }); inserted = Object.assign({}, rows[0] || {}, patch); return chain; };
         return () => chain;
       }
     });

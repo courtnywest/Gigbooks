@@ -1806,6 +1806,24 @@ body[data-view="ask"] .giggy-fab{display:none;}
 .ob-option:hover{border-color:var(--sage-300);}
 .ob-option.on{border-color:var(--green-800);box-shadow:0 0 0 1px var(--green-800) inset;background:var(--cream-50);}
 .ob-option:focus-visible{outline:2px solid var(--green-700);outline-offset:2px;}
+.ob-options.multi{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
+.ob-options.multi .ob-option{min-height:48px;padding:12px 14px;justify-content:center;}
+.ob-options.multi .ob-option b{font-size:14px;font-weight:600;line-height:1.3;}
+@media (max-width:420px){.ob-options.multi{grid-template-columns:1fr;}}
+.rv-tag{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.02em;text-transform:uppercase;padding:2px 7px;border-radius:999px;background:var(--cream-100);color:var(--ink-500);margin-right:4px;vertical-align:1px;}
+.rv-tag.rule{background:var(--green-800);color:#F5F3ED;}
+.rv-remember{display:flex;align-items:center;gap:8px;font-size:13.5px;color:var(--ink-700);margin:12px 0 0;cursor:pointer;}
+.rv-remember input{width:18px;height:18px;accent-color:var(--green-800);flex-shrink:0;}
+.rules-list{display:flex;flex-direction:column;gap:2px;max-height:52vh;overflow-y:auto;}
+.rule-row{padding:10px 2px;border-bottom:1px solid var(--cream-100);}
+.rule-main{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.rule-main b{font-size:14px;color:var(--ink-900);}
+.rule-main select{flex:1;min-width:150px;max-width:100%;}
+.rule-arrow{color:var(--ink-400);}
+.rule-issue{font-size:12.5px;color:#9a5b13;background:#fbf3e4;border-radius:8px;padding:6px 9px;margin-top:6px;}
+.rules-log{margin-top:12px;font-size:13px;color:var(--ink-700);}
+.rules-log summary{cursor:pointer;font-weight:600;}
+.rules-log ul{margin:8px 0 0;padding-left:18px;display:flex;flex-direction:column;gap:4px;}
 .ob-dir{margin-bottom:14px;}
 .ob-skip{display:block;margin:12px auto 0;}
 .ob-first{text-align:center;}
@@ -2462,11 +2480,10 @@ table.m-cards td .empty-state{width:100%;}
 
       <div id="homeSnapshot"></div>
       <div id="ovNudges"></div>
+      <div id="ovInsight"></div>
       <div id="homeSafe"></div>
       <div id="ovSetAside" hidden></div>
-      <div id="ovPersona"></div>
       <div id="ovChecklist"></div>
-      <div id="ovTakeHome"></div>
       <!-- the deals strip is kept out of view; Get Paid owns deals now -->
       <div id="dealsOverviewStrip" hidden><div id="dealsOverviewText"></div></div>
     </section>
@@ -3266,7 +3283,11 @@ table.m-cards td .empty-state{width:100%;}
               <svg class="chev-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
             </button>
             <button type="button" class="settings-row owner-only-row" data-setting="personalization">
-              <div><div class="t1">Personalization</div><div class="t2">See what GigBooks knows about you and change it</div></div>
+              <div><div class="t1">Personalization</div><div class="t2">How you make money, your money goal, and what GigBooks knows about you</div></div>
+              <svg class="chev-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+            </button>
+            <button type="button" class="settings-row" data-setting="categoryRules">
+              <div><div class="t1">Category rules</div><div class="t2">Merchants you've asked GigBooks to remember</div></div>
               <svg class="chev-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
             </button>
             <button type="button" class="settings-row" data-setting="dataPrivacy">
@@ -4320,6 +4341,8 @@ table.m-cards td .empty-state{width:100%;}
       </div>`;
   }
   function attnSuggestion(item, kind){
+    const name = kind === "income" ? item.source : item.description, rule = ruleFor(name, kind);
+    if(rule && rule.cat) return rule.cat;
     return kind === "income" ? suggestIncomeType(item.source) : suggestExpenseCategory(item.description);
   }
   async function approveAttnItem(kind, id, chosen){
@@ -6314,6 +6337,8 @@ table.m-cards td .empty-state{width:100%;}
 
   wireModal("incomeModal","openAddIncome","incomeForm", async (data)=>{
     const projectId = data.projectId || null;
+    const prevInc = data.id ? state.income.find(r=>r.id===data.id) : null;
+    const prevType = prevInc ? prevInc.type : guessIncomeType(data.source || "");
     if(data.id){
       const { data:updated, error } = await dbUpdate("income", data.id, {
         date:data.date, source:data.source, type:data.type, status:data.status||"received", amount:parseFloat(data.amount)||0, project_id:projectId
@@ -6331,6 +6356,7 @@ table.m-cards td .empty-state{width:100%;}
       track("first_transaction_added", { source:"manual" });
     }
     renderIncomeTable(); renderStats();
+    if(prevType && data.type && prevType !== data.type) setTimeout(()=>offerRemember(data.source, "income", data.type), 0);
   });
 
   /* ============================================================
@@ -6424,6 +6450,8 @@ table.m-cards td .empty-state{width:100%;}
     if(!data.category) data.category = (state.expenseCategoryList[0] || {}).name || "Other";
     if(answer) data.deductible = answer.deductible;
     const projectId = data.projectId || null;
+    const prevExp = data.id ? state.expenses.find(r=>r.id===data.id) : null;
+    const prevCat = prevExp ? prevExp.category : (guessExpenseCategory(data.description || "") || {}).name;
     if(data.id){
       const { data:updated, error } = await dbUpdate("expenses", data.id, {
         date:data.date, description:data.description, category:data.category, payment_method:data.paymentMethod, deductible:!!data.deductible, amount:parseFloat(data.amount)||0, project_id:projectId
@@ -6453,6 +6481,7 @@ table.m-cards td .empty-state{width:100%;}
     pendingReceiptFile = null;
     removeExistingReceiptFlag = false;
     renderExpenseTable(); renderStats(); renderHome(); renderNudges();
+    if(prevCat && data.category && prevCat !== data.category) setTimeout(()=>offerRemember(data.description, "expense", data.category), 0);
   });
 
 
@@ -8213,72 +8242,137 @@ table.m-cards td .empty-state{width:100%;}
     return out.concat(personalNudges()).filter(n=>!muted[n.type] && !nudgeQuieted(n.type) && !(snoozed[n.id] && snoozed[n.id] > todayStr)).sort((a,b)=>a.pri-b.pri).slice(0,3);
   }
   const NUDGE_NAMES = { tax:"tax reminders", late:"late-payment reminders", cash:"cash warnings", terms:"deal-date reminders", invoice:"invoice reminders", gifts:"gift reminders", bigpay:"set-aside reminders", goal:"goal reminders" };
-  // One short list of what matters now. The app does the sorting and
-  // suggesting; the creator just confirms.
-  // The to-do list: a few plain-language jobs, each with one button.
-  let forYouGo = [];
+  /* ============================================================
+     Your Money Moves: at most three things worth doing, built only
+     from the user's own records with plain rules (no AI calls).
+     Higher score = more urgent or more money at stake. The user's
+     money goal nudges the order. Non-essential moves can be dismissed;
+     a dismissed move stays gone (its id names the exact situation, so
+     only a new situation shows up again).
+     ============================================================ */
+  function movesDismissed(){
+    const cs = state.creatorSettings;
+    if(!cs.movesDismissed || typeof cs.movesDismissed !== "object") cs.movesDismissed = {};
+    const cutoff = isoLocal(addDays(new Date(), -180));
+    Object.keys(cs.movesDismissed).forEach(k=>{ if(cs.movesDismissed[k] < cutoff) delete cs.movesDismissed[k]; });
+    return cs.movesDismissed;
+  }
+  // A spending category that is clearly above its usual level. Needs three
+  // full earlier months with recorded expenses, the category in at least two
+  // of them, and this month already 50% (and $50) above its monthly average.
+  function unusualExpense(){
+    const now = startOfToday();
+    const key = d => `${d.getFullYear()}-${pad2(d.getMonth()+1)}`;
+    const cur = key(now), prev = [1,2,3].map(i=>key(new Date(now.getFullYear(), now.getMonth()-i, 1)));
+    const inMonth = k => state.expenses.filter(e=>String(e.date).slice(0,7) === k);
+    if(prev.some(k=>!inMonth(k).length)) return null;
+    let best = null;
+    const curRows = inMonth(cur);
+    [...new Set(curRows.map(e=>e.category || "Other"))].forEach(cat=>{
+      const sum = rows => rows.filter(e=>(e.category || "Other") === cat).reduce((a,e)=>a+e.amount,0);
+      const totals = prev.map(k=>sum(inMonth(k)));
+      if(totals.filter(t=>t > 0).length < 2) return;
+      const avg = totals.reduce((a,t)=>a+t,0) / 3, now$ = sum(curRows);
+      if(avg > 0 && now$ >= avg*1.5 && now$ - avg >= 50 && (!best || now$ - avg > best.cur - best.avg))
+        best = { cat, cur:now$, avg, month:cur, months:prev };
+    });
+    return best;
+  }
+  function moneyMoves(){
+    const cs = state.creatorSettings, goal = moneyGoal(), writable = canWriteInWorkspace();
+    const moves = [];
+    const boost = (...goals) => goals.includes(goal) ? 15 : 0;
+
+    const q = reviewQueue(), fresh = q.filter(x=>!x.later), unsure = q.filter(x=>x.later);
+    if(writable && fresh.length){
+      const mins = Math.max(1, Math.round(fresh.length * 10 / 60));
+      moves.push({ id:"review", essential:true, score:70 + boost("organized","profit"),
+        title: fresh.length === 1 ? "Just 1 transaction needs your attention." : `Just ${fresh.length} transactions need your attention.`,
+        sub:`About ${mins} minute${mins===1?"":"s"}. Nothing counts until you say yes.`, label:"Review transactions", run:()=>openReviewFlow() });
+    }
+    state.bankConnections.filter(c=>/error|reauth|login|expired|disconnected|pending/i.test(c.status || "")).slice(0,1).forEach(c=>
+      moves.push({ id:"bank", essential:true, score:85, title:`Reconnect ${c.institutionName}.`, sub:"Your bank needs you to sign in again before new transactions come through.", label:"Reconnect", attrs:`data-goto="bank"` }));
+
+    const overdue = state.invoices.filter(i=>(i.status === "sent" || i.status === "overdue") && effectiveInvoiceStatus(i) === "overdue")
+      .sort((a,b)=>Number(b.total) - Number(a.total));
+    if(overdue.length){
+      const inv = overdue[0], late = invoiceDaysLate(inv), more = overdue.length - 1;
+      moves.push({ id:`late-${inv.id}-${inv.dueDate || ""}`, type:"late", score:75 + Math.min(9, Number(inv.total)/250) + boost("paid","consistent"),
+        title:`You have a ${money(inv.total)} invoice that's overdue. Want to follow up?`,
+        sub:`${inv.clientName} was due ${late} day${late===1?"":"s"} ago${more ? `. ${more} more invoice${more===1?" is":"s are"} overdue too` : ""}. The reminder is written for you.`,
+        label:"View invoice", attrs:`data-nudge-type="late" data-chase-invoice="${inv.id}"` });
+    }
+
+    const ux = unusualExpense();
+    if(ux) moves.push({ id:`unusual-${normText(ux.cat)}-${ux.month}`, type:"unusual", score:50 + boost("profit","organized"),
+      title:`Your ${ux.cat.toLowerCase()} expenses are higher than usual this month.`,
+      sub:`${money(ux.cur)} so far this month, compared with about ${money(ux.avg)} a month over the last three months.`,
+      label:"View expenses", run:()=>{ showView("expenses"); } });
+
+    if(writable && unsure.length)
+      moves.push({ id:`unsure-${unsure.length}`, score:30 + boost("organized"), title:`Take another look at ${unsure.length} you weren't sure about.`,
+        sub:"No rush. They're not counted until you decide.", label:"Review", run:()=>openReviewFlow(true) });
+
+    const safe = safeToSpend();
+    if(safe.ready && safe.stale)
+      moves.push({ id:`balance-${cs.cashAsOf || "none"}`, score:30, title:"Update your account balance.", sub:"So your safe-to-spend number stays accurate.", label:"Update", attrs:`data-safe-setup="1"` });
+
+    const prio = { 1:72, 2:60, 3:45, 4:35, 5:25 };
+    computeNudges().filter(n=>n.type !== "late").forEach(n=>{
+      const score = (prio[n.pri] || 25) + (n.type === "tax" || n.type === "bigpay" ? boost("taxes") : 0) + (n.type === "invoice" ? boost("paid") : 0);
+      let title = n.text, sub = n.why;
+      if(n.type === "bigpay"){ const amt = n.text.match(/Move about (\$[\d,.]+)/); if(amt){ title = `Move ${amt[1]} to tax savings.`; sub = n.text.split(". Move")[0] + "."; } }
+      moves.push({ id:n.id, type:n.type, score, title, sub, label:n.cta.label,
+        attrs: n.cta.chase ? `data-nudge-type="${n.type}" data-chase-invoice="${n.cta.chase}"` : `data-nudge-type="${n.type}" data-nudge-go="${n.cta.view}"` });
+    });
+
+    if(!checkinDoneThisWeek() && (state.income.length || state.expenses.length))
+      moves.push({ id:`checkin-${weekKey(new Date())}`, score:20, title:"Your weekly money check-in is ready.", sub:"About 2 minutes. What came in, what went out, what's waiting.", label:"Start check-in", attrs:`data-weekly-note="1"` });
+
+    if(!businessProfile().set && isOwnWorkspace() && cs.setupDone)
+      moves.push({ id:"business-profile", score:18, title:"Tell GigBooks how you make money.", sub:"Two quick taps, so your Money Moves fit your business.", label:"Start", run:openBusinessModal });
+    const next = checklistItems().find(i=>!i.done);
+    if(next && !cs.checklistDismissed && writable)
+      moves.push({ id:`setup-${normText(next.label)}`, score:15, title:next.label, sub:"Getting set up. Each step makes your numbers more useful.", label:"Start", run:next.go });
+
+    const gone = movesDismissed();
+    return moves.filter(m=>m.essential || !gone[m.id]).sort((a,b)=>b.score - a.score);
+  }
+  let movesGo = [];
   function renderNudges(){
     const wrap = document.getElementById("ovNudges");
     if(!wrap) return;
-    const cs = state.creatorSettings;
-    const rows = [];
-    forYouGo = [];
-    const go = fn => { forYouGo.push(fn); return forYouGo.length - 1; };
-    const btn = (label, attrs) => `<button type="button" class="fy-btn" ${attrs}>${escapeHtml(label)}</button>`;
-    const later = attrs => `<button type="button" class="fy-later" ${attrs}>Later</button>`;
-    const writable = canWriteInWorkspace();
-
-    const q = reviewQueue(), fresh = q.filter(x=>!x.later), unsure = q.filter(x=>x.later);
-    if(fresh.length && writable){
-      const mins = Math.max(1, Math.round(fresh.length * 10 / 60));
-      rows.push({ title:`Review ${fresh.length} transaction${fresh.length===1?"":"s"}`, sub:`About ${mins} minute${mins===1?"":"s"}. Giggy has guessed most of them.`, action:btn("Start", `data-fy="${go(()=>openReviewFlow())}"`) });
-    }
-    if(unsure.length && writable)
-      rows.push({ title:`Take another look at ${unsure.length} you weren't sure about`, sub:"No rush. They're not counted until you decide.", action:btn("Review", `data-fy="${go(()=>openReviewFlow(true))}"`) });
-    state.bankConnections.filter(c=>/error|reauth|login|expired|disconnected|pending/i.test(c.status || "")).slice(0,1).forEach(c=>
-      rows.push({ title:`Finish connecting ${c.institutionName}`, sub:"Your bank needs you to sign in again before new transactions come through.", action:btn("Reconnect", `data-goto="bank"`) }));
-    const safe = safeToSpend();
-    if(safe.ready && safe.stale)
-      rows.push({ title:"Update your account balance", sub:"So your safe-to-spend number stays accurate.", action:btn("Update", `data-safe-setup="1"`) });
-    const due = remindersDue();
-    if(due.length){
-      const r = due[0];
-      rows.push({ title:`Follow up on ${due.length} unpaid invoice${due.length===1?"":"s"}`,
-        sub:`${r.inv.clientName} is ${r.late} days late on ${money(r.inv.total)}. The reminder is written for you.`,
-        action:btn("Send reminder", `data-nudge-type="late" data-chase-invoice="${r.inv.id}"`) });
-    }
-    computeNudges().filter(n=>n.type !== "late").forEach(n=>{
-      const action = n.cta.chase ? btn(n.cta.label, `data-nudge-type="${n.type}" data-chase-invoice="${n.cta.chase}"`) : btn(n.cta.label, `data-nudge-type="${n.type}" data-nudge-go="${n.cta.view}"`);
-      if(n.type === "bigpay"){
-        const amt = n.text.match(/Move about (\$[\d,.]+)/);
-        rows.push({ title: amt ? `Move ${amt[1]} to tax savings` : n.text, sub:n.text.split(". Move")[0] + ".", action, later:later(`data-nudge-type="${n.type}" data-nudge-snooze="${escapeHtml(n.id)}"`) });
-      } else rows.push({ title:n.text, sub:n.why, action, later:later(`data-nudge-type="${n.type}" data-nudge-snooze="${escapeHtml(n.id)}"`) });
-    });
-    if(!checkinDoneThisWeek() && (state.income.length || state.expenses.length))
-      rows.push({ title:"Your weekly money check-in", sub:"About 2 minutes. What came in, what went out, what's waiting.", action:btn("Start", `data-weekly-note="1"`) });
-    const plan = planInfo();
-    if(plan.kind === "trial" && plan.daysLeft <= 3)
-      rows.push({ title:`Your Pro trial ends in ${plan.daysLeft} day${plan.daysLeft===1?"":"s"}`, sub:"Keep bank sync and Giggy for $12 a month, billed yearly", action:btn("See Pro", `data-fy="${go(()=>openUpgrade())}"`) });
-    if(!persona() && !cs.personaDismissed && isOwnWorkspace() && (!cs.workKind || cs.workKind === "creator"))
-      rows.push({ title:"Tell us what kind of creator you are", sub:"20 seconds. We'll hide what you don't need.", action:btn("Start", `data-fy="${go(openPersonaModal)}"`), later:`<button type="button" class="fy-later" id="pfDismiss">Not now</button>` });
-    const next = checklistItems().find(i=>!i.done);
-    if(next && !cs.checklistDismissed && writable)
-      rows.push({ title:next.label, sub:"Getting set up", action:btn("Start", `data-fy="${go(next.go)}"`), later:`<button type="button" class="fy-later" id="clDismiss">Skip setup</button>` });
-
-    const shown = rows.slice(0, 5);
-    wrap.innerHTML = `<div class="card fy-card">
-      <div class="fy-head"><span>${shown.length ? "A couple things to check" : "You're all caught up!"}</span><span class="fy-count">${shown.length ? `${shown.length} thing${shown.length===1?"":"s"}` : ""}</span></div>
-      ${shown.length ? shown.map(r=>`<div class="fy-row">
-          <div class="fy-body"><div class="fy-text">${escapeHtml(r.title)}</div><div class="fy-why">${escapeHtml(r.sub || "")}</div></div>
-          <div class="fy-actions">${r.later || ""}${r.action}</div>
-        </div>`).join("")
-        : `<div class="fy-row fy-empty"><div class="fy-text">Nothing needs you right now. Enjoy it.</div></div>`}
+    const all = moneyMoves(), shown = all.slice(0, 3);
+    movesGo = [];
+    const action = m => {
+      if(m.run){ movesGo.push(m.run); return `<button type="button" class="fy-btn" data-move-go="${movesGo.length - 1}">${escapeHtml(m.label)}</button>`; }
+      return `<button type="button" class="fy-btn" ${m.attrs}>${escapeHtml(m.label)}</button>`;
+    };
+    const empty = !state.income.length && !state.expenses.length;
+    const emptyHtml = empty
+      ? `<div class="fy-row fy-empty"><div class="fy-body"><div class="fy-text">Your Money Moves show up here.</div><div class="fy-why">Add something you were paid or spent and GigBooks will start pointing out what deserves your attention.</div></div>
+          <div class="fy-actions"><button type="button" class="fy-btn" data-goto="all">Add money in or out</button></div></div>`
+      : `<div class="fy-row fy-empty"><div class="fy-body"><div class="fy-text">You're all caught up.</div><div class="fy-why">Nothing needs you right now. New moves show up here when something does.</div></div></div>`;
+    wrap.innerHTML = `<div class="card fy-card moves">
+      <div class="fy-head"><span>Your Money Moves</span><span class="fy-count">${all.length > 3 ? `Top 3 of ${all.length}` : ""}</span></div>
+      ${shown.length ? shown.map(m=>`<div class="fy-row" data-move="${escapeHtml(m.id)}">
+          <div class="fy-body"><div class="fy-text">${escapeHtml(m.title)}</div><div class="fy-why">${escapeHtml(m.sub || "")}</div></div>
+          <div class="fy-actions">${m.essential ? "" : `<button type="button" class="fy-later" data-move-dismiss="${escapeHtml(m.id)}" data-move-type="${escapeHtml(m.type || "")}" aria-label="Dismiss: ${escapeHtml(m.title)}">Not now</button>`}${action(m)}</div>
+        </div>`).join("") : emptyHtml}
     </div>`;
   }
   function openReview(){ openReviewFlow(); }
   document.addEventListener("click", async e=>{
-    const fy = e.target.closest("[data-fy]");
-    if(fy && forYouGo[fy.dataset.fy]){ forYouGo[fy.dataset.fy](); return; }
+    const go = e.target.closest("[data-move-go]");
+    if(go && movesGo[go.dataset.moveGo]){ movesGo[go.dataset.moveGo](); return; }
+    const dis = e.target.closest("[data-move-dismiss]");
+    if(!dis) return;
+    movesDismissed()[dis.dataset.moveDismiss] = todayISO();
+    if(dis.dataset.moveType) recordNudge(dis.dataset.moveType, "snoozed");
+    renderNudges();
+    await saveCreatorSettings();
+  });
+  document.addEventListener("click", async e=>{
     const all = e.target.closest("#fyApproveAll");
     if(!all) return;
     all.disabled = true;
@@ -9720,16 +9814,17 @@ table.m-cards td .empty-state{width:100%;}
 
   /* ---------- Trust: what GigBooks knows ---------- */
   function renderPersonalizationSettings(){
-    const cs = state.creatorSettings, p = persona();
+    const cs = state.creatorSettings, p = persona(), bp = businessProfile();
     const s = nudgeStats();
     const quieted = Object.keys(s).filter(nudgeQuieted);
     const row = (t, v, use) => `<div class="toggle-row"><div><div class="t1">${t}: <span style="font-weight:500;">${v}</span></div><div class="t2">${use}</div></div></div>`;
     openSettingsModal(`<h2>Personalization</h2>
       <p class="settings-note">Everything GigBooks uses to tailor the app is listed here. It comes from your answers and your own books, stays in your account, and is never sold or shared.</p>
       <div class="settings-section">
+        ${row("How you make money", bp.ways.length ? bp.ways.map(k=>escapeHtml(MONEY_WAYS[k])).join(", ") : "Not set", "Picks examples and suggested categories, and hides Deals or Invoices if you don't use them.")}
+        ${row("Biggest money goal", bp.goal ? escapeHtml(MONEY_GOALS[bp.goal]) : "Not set", "Decides which Money Moves and insight show up first on Overview.")}
         ${row("Creator type", p && CREATOR_TYPES[p.type] ? CREATOR_TYPES[p.type].label : "Not set", "Sorts tax write-off ideas and picks your default payout import.")}
-        ${row("Income streams", p && p.streams && p.streams.length ? p.streams.map(k=>INCOME_STREAMS[k]).join(", ") : "Not set", "Hides Deals and Invoices if you don't use them.")}
-        ${row("Focus", p && MONEY_FOCUS[p.focus] ? MONEY_FOCUS[p.focus] : "Not set", "Decides what shows up first on Overview.")}
+        ${row("Category rules", `${categoryRules().length} saved`, "Merchants you asked GigBooks to remember. Manage them in Settings → Category rules.")}
         ${row("Your history", "Income and expenses you've logged", "Powers month-to-month comparisons, milestones and Wrapped.")}
         ${row("Reminder habits", quieted.length ? `Quieted: ${quieted.map(k=>NUDGE_NAMES[k]||k).join(", ")}` : "Nothing quieted", "Reminders you keep snoozing without acting on get turned down.")}
       </div>
@@ -9741,7 +9836,7 @@ table.m-cards td .empty-state{width:100%;}
       </div>
       <div class="settings-form-actions" style="margin-top:14px;justify-content:space-between;">
         <button type="button" class="btn-secondary" id="pzReset">Reset personalization</button>
-        <span style="display:flex;gap:8px;"><button type="button" class="btn-secondary" id="pzEdit">Edit answers</button><button type="button" class="btn-primary" data-close-settings>Done</button></span>
+        <span style="display:flex;gap:8px;flex-wrap:wrap;"><button type="button" class="btn-secondary" id="pzEdit">Edit creator type</button><button type="button" class="btn-secondary" id="pzBiz">Edit your business</button><button type="button" class="btn-primary" data-close-settings>Done</button></span>
       </div>`);
     const bind = (id, fn) => document.getElementById(id).addEventListener("change", async e=>{ fn(e.target.checked); renderAll(); await saveCreatorSettings(); });
     bind("pzTailor", v=>{ cs.tailorTools = v; });
@@ -9749,8 +9844,9 @@ table.m-cards td .empty-state{width:100%;}
     bind("pzVibe", v=>{ cs.vibe = v ? "witty" : "plain"; });
     bind("pzBench", v=>{ cs.shareRates = v; });
     document.getElementById("pzEdit").addEventListener("click", openPersonaModal);
+    document.getElementById("pzBiz").addEventListener("click", openBusinessModal);
     document.getElementById("pzReset").addEventListener("click", async ()=>{
-      delete cs.persona; cs.nudgeStats = {}; cs.personaDismissed = false;
+      delete cs.persona; delete cs.business; cs.nudgeStats = {}; cs.personaDismissed = false;
       closeSettingsModal(); renderAll(); await saveCreatorSettings();
       showToast("Personalization reset. Fresh start.");
     });
@@ -10473,8 +10569,8 @@ table.m-cards td .empty-state{width:100%;}
     [/accountant|lawyer|attorney|cpa|bookkeep|insurance|bank fee/i, /professional|fees|insurance/i]
   ];
   function guessExpenseCategory(text){
-    const rule = (state.creatorSettings.merchantRules || {})[normText(text)];
-    if(rule && rule.cat && state.expenseCategoryList.some(c=>c.name === rule.cat)) return { name:rule.cat, from:"history" };
+    const rule = ruleFor(text, "expense");
+    if(rule && rule.cat) return { name:rule.cat, from:"rule" };
     const hist = suggestExpenseCategory(text);
     if(hist) return { name:hist, from:"history" };
     for(const [re, catRe] of CATEGORY_HINTS){
@@ -10483,9 +10579,14 @@ table.m-cards td .empty-state{width:100%;}
     return null;
   }
   function guessIncomeType(text){
+    const rule = ruleFor(text, "income");
+    if(rule && rule.cat) return rule.cat;
     const hist = suggestIncomeType(text);
     if(hist) return hist;
     const pick = re => (state.incomeCategoryList.find(c=>re.test(c.name)) || {}).name;
+    if(/gumroad|stan store|kajabi|teachable|podia|payhip|lemon ?squeezy/i.test(text)) return pick(/digital|product|course|sales/i);
+    if(/etsy|ebay|poshmark|depop|mercari|shopify|amazon seller|whatnot/i.test(text)) return pick(/sales|product|merch|shop/i);
+    if(/upwork|fiverr|contra|toptal|freelancer\.com|client/i.test(text)) return pick(/client|service|freelance|project/i);
     if(/adsense|youtube|tiktok|creator fund|twitch|reels play/i.test(text)) return pick(/ad|platform|payout/i);
     if(/patreon|substack|membership|subscri/i.test(text)) return pick(/member|subscri/i);
     if(/ltk|amazon associates|affiliate|shopmy|impact/i.test(text)) return pick(/affiliate/i);
@@ -10496,8 +10597,145 @@ table.m-cards td .empty-state{width:100%;}
      Covers imported email/CSV items, bank transactions and anything the
      user wasn't sure about. Nothing becomes income or a write-off without
      a "Yes". Confirmed merchants are remembered for next time. */
-  function merchantRules(){ const cs = state.creatorSettings; if(!cs.merchantRules || typeof cs.merchantRules !== "object") cs.merchantRules = {}; return cs.merchantRules; }
-  function rememberMerchant(name, rule){ const k = normText(name); if(k) merchantRules()[k] = rule; }
+  /* ============================================================
+     Category rules: GigBooks learns, but only when asked to.
+     A rule is saved only after the user says "Remember this".
+     Rules live in this user's own settings row (protected by
+     row-level security), match by merchant name, and only ever
+     *suggest*: every transaction is still confirmed by the user.
+     ============================================================ */
+  const MERCHANT_NOISE = new Set(["pos","purchase","debit","credit","card","payment","pmt","online","www","com","net","inc","llc","ltd","co","corp","the","sq","tst","pp","paypal","venmo","zelle","cashapp","cash","app","ach","recurring","autopay","checkcard","visa","mastercard","amex","from","to","for","via","ref","id","txn","transfer","deposit","withdrawal","mobile","us","usa"]);
+  // "ADOBE *CREATIVE CLD 800-833" → "adobe creative"; "Venmo from Jane Doe" → "jane doe".
+  function merchantKey(name){
+    const words = String(name || "").toLowerCase().replace(/\.(com|net|io|co|org)\b/g, " ").replace(/[^a-z&']+/g, " ").replace(/'/g, "")
+      .split(" ").filter(w=>w.length > 1 && !MERCHANT_NOISE.has(w));
+    return words.slice(0, 2).join(" ");
+  }
+  // A rule "adobe" matches "Adobe Stock" and "ADOBE *CREATIVE CLD", never "Adoberry" or "Photo Adobe".
+  function ruleMatches(ruleKey, name){
+    const rk = String(ruleKey || "").split(" ").filter(Boolean), nk = merchantKey(name).split(" ").filter(Boolean);
+    return rk.length > 0 && rk.every((w,i)=>nk[i] === w);
+  }
+  function categoryRules(){
+    const cs = state.creatorSettings;
+    if(!Array.isArray(cs.categoryRules)) cs.categoryRules = [];
+    // One-time copy of rules remembered by earlier versions (the originals are left in place).
+    if(!cs.rulesMigrated){
+      cs.rulesMigrated = true;
+      Object.entries(cs.merchantRules || {}).forEach(([name, r])=>{
+        const key = merchantKey(name);
+        if(!key || !r) return;
+        const kind = r.personal ? "expense" : state.incomeCategoryList.some(c=>c.name === r.cat) && !state.expenseCategoryList.some(c=>c.name === r.cat) ? "income" : "expense";
+        if(!cs.categoryRules.some(x=>x.key === key && x.kind === kind))
+          cs.categoryRules.push({ id:rid(), kind, key, label:name, cat:r.cat || null, personal:!!r.personal, created:todayISO(), from:"earlier" });
+      });
+    }
+    return cs.categoryRules;
+  }
+  function catOptions(kind){ return kind === "income" ? state.incomeCategoryList : state.expenseCategoryList; }
+  function ruleValid(r){ return r.personal || catOptions(r.kind).some(c=>c.name === r.cat); }
+  // The most specific matching rule wins.
+  function ruleFor(name, kind){
+    return categoryRules().filter(r=>r.kind === kind && ruleValid(r) && ruleMatches(r.key, name))
+      .sort((a,b)=>b.key.split(" ").length - a.key.split(" ").length)[0] || null;
+  }
+  function ruleOutcome(r){ return r.personal ? "Personal" : r.cat; }
+  // Rules whose matches overlap but disagree ("adobe" → Software, "adobe stock" → Marketing).
+  function ruleConflicts(r){
+    return categoryRules().filter(o=>o.id !== r.id && o.kind === r.kind && (ruleMatches(o.key, r.key) || ruleMatches(r.key, o.key)) && ruleOutcome(o) !== ruleOutcome(r));
+  }
+  function logCategoryChange(entry){
+    const cs = state.creatorSettings;
+    if(!Array.isArray(cs.categoryLog)) cs.categoryLog = [];
+    cs.categoryLog.unshift(Object.assign({ at:new Date().toISOString() }, entry));
+    cs.categoryLog = cs.categoryLog.slice(0, 100);
+  }
+  // Saves (or updates) a rule. If a rule for the same merchant says something
+  // different, the user is asked before it's replaced. Resolves true if saved.
+  function saveRule(name, kind, outcome, confirmed){
+    return new Promise(resolve=>{
+      const key = merchantKey(name) || normText(name);
+      if(!key || key.length < 3){ showToast("That name is too general to remember safely.", true); resolve(false); return; }
+      const rules = categoryRules(), existing = rules.find(r=>r.key === key && r.kind === kind);
+      const commit = async ()=>{
+        const before = existing ? ruleOutcome(existing) : null;
+        const r = existing || { id:rid(), kind, key, created:todayISO() };
+        Object.assign(r, { label:name, cat: outcome.personal ? null : outcome.cat, personal:!!outcome.personal, updated:todayISO() });
+        if(!existing) rules.push(r);
+        logCategoryChange({ what:"rule", name, from:before, to:ruleOutcome(r) });
+        await saveCreatorSettings();
+        resolve(true);
+      };
+      const next = outcome.personal ? "Personal" : outcome.cat;
+      if(existing && ruleOutcome(existing) !== next && !confirmed){
+        openSettingsModal(`<h2>Replace your saved rule?</h2>
+          <p class="settings-note">You told GigBooks <b>${escapeHtml(existing.label || key)}</b> is <b>${escapeHtml(ruleOutcome(existing))}</b>. Change it to <b>${escapeHtml(next)}</b> from now on? Past transactions stay as they are.</p>
+          <div class="modal-actions"><button type="button" class="btn-secondary" id="rcKeep">Keep ${escapeHtml(ruleOutcome(existing))}</button><button type="button" class="btn-primary" id="rcReplace">Change to ${escapeHtml(next)}</button></div>`);
+        document.getElementById("rcKeep").addEventListener("click", ()=>{ closeSettingsModal(); resolve(false); });
+        document.getElementById("rcReplace").addEventListener("click", ()=>{ closeSettingsModal(); commit(); });
+      } else if(existing && ruleOutcome(existing) === next){ resolve(true); }
+      else commit();
+    });
+  }
+  // After a manual category change: "Want GigBooks to remember this for next time?"
+  function offerRemember(name, kind, cat){
+    if(!name || !cat || !canWriteInWorkspace()) return;
+    const r = ruleFor(name, kind);
+    if(r && ruleOutcome(r) === cat) return;
+    const key = merchantKey(name) || normText(name);
+    if(!key || key.length < 3) return;
+    openSettingsModal(`<h2>Want GigBooks to remember this for next time?</h2>
+      <p class="settings-note">Next time something from <b>${escapeHtml(name)}</b> comes in, GigBooks will suggest <b>${escapeHtml(cat)}</b>. You'll still confirm it, and you can change or delete the rule in Settings.</p>
+      <div class="modal-actions"><button type="button" class="btn-secondary" data-close-settings>Just this once</button><button type="button" class="btn-primary" id="remYes">Remember</button></div>`);
+    document.getElementById("remYes").addEventListener("click", async ()=>{
+      closeSettingsModal();
+      if(await saveRule(name, kind, { cat })) showToast(`Got it. ${name} → ${cat}.`);
+    });
+  }
+  if(window.__FIXTURE) window.__gbTest = { merchantKey, ruleMatches };
+  function renderRulesSettings(){
+    const rules = categoryRules().slice().sort((a,b)=>(a.label || a.key).localeCompare(b.label || b.key));
+    const writable = canWriteInWorkspace();
+    const log = (state.creatorSettings.categoryLog || []).slice(0, 8);
+    openSettingsModal(`<h2>Category rules</h2>
+      <p class="settings-note">Merchants you've asked GigBooks to remember. Rules only suggest a category. Nothing is counted until you confirm it, and changing a rule never changes past transactions.</p>
+      <div class="settings-section rules-list">${rules.length ? rules.map(r=>{
+        const issues = [];
+        if(!ruleValid(r)) issues.push(`The category “${escapeHtml(r.cat || "")}” no longer exists, so this rule is paused.`);
+        const cf = ruleConflicts(r);
+        if(cf.length) issues.push(`Disagrees with ${cf.map(o=>`“${escapeHtml(o.label || o.key)}” → ${escapeHtml(ruleOutcome(o))}`).join(", ")}. The more specific name wins.`);
+        return `<div class="rule-row" data-rule="${r.id}">
+          <div class="rule-main"><b>${escapeHtml(r.label || r.key)}</b><span class="rule-arrow">→</span>
+            ${writable ? `<select data-rule-cat="${r.id}" aria-label="Category for ${escapeHtml(r.label || r.key)}">
+              ${r.kind === "expense" ? `<option value="__personal" ${r.personal ? "selected" : ""}>Personal (not a business expense)</option>` : ""}
+              ${catOptions(r.kind).map(c=>`<option ${!r.personal && c.name === r.cat ? "selected" : ""}>${escapeHtml(c.name)}</option>`).join("")}
+              ${!r.personal && !ruleValid(r) ? `<option selected>${escapeHtml(r.cat || "")}</option>` : ""}
+            </select>` : `<span>${escapeHtml(ruleOutcome(r))}</span>`}
+            ${writable ? `<button type="button" class="nudge-link" data-rule-del="${r.id}">Delete</button>` : ""}</div>
+          <div class="sa-sub">${r.kind === "income" ? "Money in" : "Money out"} · matches names starting with “${escapeHtml(r.key)}”${r.from === "earlier" ? " · remembered by an earlier version" : ""}</div>
+          ${issues.map(t=>`<div class="rule-issue">${t}</div>`).join("")}
+        </div>`; }).join("")
+        : `<div class="settings-note">No rules yet. When you change a category, GigBooks will ask if you want it remembered.</div>`}</div>
+      ${log.length ? `<details class="rules-log"><summary>Recent category decisions</summary><ul>${log.map(l=>`<li>${new Date(l.at).toLocaleDateString("en-US",{month:"short",day:"numeric"})} · ${escapeHtml(l.name || "")}: ${l.from ? `${escapeHtml(l.from)} → ` : ""}${escapeHtml(l.to || "")} <span class="sa-sub">(${escapeHtml(l.what === "rule" ? "rule saved" : l.what === "rule-deleted" ? "rule deleted" : "confirmed in review")})</span></li>`).join("")}</ul></details>` : ""}
+      <div class="settings-form-actions" style="margin-top:14px;"><button type="button" class="btn-primary" data-close-settings>Done</button></div>`);
+    document.querySelectorAll("[data-rule-cat]").forEach(sel=>sel.addEventListener("change", async ()=>{
+      const r = categoryRules().find(x=>x.id === sel.dataset.ruleCat); if(!r) return;
+      const before = ruleOutcome(r);
+      if(sel.value === "__personal"){ r.personal = true; r.cat = null; } else { r.personal = false; r.cat = sel.value; }
+      r.updated = todayISO();
+      logCategoryChange({ what:"rule", name:r.label || r.key, from:before, to:ruleOutcome(r) });
+      await saveCreatorSettings();
+      renderRulesSettings();
+    }));
+    document.querySelectorAll("[data-rule-del]").forEach(b=>b.addEventListener("click", async ()=>{
+      const cs = state.creatorSettings, r = categoryRules().find(x=>x.id === b.dataset.ruleDel); if(!r) return;
+      cs.categoryRules = categoryRules().filter(x=>x.id !== r.id);
+      logCategoryChange({ what:"rule-deleted", name:r.label || r.key, from:ruleOutcome(r), to:"no rule" });
+      await saveCreatorSettings();
+      renderRulesSettings();
+    }));
+  }
+
   function reviewLater(){ const cs = state.creatorSettings; if(!cs.reviewLater || typeof cs.reviewLater !== "object") cs.reviewLater = {}; return cs.reviewLater; }
   function reviewQueue(){
     const flagged = state.creatorSettings.expenseReview || {}, later = reviewLater();
@@ -10522,9 +10760,9 @@ table.m-cards td .empty-state{width:100%;}
     return null;
   }
   function suggestFor(x){
-    const rule = merchantRules()[normText(x.name)];
-    if(rule && rule.personal) return { personal:true };
-    if(rule && rule.cat) return { cat:rule.cat, why:"You picked this last time." };
+    const rule = ruleFor(x.name, x.kind);
+    if(rule && rule.personal) return { personal:true, rule };
+    if(rule && rule.cat) return { cat:rule.cat, rule };
     if(x.kind === "income"){ const t = guessIncomeType(x.name); return t ? { cat:t } : {}; }
     const g = guessExpenseCategory(x.name);
     return g ? { cat:g.name, why: g.from === "history" ? "Based on similar ones you've logged." : "" } : {};
@@ -10549,13 +10787,12 @@ table.m-cards td .empty-state{width:100%;}
       if(answer !== "later") track("first_transaction_reviewed", { source:"review" });
       delete reviewLater()[x.key];
       if(answer === "yes"){
-        rememberMerchant(x.name, { cat });
+        logCategoryChange({ what:"review", name:x.name, from: x.suggested && x.suggested !== cat ? x.suggested : null, to:cat });
         if(x.kind === "expense" && /meal|food|entertain/i.test(cat || "")){
           const cs = state.creatorSettings, e = state.expenses.find(r=>normText(r.description) === normText(x.name) && Math.abs(r.amount - x.amount) < 0.01);
           if(e) cs.expenseReview = Object.assign({}, cs.expenseReview, { [e.id]: "Meals are usually only 50% deductible. Check this one with your tax pro." });
         }
       }
-      if(answer === "no" && x.kind === "expense") rememberMerchant(x.name, { personal:true });
     }
     return ok;
   }
@@ -10578,8 +10815,10 @@ table.m-cards td .empty-state{width:100%;}
       const opts = isIn ? state.incomeCategoryList : state.expenseCategoryList;
       const cat = sug.cat || (opts[0] || {}).name || (isIn ? "Other Income" : "Other");
       const noun = c => c ? c.toLowerCase().replace(/^other( income)?$/, "other") : "";
-      const guessLine = sug.personal ? `<div class="rv-hint">You said <b>${escapeHtml(x.name)}</b> was personal last time.</div>`
-        : sug.cat ? `<div class="rv-hint">Giggy thinks this is ${isIn ? "" : (/^[aeiou]/i.test(noun(sug.cat)) ? "an" : "a")} <b>${escapeHtml(noun(sug.cat))}</b> ${isIn ? "income" : "expense"}. <button type="button" class="hh-link" id="rvChange">Change</button>${sug.why ? `<span class="sa-sub"> ${escapeHtml(sug.why)}</span>` : ""}</div>`
+      x.suggested = sug.cat || null;
+      const guessLine = sug.personal ? `<div class="rv-hint"><span class="rv-tag rule">Your rule</span> You told GigBooks <b>${escapeHtml(x.name)}</b> is personal.</div>`
+        : sug.rule ? `<div class="rv-hint"><span class="rv-tag rule">Your rule</span> <b>${escapeHtml(x.name)}</b> → <b>${escapeHtml(sug.cat)}</b>. <button type="button" class="hh-link" id="rvChange">Change</button></div>`
+        : sug.cat ? `<div class="rv-hint"><span class="rv-tag">Suggested</span> Giggy thinks this is ${isIn ? "" : (/^[aeiou]/i.test(noun(sug.cat)) ? "an" : "a")} <b>${escapeHtml(noun(sug.cat))}</b> ${isIn ? "income" : "expense"}. <button type="button" class="hh-link" id="rvChange">Change</button>${sug.why ? `<span class="sa-sub"> ${escapeHtml(sug.why)}</span>` : ""}</div>`
         : `<div class="rv-hint">Pick what it was:</div>`;
       openSettingsModal(`<div class="rv">
         <div class="rv-top"><span>${i+1} of ${queue.length}</span><button type="button" class="nudge-link" id="rvClose">Finish later</button></div>
@@ -10597,6 +10836,7 @@ table.m-cards td .empty-state{width:100%;}
           <button type="button" class="btn-secondary" id="rvNo">${isIn ? "No, something else" : "No, personal"}</button>
           <button type="button" class="btn-secondary" id="rvLater">I'm not sure</button>
         </div>
+        <label class="rv-remember" id="rvRemWrap" ${sug.rule || sug.personal ? "hidden" : ""}><input type="checkbox" id="rvRemember"> <span id="rvRemText"></span></label>
         ${x.dup && x.src === "bank" && x.dup.incomeId ? `<button type="button" class="nudge-link rv-same" id="rvSame">It's the same payment, don't count it again</button>` : ""}
         <div class="rv-other" id="rvOther" hidden>
           <div class="rv-q" style="margin-top:14px;">What was it?</div>
@@ -10607,14 +10847,24 @@ table.m-cards td .empty-state{width:100%;}
         </div>
       </div>`);
       const btns = ()=>document.querySelectorAll(".rv button");
+      const catSel = document.getElementById("rvCat"), remWrap = document.getElementById("rvRemWrap"), remBox = document.getElementById("rvRemember");
+      const remText = ()=>{
+        const r = ruleFor(x.name, x.kind);
+        document.getElementById("rvRemText").textContent = r ? `Change your saved rule: ${x.name} → ${catSel.value}` : `Remember ${x.name} → ${catSel.value} for next time`;
+      };
+      remText();
+      catSel.addEventListener("change", ()=>{ remText(); const r = ruleFor(x.name, x.kind); remWrap.hidden = !!(r && ruleOutcome(r) === catSel.value); });
       const act = async (answer)=>{
         btns().forEach(b=>b.disabled = true);
-        const ok = await resolveItem(x, answer, document.getElementById("rvCat").value);
+        const chosen = catSel.value;
+        const ok = await resolveItem(x, answer, chosen);
+        if(ok && remBox.checked && !remWrap.hidden && (answer === "yes" || (answer === "no" && !isIn)))
+          await saveRule(x.name, x.kind, answer === "yes" ? { cat:chosen } : { personal:true }, true);
         if(ok && answer === "later") later++; else if(ok) done++;
         if(!ok) showToast("Couldn't save that one. It's still in your list.", true);
         next();
       };
-      const ch = document.getElementById("rvChange"); if(ch) ch.addEventListener("click", ()=>{ document.getElementById("rvCatWrap").hidden = false; document.getElementById("rvCat").focus(); });
+      const ch = document.getElementById("rvChange"); if(ch) ch.addEventListener("click", ()=>{ document.getElementById("rvCatWrap").hidden = false; catSel.focus(); });
       document.getElementById("rvYes").addEventListener("click", ()=>act("yes"));
       document.getElementById("rvLater").addEventListener("click", ()=>act("later"));
       document.getElementById("rvNo").addEventListener("click", ()=>{ if(isIn){ document.getElementById("rvOther").hidden = false; } else act("no"); });
@@ -10859,7 +11109,7 @@ table.m-cards td .empty-state{width:100%;}
     "bank_connection_completed","first_money_summary_viewed","weekly_checkin_completed","pro_upgrade_started","pro_upgrade_completed"];
   const FIRST_ONLY = ["first_transaction_added","first_transaction_reviewed","first_money_summary_viewed","onboarding_completed"];
   // Only these small, non-financial properties are ever sent.
-  const SAFE_PROPS = { source:["manual","bank","import","review"], path:["connect","manual","skipped"], interval:["month","year"], work:["creator","freelancer","business","other"] };
+  const SAFE_PROPS = { source:["manual","bank","import","review"], path:["connect","manual","skipped"], interval:["month","year"], work:["creator","freelancer","business","other"], goal:["organized","profit","consistent","taxes","paid","grow"] };
   let analyticsOff = false;
   function track(event, props){
     try{
@@ -10878,10 +11128,11 @@ table.m-cards td .empty-state{width:100%;}
   }
 
   /* ============================================================
-     Onboarding: three steps to the first useful number.
-     1. What kind of work do you do?
-     2. Connect accounts, or add things myself?
-     3. Do the first useful thing, then see your dashboard.
+     Onboarding: four short steps to the first useful number.
+     1. How do you make money? (pick any)
+     2. What's your biggest money goal right now?
+     3. Connect accounts, or add things myself?
+     4. Do the first useful thing, then see your dashboard.
      Progress is saved; every step can be skipped.
      ============================================================ */
   const WORK_KINDS = {
@@ -10890,48 +11141,139 @@ table.m-cards td .empty-state{width:100%;}
     business:{ label:"Small business owner", sub:"Selling products or services", inEx:"Order from a customer", outEx:"Packaging supplies" },
     other:{ label:"Something else", sub:"We'll keep it general", inEx:"Payment for a project", outEx:"Supplies" }
   };
+  /* ============================================================
+     Your business: how you make money + your biggest money goal.
+     Asked once in onboarding, editable in Settings → Personalization.
+     Used to order Money Moves, pick the one insight on Home, word
+     examples and suggest categories. Never hides features.
+     ============================================================ */
+  const MONEY_WAYS = {
+    content:"Content creation and brand deals", freelance:"Freelance services", influencing:"Social media influencing",
+    digital:"Digital products", affiliate:"Affiliate marketing", selling:"Online selling", gig:"Other gig or contract work"
+  };
+  const MONEY_GOALS = {
+    organized:"Stay organized", profit:"Understand my profit", consistent:"Make more consistent income",
+    taxes:"Save for taxes", paid:"Get paid on time", grow:"Grow my business"
+  };
+  // Older answers (persona streams / work kind / focus) still count until the user answers the new questions.
+  function businessProfile(){
+    const cs = state.creatorSettings, b = cs.business;
+    if(b && typeof b === "object" && Array.isArray(b.ways)) return { ways:b.ways.filter(k=>MONEY_WAYS[k]), goal: MONEY_GOALS[b.goal] ? b.goal : null, set:true };
+    const p = persona(), ways = new Set();
+    ((p && p.streams) || []).forEach(s=>{ const m = { brand:"content", ads:"influencing", affiliate:"affiliate", members:"digital", clients:"freelance", products:"digital" }[s]; if(m) ways.add(m); });
+    if(!ways.size && cs.workKind) ways.add({ creator:"content", freelancer:"freelance", business:"selling", other:"gig" }[cs.workKind] || "gig");
+    const goal = p && { taxes:"taxes", smooth:"consistent", rates:"grow", save:"organized" }[p.focus];
+    return { ways:[...ways], goal: goal || null, set:false };
+  }
+  function moneyGoal(){ return businessProfile().goal; }
+  // Keep the older settings that other parts of the app read in step with the new answers.
+  function workKindFromWays(ways){
+    const w = new Set(ways);
+    if(w.has("content") || w.has("influencing") || w.has("affiliate")) return "creator";
+    if(w.has("freelance") || w.has("gig")) return "freelancer";
+    if(w.has("digital") || w.has("selling")) return "business";
+    return "other";
+  }
+  function applyBusinessProfile(ways, goal){
+    const cs = state.creatorSettings;
+    cs.business = { ways: ways.filter(k=>MONEY_WAYS[k]), goal: MONEY_GOALS[goal] ? goal : null, at: todayISO() };
+    if(ways.length){
+      cs.workKind = workKindFromWays(ways);
+      const streams = new Set();
+      ways.forEach(k=>({ content:["brand"], influencing:["brand","ads"], affiliate:["affiliate"], digital:["products"], selling:["products"], freelance:["clients"], gig:["clients"] }[k] || []).forEach(s=>streams.add(s)));
+      cs.persona = Object.assign({}, cs.persona, { streams:[...streams] });
+    }
+  }
+  function waysChipsHtml(sel){
+    return `<div class="ob-options multi">${Object.entries(MONEY_WAYS).map(([k,l])=>`<button type="button" class="ob-option ${sel.has(k)?"on":""}" data-way="${k}" aria-pressed="${sel.has(k)}"><b>${l}</b></button>`).join("")}</div>`;
+  }
+  function goalChipsHtml(goal){
+    return `<div class="ob-options multi">${Object.entries(MONEY_GOALS).map(([k,l])=>`<button type="button" class="ob-option ${goal===k?"on":""}" data-goal="${k}" aria-pressed="${goal===k}"><b>${l}</b></button>`).join("")}</div>`;
+  }
+  function bindWayChips(sel, onChange){
+    document.querySelectorAll("[data-way]").forEach(b=>b.addEventListener("click", ()=>{
+      const k = b.dataset.way; sel.has(k) ? sel.delete(k) : sel.add(k);
+      b.classList.toggle("on", sel.has(k)); b.setAttribute("aria-pressed", sel.has(k));
+      if(onChange) onChange();
+    }));
+  }
+  function bindGoalChips(onPick){
+    document.querySelectorAll("[data-goal]").forEach(b=>b.addEventListener("click", ()=>{
+      document.querySelectorAll("[data-goal]").forEach(x=>{ x.classList.toggle("on", x === b); x.setAttribute("aria-pressed", x === b); });
+      onPick(b.dataset.goal);
+    }));
+  }
+  function openBusinessModal(){
+    const bp = businessProfile(), sel = new Set(bp.ways);
+    let goal = bp.goal;
+    openSettingsModal(`<h2>Your business</h2>
+      <p class="settings-note">GigBooks uses this to put the right things first. You'll always have every feature.</p>
+      <div class="field"><label>How do you make money? <span class="field-hint">Pick all that apply</span></label>${waysChipsHtml(sel)}</div>
+      <div class="field"><label>What's your biggest money goal right now?</label>${goalChipsHtml(goal)}</div>
+      <div class="modal-actions"><button type="button" class="btn-secondary" data-close-settings>Cancel</button><button type="button" class="btn-primary" id="bizSave">Save</button></div>`);
+    bindWayChips(sel);
+    bindGoalChips(g=>{ goal = g; });
+    document.getElementById("bizSave").addEventListener("click", async ()=>{
+      applyBusinessProfile([...sel], goal);
+      closeSettingsModal(); renderAll(); showToast("Saved. GigBooks will put what matters to you first.");
+      await saveCreatorSettings();
+    });
+  }
+
   function workKind(){ return state.creatorSettings.workKind || "creator"; }
   function examples(){ return WORK_KINDS[workKind()] || WORK_KINDS.creator; }
-  function onboardingState(){ const cs = state.creatorSettings; if(!cs.onboarding || typeof cs.onboarding !== "object") cs.onboarding = { step:1 }; return cs.onboarding; }
+  function onboardingState(){
+    const cs = state.creatorSettings;
+    if(!cs.onboarding || typeof cs.onboarding !== "object") cs.onboarding = { step:1, v:2 };
+    // Progress saved by the earlier three-step version: its step 2 is now step 3.
+    if(!cs.onboarding.v){ if(cs.onboarding.step >= 2) cs.onboarding.step++; cs.onboarding.v = 2; }
+    return cs.onboarding;
+  }
   async function finishWizard(path){
     const cs = state.creatorSettings;
     cs.setupDone = true;
     delete cs.onboarding;
     closeSettingsModal();
-    track("onboarding_completed", { path: path || "skipped", work: cs.workKind });
+    track("onboarding_completed", { path: path || "skipped", work: cs.workKind, goal: (cs.business || {}).goal });
     renderAll();
     await saveCreatorSettings();
   }
   function openSetupWizard(){ renderWizard(); }
   function renderWizard(){
     const cs = state.creatorSettings, ob = onboardingState();
-    const dots = `<div class="wiz-dots" aria-label="Step ${ob.step} of 3">${[1,2,3].map(i=>`<span class="${i===ob.step?"on":""}"></span>`).join("")}</div>`;
+    const dots = `<div class="wiz-dots" aria-label="Step ${ob.step} of 4">${[1,2,3,4].map(i=>`<span class="${i===ob.step?"on":""}"></span>`).join("")}</div>`;
     const save = ()=>saveCreatorSettings();
     if(ob.step === 1){
-      openSettingsModal(`${dots}<h2>What kind of work do you do?</h2>
-        <p class="settings-note">So GigBooks can use examples that sound like your work. You'll still get every feature.</p>
-        <div class="ob-options">${Object.entries(WORK_KINDS).map(([k,w])=>`<button type="button" class="ob-option ${cs.workKind===k?"on":""}" data-work="${k}"><b>${w.label}</b><span>${w.sub}</span></button>`).join("")}</div>
-        <div class="modal-actions"><button type="button" class="btn-secondary" id="wizSkip">Skip setup</button><button type="button" class="btn-primary" id="wizNext" ${cs.workKind ? "" : "disabled"}>Next</button></div>`);
-      document.querySelectorAll("[data-work]").forEach(b=>b.addEventListener("click", ()=>{
-        cs.workKind = b.dataset.work;
-        document.querySelectorAll("[data-work]").forEach(x=>x.classList.toggle("on", x === b));
-        document.getElementById("wizNext").disabled = false;
-      }));
-      document.getElementById("wizNext").addEventListener("click", ()=>{ ob.step = 2; save(); renderWizard(); });
+      const sel = new Set(ob.ways || businessProfile().ways);
+      openSettingsModal(`${dots}<h2>How do you make money?</h2>
+        <p class="settings-note">Pick all that apply. GigBooks uses this to put the right things first. You'll still get every feature.</p>
+        ${waysChipsHtml(sel)}
+        <div class="modal-actions"><button type="button" class="btn-secondary" id="wizSkip">Skip setup</button><button type="button" class="btn-primary" id="wizNext" ${sel.size ? "" : "disabled"}>Next</button></div>`);
+      bindWayChips(sel, ()=>{ document.getElementById("wizNext").disabled = !sel.size; });
+      document.getElementById("wizNext").addEventListener("click", ()=>{ ob.ways = [...sel]; applyBusinessProfile(ob.ways, ob.goal); ob.step = 2; save(); renderWizard(); });
     } else if(ob.step === 2){
+      openSettingsModal(`${dots}<h2>What's your biggest money goal right now?</h2>
+        <p class="settings-note">Pick one. You can change it any time in Settings.</p>
+        ${goalChipsHtml(ob.goal)}
+        <div class="modal-actions"><button type="button" class="btn-secondary" id="wizBack">Back</button><button type="button" class="btn-secondary" id="wizSkipStep">Skip</button></div>`);
+      bindGoalChips(g=>{ ob.goal = g; applyBusinessProfile(ob.ways || businessProfile().ways, g); ob.step = 3; save(); renderWizard(); });
+      document.getElementById("wizBack").addEventListener("click", ()=>{ ob.step = 1; save(); renderWizard(); });
+      document.getElementById("wizSkipStep").addEventListener("click", ()=>{ ob.step = 3; save(); renderWizard(); });
+      return;
+    } else if(ob.step === 3){
       openSettingsModal(`${dots}<h2>How would you like to get started?</h2>
         <div class="ob-options">
           <button type="button" class="ob-option" data-path="connect"><b>Connect my accounts</b><span>Link your bank through Plaid, a secure service thousands of apps use. GigBooks sees your transactions, never your bank password, and nothing counts until you say yes.</span></button>
           <button type="button" class="ob-option" data-path="manual"><b>Add things myself</b><span>Type in money in and money out as it happens. You can connect a bank any time later.</span></button>
         </div>
         <div class="modal-actions"><button type="button" class="btn-secondary" id="wizBack">Back</button><button type="button" class="btn-secondary" id="wizSkip">Skip for now</button></div>`);
-      document.querySelectorAll("[data-path]").forEach(b=>b.addEventListener("click", ()=>{ ob.path = b.dataset.path; ob.step = 3; save(); renderWizard(); }));
-      document.getElementById("wizBack").addEventListener("click", ()=>{ ob.step = 1; save(); renderWizard(); });
+      document.querySelectorAll("[data-path]").forEach(b=>b.addEventListener("click", ()=>{ ob.path = b.dataset.path; ob.step = 4; save(); renderWizard(); }));
+      document.getElementById("wizBack").addEventListener("click", ()=>{ ob.step = 2; save(); renderWizard(); });
     } else if(ob.path === "connect"){
       openSettingsModal(`${dots}<h2>Let's organize your money</h2>
         <p class="settings-note">Your bank opens in a secure Plaid window. When you're back, new transactions show up on Home for a quick yes or no.</p>
         <div class="modal-actions"><button type="button" class="btn-secondary" id="wizBack">Back</button><button type="button" class="btn-primary" id="wizConnect">Connect my bank</button></div>`);
-      document.getElementById("wizBack").addEventListener("click", ()=>{ ob.step = 2; save(); renderWizard(); });
+      document.getElementById("wizBack").addEventListener("click", ()=>{ ob.step = 3; save(); renderWizard(); });
       document.getElementById("wizConnect").addEventListener("click", async ()=>{ await finishWizard("connect"); startPlaidConnect(); });
     } else {
       const ex = examples();
@@ -10946,7 +11288,7 @@ table.m-cards td .empty-state{width:100%;}
           <div class="modal-actions"><button type="button" class="btn-secondary" id="wizBack">Back</button><button type="button" class="btn-primary" id="obSave">Add it</button></div>
           <button type="button" class="nudge-link ob-skip" id="wizSkip">I'll do this later</button>`);
         document.querySelectorAll("[data-dir]").forEach(b=>b.addEventListener("click", ()=>{ dir = ob.dir = b.dataset.dir; draw(); }));
-        document.getElementById("wizBack").addEventListener("click", ()=>{ ob.step = 2; save(); renderWizard(); });
+        document.getElementById("wizBack").addEventListener("click", ()=>{ ob.step = 3; save(); renderWizard(); });
         document.getElementById("obSave").addEventListener("click", async e=>{
           const name = document.getElementById("obName").value.trim(), amt = Number(document.getElementById("obAmt").value);
           if(!name || !(amt > 0)){ showToast("Add what it was and how much.", true); return; }
@@ -12342,6 +12684,7 @@ table.m-cards td .empty-state{width:100%;}
     displayOptions: renderDisplayOptionsSettings,
     dataPrivacy: renderDataPrivacySettings,
     personalization: renderPersonalizationSettings,
+    categoryRules: renderRulesSettings,
     getPaid: renderGetPaidSettings,
     mediaKit: renderMediaKitSettings,
     invite: renderInviteSettings,

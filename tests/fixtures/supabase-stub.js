@@ -10,6 +10,7 @@
   function query(table){
     let rows = (tables[table] || []).slice();
     let inserted = null;
+    const filters = [];
     const missing = F.missingTables && F.missingTables.includes(table);
     const result = () => missing ? { data:null, error:{ message:`relation "${table}" does not exist` } } : { data:rows, error:null };
     const chain = new Proxy(function(){}, {
@@ -23,7 +24,8 @@
           inserted = Object.assign({ id:"row-" + Math.random().toString(36).slice(2) }, Array.isArray(row) ? row[0] : row);
           return chain;
         };
-        if(k === "update") return (patch) => { (window.__updates = window.__updates || []).push({ table, values: JSON.parse(JSON.stringify(patch)) }); inserted = Object.assign({}, rows[0] || {}, patch); return chain; };
+        if(k === "update") return (patch) => { (window.__updates = window.__updates || []).push({ table, values: JSON.parse(JSON.stringify(patch)), filters }); inserted = Object.assign({}, rows[0] || {}, patch); return chain; };
+        if(k === "eq") return (col, val) => { filters.push([col, val]); return chain; };
         return () => chain;
       }
     });

@@ -1,4 +1,4 @@
-// Phase 3: the weekly check-in, the monthly recap, and Giggy in context.
+// Retention: the monthly check-in, the monthly recap, and Giggy in context.
 const { test, after } = require("node:test");
 const assert = require("node:assert/strict");
 const { openApp, closeAll, go } = require("./helpers");
@@ -15,36 +15,55 @@ const WEEK = { tables: {
   invoices: [{ id:"inv1", invoice_number:12, client_name:"Aritzia", issue_date:"2026-09-20", due_date:"2026-10-21", status:"sent", line_items:[], subtotal:3500, total:3500 }]
 } };
 
-test("the weekly check-in greets you with what's waiting, then walks through it", async () => {
+test("the monthly check-in asks only what applies, then shows the month at a glance", async () => {
   const page = await openApp(WEEK);
-  assert.match(await page.textContent("#ovNudges"), /Your weekly money check-in/);
+  assert.match(await page.textContent("#ovNudges"), /Your October money check-in is ready/);
   await page.click("#ovNudges [data-weekly-note]");
   await page.waitForSelector(".ci");
-  assert.match(await page.textContent(".ci h2"), /Your Weekly Money Check-In/);
-  assert.equal((await page.textContent(".ci-hello")).trim(), "Hey! You have 1 transaction to check and one invoice waiting for payment. Let's knock that out.");
-  const [mIn, mOut] = await page.$$eval(".ci-pair b", els => els.map(e => e.textContent));
-  assert.equal(mIn, "$800");   // only the Oct 28 payment is in the last 7 days
-  assert.equal(mOut, "$0");
-  await page.click("#ciReview");
+  assert.match(await page.textContent(".rv-top"), /October check-in · 1 of 3/); // review, one invoice, goal (no gifts question for this account)
+  assert.match(await page.textContent(".ci-q"), /Can we clear up this transaction\?/);
+  await page.click("#ciGo");
   await page.click("#rvYes");
   await page.click("#rvBack");
-  await page.waitForSelector(".ci");
-  assert.match(await page.textContent(".ci-steps"), /All sorted/);
-  await page.click("#ciInvoices");
-  assert.match(await page.textContent(".ci-list"), /Aritzia.*10 days late/s);
-  await page.click("#ciBack");
+  assert.match(await page.textContent(".ci-q"), /Did Aritzia pay you yet\?/);
+  assert.match(await page.textContent(".ci"), /\$3,500\.00 · invoice #0012 · 10 days past due/);
+  await page.click("#ciSkip"); // not yet
+  assert.match(await page.textContent(".ci-q"), /Want to update your income goal for next month\?/);
+  await page.fill("#ciGoalAmt", "7000");
+  await page.click("#ciGoalSave");
+  await page.waitForSelector(".ci h2");
+  assert.match(await page.textContent(".ci h2"), /Your month at a glance/);
+  const rows = await page.$$eval(".ci .explain-math > div", els => els.map(e => [...e.children].map(c => c.textContent.replace(/\s+/g, " ").trim()).join(" ")));
+  assert.deepEqual(rows, ["Total income $6,800.00", "Total expenses $1,620.00", "Net profit (before taxes) $5,180.00", "Outstanding invoices 1 · $3,500.00", "Items still needing review None"]);
+  assert.match(await page.textContent(".ci-insight"), /Your income so far in October was 70% higher than in September\./);
   await page.click("#ciFinish");
   await page.waitForTimeout(150);
-  assert.doesNotMatch(await page.textContent("#ovNudges"), /weekly money check-in/);
+  assert.doesNotMatch(await page.textContent("#ovNudges"), /check-in is ready/);
   const evs = await page.evaluate(() => (window.__inserts || []).filter(i => i.table === "product_events").map(i => i.row.event));
   assert.ok(evs.includes("weekly_checkin_completed"));
+  const cs = await page.evaluate(() => window.__updates.filter(u => u.table === "profiles").pop().values.creator_settings);
+  assert.equal(cs.checkinMonth, "2026-10");
+  assert.equal(cs.incomeGoal, 7000);
   assert.deepEqual(page.errors, []);
 });
 
-test("a quiet week says so, without guilt", async () => {
-  const page = await openApp();
+test("saying a client paid marks the invoice paid and records the income", async () => {
+  const page = await openApp({ tables: { invoices: WEEK.tables.invoices } });
   await page.click("#ovNudges [data-weekly-note]");
-  assert.equal((await page.textContent(".ci-hello")).trim(), "Hey! Nothing needs you this week. Here's your quick summary.");
+  assert.match(await page.textContent(".ci-q"), /Did Aritzia pay you yet\?/);
+  await page.click("#ciPaid");
+  await page.waitForSelector("#ciGoalAmt");
+  const ins = await page.evaluate(() => window.__inserts.filter(i => i.table === "income").map(i => [i.row.source, i.row.amount, i.row.status]));
+  assert.deepEqual(ins, [["Aritzia", 3500, "received"]]);
+});
+
+test("creators get asked about products received in exchange for work", async () => {
+  const page = await openApp({ tables: { profiles: [{ id:"11111111-2222-3333-4444-555555555555", creator_settings:{ setupDone:true, business:{ ways:["influencing"], goal:"organized" } } }] } });
+  await page.click("#ovNudges [data-weekly-note]");
+  assert.match(await page.textContent(".ci-q"), /Did you receive any products or services in exchange for work this month\?/);
+  await page.click("#ciGift");
+  await page.click("#ciSkip");
+  assert.match(await page.textContent(".ci"), /Log them in Gifts/);
 });
 
 test("the monthly recap shows earned, spent and left, with factual insights", async () => {

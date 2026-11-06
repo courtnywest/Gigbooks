@@ -1626,6 +1626,17 @@ input,select,textarea{border-radius:10px;}
 .hs-label{font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:var(--ink-500);}
 .hs-value{font-family:var(--font-serif);font-weight:500;font-size:32px;letter-spacing:-0.02em;margin:6px 0 4px;font-variant-numeric:tabular-nums;}
 .hs-sub{font-size:13px;color:var(--ink-500);}
+.hs-goal{appearance:none;border:none;background:none;padding:0;margin-top:10px;width:100%;display:flex;flex-direction:column;gap:5px;font:inherit;font-size:12.5px;color:var(--ink-700);text-align:left;cursor:pointer;}
+.hs-goal .cl-bar{display:block;height:6px;}
+.hs-goal:hover span:last-child{text-decoration:underline;}
+.insight-card{padding:20px 24px;margin-bottom:14px;}
+.insight-card .ins-text{font-size:15.5px;line-height:1.5;color:var(--ink-900);margin:6px 0 10px;}
+.insight-card .ins-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;}
+.goal-big{display:flex;align-items:baseline;gap:10px;margin:4px 0 10px;}
+.goal-big b{font-family:var(--serif, Georgia, serif);font-size:40px;color:var(--green-800);font-weight:500;}
+.goal-big span{font-size:14px;color:var(--ink-500);}
+.goal-bar{height:8px;margin-bottom:14px;}
+.ci-q{font-size:19px;font-weight:600;color:var(--ink-900);line-height:1.35;margin:16px 0 6px;}
 .hs-sub .up{color:var(--up);font-weight:600;} .hs-sub .down{color:var(--down);font-weight:600;}
 .home-tax{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;font-size:13.5px;color:var(--ink-700);padding:4px 4px 18px;}
 .fy-head{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;letter-spacing:0;text-transform:none;color:var(--ink-900);font-weight:600;font-family:var(--font-serif);font-size:20px;padding:20px 0 6px;}
@@ -1823,6 +1834,12 @@ body[data-view="ask"] .giggy-fab{display:none;}
 .rule-issue{font-size:12.5px;color:#9a5b13;background:#fbf3e4;border-radius:8px;padding:6px 9px;margin-top:6px;}
 .rules-log{margin-top:12px;font-size:13px;color:var(--ink-700);}
 .rules-log summary{cursor:pointer;font-weight:600;}
+.deal-exp{display:flex;flex-direction:column;max-height:40vh;overflow-y:auto;border:1px solid var(--line);border-radius:12px;}
+.deal-exp-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--cream-100);cursor:pointer;font-size:13.5px;}
+.deal-exp-row:last-child{border-bottom:none;}
+.deal-exp-row input{width:18px;height:18px;accent-color:var(--green-800);flex-shrink:0;}
+.deal-exp-row span{flex:1;min-width:0;display:flex;flex-direction:column;color:var(--ink-900);}
+.deal-exp-row em{font-style:normal;font-size:12px;color:var(--ink-500);}
 .rules-log ul{margin:8px 0 0;padding-left:18px;display:flex;flex-direction:column;gap:4px;}
 .ob-dir{margin-bottom:14px;}
 .ob-skip{display:block;margin:12px auto 0;}
@@ -2670,7 +2687,8 @@ table.m-cards td .empty-state{width:100%;}
           <div class="field"><label>How many hours will it take?</label><input type="number" id="rcHours" min="0" step="0.5" value="10">
             <div style="font-size:11.5px;color:var(--ink-500);margin-top:4px;">Count planning, filming, editing and revisions.</div></div>
           <div class="field"><label>What do you want to earn for your time, per hour?</label><input type="number" id="rcHourlyRate" min="0" step="1" value="75" inputmode="decimal">
-            <div style="font-size:11.5px;color:var(--ink-500);margin-top:4px;">Pick what your time is worth to you. You can change it for every project.</div></div>
+            <div style="font-size:11.5px;color:var(--ink-500);margin-top:4px;">Pick what your time is worth to you. You can change it for every project.</div>
+            <button type="button" class="hh-link" id="rcFromTarget" style="margin-top:6px;">Work it out from what I want to earn in a year</button></div>
           <div class="field">
             <label>Anything you'll need to buy or pay for?</label>
             <input type="number" id="rcExpenses" min="0" step="1" value="0">
@@ -2689,6 +2707,7 @@ table.m-cards td .empty-state{width:100%;}
             <div class="field"><label>Platform / Payment Processing Fees</label><input type="number" id="rcPlatformFee" min="0" step="1" value="0"></div>
             <div class="field"><label>Additional Deliverables</label><input type="number" id="rcAdditionalDeliverables" min="0" step="1" value="0"></div>
           </div>
+          <button type="button" class="hh-link" id="rcSaveDefaults" style="margin-top:8px;">Save my hourly rate, costs, fee and margin as defaults</button>
         </div>
 
         <div class="card" style="padding:24px;">
@@ -5570,7 +5589,101 @@ table.m-cards td .empty-state{width:100%;}
     if(el && r) el.textContent = `How we got this: ${Number(h && h.value)||0} hours × ${money(Number(r.value)||0).replace(/\.00$/,"")} for your time, plus your costs, plus a ${Number(m && m.value)||0}% profit cushion and any manager fee. It's a starting point for your quote, not a market rate.`;
   }
   document.addEventListener("input", e=>{ if(e.target && /^rc(HourlyRate|Hours|ProfitMargin)$/.test(e.target.id)) syncRcExplain(); });
+  /* ---------- Deal profit: an estimate from expenses the user links ----------
+     Links are stored in this user's own settings (no schema change) and are
+     never made automatically; GigBooks only suggests likely matches. */
+  function dealExpenseLinks(){ const cs = state.creatorSettings; if(!cs.dealExpenses || typeof cs.dealExpenses !== "object") cs.dealExpenses = {}; return cs.dealExpenses; }
+  function dealProfit(d){
+    const inv = d.linkedInvoiceId ? state.invoices.find(i=>i.id === d.linkedInvoiceId) : null;
+    const amount = inv ? Number(inv.total || 0) : d.estimatedValue;
+    const ids = new Set(dealExpenseLinks()[d.id] || []);
+    const linked = state.expenses.filter(e=>ids.has(e.id));
+    const spent = linked.reduce((a,e)=>a+e.amount,0);
+    return { amount, amountFrom: inv ? `invoice #${String(inv.number).padStart(4,"0")}` : "estimated value", linked, spent, profit: amount === null || amount === undefined ? null : amount - spent };
+  }
+  function openDealProfit(id){
+    const d = state.pipelineDeals.find(x=>x.id === id); if(!d) return;
+    const p = dealProfit(d), ids = new Set(p.linked.map(e=>e.id));
+    const brand = normText(d.brandName);
+    const cutoff = isoLocal(addDays(new Date(), -180));
+    const candidates = state.expenses.filter(e=>ids.has(e.id) || e.date >= cutoff).slice()
+      .sort((a,b)=>(ids.has(b.id) - ids.has(a.id)) || ((brand && normText(b.description).includes(brand)) - (brand && normText(a.description).includes(brand))) || (a.date < b.date ? 1 : -1)).slice(0, 30);
+    const writable = canWriteInWorkspace();
+    openSettingsModal(`<h2>${escapeHtml(d.brandName)}: estimated profit</h2>
+      <div class="explain-math">
+        <div><span>Deal amount <span class="sa-sub">(${escapeHtml(p.amountFrom)})</span></span><b>${p.amount === null || p.amount === undefined ? "Not set" : money(p.amount)}</b></div>
+        <div><span>Recorded expenses for this deal</span><b>−${money(p.spent)}</b></div>
+        <div class="total"><span>Estimated profit</span><b>${p.profit === null ? "—" : (p.profit < 0 ? "−" : "") + money(Math.abs(p.profit))}</b></div>
+      </div>
+      <p class="sa-sub">An estimate from the expenses you link below. It isn't your final accounting: your tax numbers use all your recorded income and expenses${p.amountFrom === "estimated value" ? ", and this deal hasn't been invoiced yet" : ""}.</p>
+      <div class="field" style="margin-top:12px;"><label>Expenses for this deal</label>
+        ${candidates.length ? `<div class="deal-exp">${candidates.map(e=>`<label class="deal-exp-row"><input type="checkbox" data-deal-exp="${e.id}" ${ids.has(e.id) ? "checked" : ""} ${writable ? "" : "disabled"}>
+          <span>${escapeHtml(e.description)}<em>${shortDate(e.date)} · ${escapeHtml(e.category || "")}</em></span><b>${money(e.amount)}</b></label>`).join("")}</div>`
+          : `<div class="settings-note">No expenses in the last six months. Add the costs for this deal under Money out, then link them here.</div>`}
+      </div>
+      <div class="modal-actions"><button type="button" class="btn-primary" data-close-settings>Done</button></div>`);
+    document.querySelectorAll("[data-deal-exp]").forEach(cb=>cb.addEventListener("change", async ()=>{
+      const links = dealExpenseLinks(), set = new Set(links[d.id] || []);
+      cb.checked ? set.add(cb.dataset.dealExp) : set.delete(cb.dataset.dealExp);
+      if(set.size) links[d.id] = [...set]; else delete links[d.id];
+      await saveCreatorSettings();
+      openDealProfit(id);
+    }));
+  }
+  document.addEventListener("click", e=>{ const b = e.target.closest("[data-deal-profit]"); if(b) openDealProfit(b.dataset.dealProfit); });
+
+  /* ---------- Rate calculator: your saved defaults, with the math shown ---------- */
+  const RC_DEFAULT_FIELDS = { hourlyRate:"rcHourlyRate", expenses:"rcExpenses", managerFee:"rcManagerFee", profitMargin:"rcProfitMargin" };
+  let rcDefaultsApplied = false;
+  function applyRateDefaults(){
+    if(rcDefaultsApplied) return;
+    rcDefaultsApplied = true;
+    const d = state.creatorSettings.rateDefaults; if(!d) return;
+    Object.entries(RC_DEFAULT_FIELDS).forEach(([k, id])=>{ const el = document.getElementById(id); if(el && d[k] !== undefined && d[k] !== null) el.value = d[k]; });
+  }
+  function openRateTarget(){
+    const d = state.creatorSettings.rateDefaults || {};
+    openSettingsModal(`<h2>Work out your hourly rate</h2>
+      <p class="settings-note">Start from what you want to earn in a year, before taxes, and how many hours you can actually bill. Nothing here is guessed from other creators.</p>
+      <div class="field"><label>What do you want to earn in a year?</label><input type="number" id="rtTarget" min="0" step="500" inputmode="decimal" value="${d.target || ""}" placeholder="60000"></div>
+      <div class="field"><label>Hours a week you spend on paid work</label><input type="number" id="rtHours" min="1" max="80" step="1" value="${d.weeklyHours || 20}">
+        <div class="sa-sub" style="margin-top:4px;">Not admin, pitching or emails. Just the hours that turn into paid deliverables.</div></div>
+      <div class="field"><label>Weeks a year you work</label><input type="number" id="rtWeeks" min="1" max="52" step="1" value="${d.weeks || 46}"></div>
+      <div class="explain-math" id="rtMath"></div>
+      <div class="modal-actions"><button type="button" class="btn-secondary" data-close-settings>Cancel</button><button type="button" class="btn-primary" id="rtUse">Use this rate</button></div>`);
+    const calc = ()=>{
+      const t = Number(document.getElementById("rtTarget").value) || 0, h = Number(document.getElementById("rtHours").value) || 0, w = Number(document.getElementById("rtWeeks").value) || 0;
+      const hours = h * w, rate = hours > 0 ? t / hours : 0;
+      document.getElementById("rtMath").innerHTML = `<div><span>Billable hours a year (${h} × ${w})</span><b>${hours.toLocaleString("en-US")}</b></div>
+        <div class="total"><span>Hourly rate (${money(t).replace(/\.00$/,"")} ÷ ${hours.toLocaleString("en-US")})</span><b>${money(rate)}</b></div>`;
+      return { t, h, w, rate };
+    };
+    ["rtTarget","rtHours","rtWeeks"].forEach(id=>document.getElementById(id).addEventListener("input", calc));
+    calc();
+    document.getElementById("rtUse").addEventListener("click", async ()=>{
+      const r = calc();
+      if(!(r.rate > 0)){ showToast("Add a yearly amount and your hours.", true); return; }
+      document.getElementById("rcHourlyRate").value = Math.round(r.rate);
+      const cs = state.creatorSettings;
+      cs.rateDefaults = Object.assign({}, cs.rateDefaults, { target:r.t, weeklyHours:r.h, weeks:r.w, hourlyRate:Math.round(r.rate) });
+      closeSettingsModal(); renderRateCalculator();
+      await saveCreatorSettings();
+    });
+  }
+  async function saveRateDefaults(){
+    const cs = state.creatorSettings, d = Object.assign({}, cs.rateDefaults);
+    Object.entries(RC_DEFAULT_FIELDS).forEach(([k, id])=>{ const el = document.getElementById(id); if(el) d[k] = Number(el.value) || 0; });
+    cs.rateDefaults = d;
+    showToast("Saved. The calculator starts from these next time.");
+    await saveCreatorSettings();
+  }
+  document.addEventListener("click", e=>{
+    if(e.target.closest("#rcFromTarget")) openRateTarget();
+    if(e.target.closest("#rcSaveDefaults")) saveRateDefaults();
+  });
+
   function renderRateCalculator(){
+    applyRateDefaults();
     syncRcExplain();
     const rateEl = document.getElementById("rcRecommendedRate");
     if(!rateEl) return;
@@ -5731,9 +5844,10 @@ table.m-cards td .empty-state{width:100%;}
     wrap.innerHTML = state.pipelineDeals.map(d=>{
       const isPaid = d.stage === "paid";
       const canInvoice = DEAL_INVOICE_STAGES.includes(d.stage) && !d.linkedInvoiceId;
-      const dealActionHtml = canInvoice
+      const profitBtn = `<button type="button" class="mli-action" data-deal-profit="${d.id}" style="margin-right:6px;white-space:nowrap;">Profit</button>`;
+      const dealActionHtml = profitBtn + (canInvoice
         ? `<button type="button" class="mli-action" data-create-invoice-from-deal="${d.id}" style="margin-right:6px;white-space:nowrap;">Create Invoice</button>`
-        : (d.linkedInvoiceId ? `<span class="status paid" style="margin-right:6px;"><span class="sdot"></span>Invoiced</span>` : "");
+        : (d.linkedInvoiceId ? `<span class="status paid" style="margin-right:6px;"><span class="sdot"></span>Invoiced</span>` : ""));
       return `
       <tr data-deal-id="${d.id}"${isPaid ? ' style="opacity:.6;"' : ""}>
         <td><input type="text" value="${escapeHtml(d.brandName)}" data-deal-field="brandName" placeholder="Brand name">${payerTagHtml(payerMap, d.brandName)}</td>
@@ -8303,6 +8417,16 @@ table.m-cards td .empty-state{width:100%;}
         label:"View invoice", attrs:`data-nudge-type="late" data-chase-invoice="${inv.id}"` });
     }
 
+    const payers = payerStatsMap();
+    state.invoices.filter(i=>(i.status === "sent" || i.status === "overdue") && effectiveInvoiceStatus(i) !== "overdue" && i.dueDate).forEach(inv=>{
+      const days = Math.round((parseISODate(inv.dueDate) - startOfToday()) / DAY_MS), p = payers.get(normText(inv.clientName));
+      if(days < 0 || days > 5 || !p || p.onTimeKnown < 2 || p.onTime / p.onTimeKnown >= 0.5) return;
+      moves.push({ id:`soon-${inv.id}-${inv.dueDate}`, type:"late", score:46 + boost("paid","consistent"),
+        title:`${inv.clientName}'s ${money(inv.total)} invoice is due ${days === 0 ? "today" : `in ${days} day${days===1?"":"s"}`}.`,
+        sub:`They've paid ${p.onTimeKnown - p.onTime} of ${p.onTimeKnown} invoices late before. A friendly reminder before the due date can help.`,
+        label:"Send a reminder", attrs:`data-nudge-type="late" data-chase-invoice="${inv.id}"` });
+    });
+
     const ux = unusualExpense();
     if(ux) moves.push({ id:`unusual-${normText(ux.cat)}-${ux.month}`, type:"unusual", score:50 + boost("profit","organized"),
       title:`Your ${ux.cat.toLowerCase()} expenses are higher than usual this month.`,
@@ -8326,8 +8450,17 @@ table.m-cards td .empty-state{width:100%;}
         attrs: n.cta.chase ? `data-nudge-type="${n.type}" data-chase-invoice="${n.cta.chase}"` : `data-nudge-type="${n.type}" data-nudge-go="${n.cta.view}"` });
     });
 
-    if(!checkinDoneThisWeek() && (state.income.length || state.expenses.length))
-      moves.push({ id:`checkin-${weekKey(new Date())}`, score:20, title:"Your weekly money check-in is ready.", sub:"About 2 minutes. What came in, what went out, what's waiting.", label:"Start check-in", attrs:`data-weekly-note="1"` });
+    const cm = checkinReady();
+    if(cm) moves.push({ id:`checkin-${cm.key}`, score:40, title:`Your ${cm.name} money check-in is ready.`, sub:"About 2 minutes. A few quick questions, then your month at a glance.", label:"Start check-in", attrs:`data-weekly-note="1"` });
+
+    const gp = goalProgress();
+    if(gp && gp.pct >= 50){
+      const step = gp.pct >= 100 ? 100 : gp.pct >= 75 ? 75 : 50;
+      moves.push({ id:`goal-${gp.range.key}-${step}`, score:33 + boost("consistent","grow"),
+        title: gp.pct >= 100 ? "You reached your monthly income goal." : `You're ${gp.pct}% of the way to your monthly income goal.`,
+        sub:`${money(gp.received)} of ${money(gp.goal)} received this month${gp.remaining ? `. ${money(gp.remaining)} to go` : ""}.`, label:"View progress", attrs:`data-income-goal="1"` });
+    } else if(!gp && (goal === "consistent" || goal === "grow") && (state.income.length || state.expenses.length))
+      moves.push({ id:"goal-set", score:22, title:"Set a monthly income goal.", sub:"Pick a number and GigBooks tracks the income you receive toward it.", label:"Set a goal", attrs:`data-income-goal="1"` });
 
     if(!businessProfile().set && isOwnWorkspace() && cs.setupDone)
       moves.push({ id:"business-profile", score:18, title:"Tell GigBooks how you make money.", sub:"Two quick taps, so your Money Moves fit your business.", label:"Start", run:openBusinessModal });
@@ -9823,6 +9956,7 @@ table.m-cards td .empty-state{width:100%;}
       <div class="settings-section">
         ${row("How you make money", bp.ways.length ? bp.ways.map(k=>escapeHtml(MONEY_WAYS[k])).join(", ") : "Not set", "Picks examples and suggested categories, and hides Deals or Invoices if you don't use them.")}
         ${row("Biggest money goal", bp.goal ? escapeHtml(MONEY_GOALS[bp.goal]) : "Not set", "Decides which Money Moves and insight show up first on Overview.")}
+        ${row("Monthly income goal", incomeGoal() ? money(incomeGoal()) : "Not set", "Shows your progress on Overview, counting only money you've received.")}
         ${row("Creator type", p && CREATOR_TYPES[p.type] ? CREATOR_TYPES[p.type].label : "Not set", "Sorts tax write-off ideas and picks your default payout import.")}
         ${row("Category rules", `${categoryRules().length} saved`, "Merchants you asked GigBooks to remember. Manage them in Settings → Category rules.")}
         ${row("Your history", "Income and expenses you've logged", "Powers month-to-month comparisons, milestones and Wrapped.")}
@@ -9836,7 +9970,7 @@ table.m-cards td .empty-state{width:100%;}
       </div>
       <div class="settings-form-actions" style="margin-top:14px;justify-content:space-between;">
         <button type="button" class="btn-secondary" id="pzReset">Reset personalization</button>
-        <span style="display:flex;gap:8px;flex-wrap:wrap;"><button type="button" class="btn-secondary" id="pzEdit">Edit creator type</button><button type="button" class="btn-secondary" id="pzBiz">Edit your business</button><button type="button" class="btn-primary" data-close-settings>Done</button></span>
+        <span style="display:flex;gap:8px;flex-wrap:wrap;"><button type="button" class="btn-secondary" id="pzEdit">Edit creator type</button><button type="button" class="btn-secondary" id="pzBiz">Edit your business</button><button type="button" class="btn-secondary" data-income-goal="1">Income goal</button><button type="button" class="btn-primary" data-close-settings>Done</button></span>
       </div>`);
     const bind = (id, fn) => document.getElementById(id).addEventListener("change", async e=>{ fn(e.target.checked); renderAll(); await saveCreatorSettings(); });
     bind("pzTailor", v=>{ cs.tailorTools = v; });
@@ -10383,7 +10517,7 @@ table.m-cards td .empty-state{width:100%;}
     }
     const ask = document.querySelector("#view-ask .topbar .actions");
     if(ask && !document.getElementById("askAfford")){
-      ask.insertAdjacentHTML("afterbegin", `<button type="button" class="pack-btn" id="askAfford" data-afford="1">Can I afford it?</button><button type="button" class="pack-btn" data-weekly-note="1">Weekly check-in</button>`);
+      ask.insertAdjacentHTML("afterbegin", `<button type="button" class="pack-btn" id="askAfford" data-afford="1">Can I afford it?</button><button type="button" class="pack-btn" data-weekly-note="1">Monthly check-in</button>`);
     }
   }
 
@@ -10487,6 +10621,7 @@ table.m-cards td .empty-state{width:100%;}
   function renderHome(){
     const wrap = document.getElementById("homeSnapshot");
     if(!wrap) return;
+    renderInsight();
     const r = periodRange(homePeriod);
     const cur = moneyInOut(r), prev = moneyInOut(r.prev);
     const empty = !state.income.length && !state.expenses.length;
@@ -10496,7 +10631,7 @@ table.m-cards td .empty-state{width:100%;}
       const d = Math.round((cur.moneyIn - prev.moneyIn) / prev.moneyIn * 100);
       trend = `<span class="${d >= 0 ? "up" : "down"}">${d >= 0 ? "↑" : "↓"} ${Math.abs(d)}%</span> vs. ${r.prevLabel}`;
     }
-    const s = safeToSpend();
+    const s = safeToSpend(), gp = goalProgress();
     const arrowIn = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 7 7 17M7 9v8h8"/></svg>`;
     const arrowOut = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg>`;
     wrap.innerHTML = `
@@ -10508,7 +10643,8 @@ table.m-cards td .empty-state{width:100%;}
       </div>
       <div class="home-pair">
         <div class="card home-stat in"><div class="hs-top"><span class="hs-ic">${arrowIn}</span><span class="hs-label">Money In</span></div>
-          <div class="hs-value">${wholeMoney(cur.moneyIn)}</div><div class="hs-sub">${trend || HOME_PERIODS[homePeriod]}${cur.pending ? ` · ${wholeMoney(cur.pending)} more on the way` : ""}</div></div>
+          <div class="hs-value">${wholeMoney(cur.moneyIn)}</div><div class="hs-sub">${trend || HOME_PERIODS[homePeriod]}${cur.pending ? ` · ${wholeMoney(cur.pending)} more on the way` : ""}</div>
+          ${gp && homePeriod === "month" ? `<button type="button" class="hs-goal" data-income-goal="1" aria-label="Income goal: ${gp.pct}% of ${money(gp.goal)}"><span class="cl-bar"><span style="width:${Math.min(100, gp.pct)}%"></span></span><span>${gp.pct}% of your ${wholeMoney(gp.goal)} goal</span></button>` : ""}</div>
         <div class="card home-stat out"><div class="hs-top"><span class="hs-ic">${arrowOut}</span><span class="hs-label">Money Out</span></div>
           <div class="hs-value">${wholeMoney(cur.moneyOut)}</div><div class="hs-sub">Business expenses, ${r.label}</div></div>
       </div>`;
@@ -10670,9 +10806,9 @@ table.m-cards td .empty-state{width:100%;}
       if(existing && ruleOutcome(existing) !== next && !confirmed){
         openSettingsModal(`<h2>Replace your saved rule?</h2>
           <p class="settings-note">You told GigBooks <b>${escapeHtml(existing.label || key)}</b> is <b>${escapeHtml(ruleOutcome(existing))}</b>. Change it to <b>${escapeHtml(next)}</b> from now on? Past transactions stay as they are.</p>
-          <div class="modal-actions"><button type="button" class="btn-secondary" id="rcKeep">Keep ${escapeHtml(ruleOutcome(existing))}</button><button type="button" class="btn-primary" id="rcReplace">Change to ${escapeHtml(next)}</button></div>`);
-        document.getElementById("rcKeep").addEventListener("click", ()=>{ closeSettingsModal(); resolve(false); });
-        document.getElementById("rcReplace").addEventListener("click", ()=>{ closeSettingsModal(); commit(); });
+          <div class="modal-actions"><button type="button" class="btn-secondary" id="ruleKeep">Keep ${escapeHtml(ruleOutcome(existing))}</button><button type="button" class="btn-primary" id="ruleReplace">Change to ${escapeHtml(next)}</button></div>`);
+        document.getElementById("ruleKeep").addEventListener("click", ()=>{ closeSettingsModal(); resolve(false); });
+        document.getElementById("ruleReplace").addEventListener("click", ()=>{ closeSettingsModal(); commit(); });
       } else if(existing && ruleOutcome(existing) === next){ resolve(true); }
       else commit();
     });
@@ -10692,7 +10828,7 @@ table.m-cards td .empty-state{width:100%;}
       if(await saveRule(name, kind, { cat })) showToast(`Got it. ${name} → ${cat}.`);
     });
   }
-  if(window.__FIXTURE) window.__gbTest = { merchantKey, ruleMatches };
+  if(window.__FIXTURE) window.__gbTest = { merchantKey, ruleMatches, computeInsights };
   function renderRulesSettings(){
     const rules = categoryRules().slice().sort((a,b)=>(a.label || a.key).localeCompare(b.label || b.key));
     const writable = canWriteInWorkspace();
@@ -11344,81 +11480,274 @@ table.m-cards td .empty-state{width:100%;}
     if(e.target.closest("[data-new-gift]")) openGiftModal(null);
   });
   /* ============================================================
-     Your Weekly Money Check-In: a two-minute look at the week.
-     Never guilt, never automatic notifications.
+     Months, recorded money, and the monthly income goal.
+     Every figure here is computed from stored records. "Recorded"
+     means received income and logged expenses; pending payments and
+     unpaid invoices are always shown separately.
+     ============================================================ */
+  function monthBounds(offset){
+    const now = startOfToday();
+    const s = new Date(now.getFullYear(), now.getMonth() - offset, 1), e = new Date(now.getFullYear(), now.getMonth() - offset + 1, 0);
+    return { start:isoLocal(s), end:isoLocal(e), key:`${s.getFullYear()}-${pad2(s.getMonth()+1)}`, offset,
+      name: s.toLocaleDateString("en-US", { month:"long" }), partial: offset === 0 };
+  }
+  const rangeText = r => `${shortDate(r.start)} – ${shortDate(r.partial ? todayISO() : r.end)}`;
+  function receivedIn(r){ const rows = state.income.filter(x=>x.status === "received" && inRange(x.date, r)); return { rows, total: rows.reduce((a,x)=>a+x.amount,0) }; }
+  function spentIn(r){ const rows = state.expenses.filter(x=>inRange(x.date, r)); return { rows, total: rows.reduce((a,x)=>a+x.amount,0) }; }
+  function openInvoices(){ return state.invoices.filter(i=>i.status === "sent" || i.status === "overdue"); }
+
+  function incomeGoal(){ const g = Number(state.creatorSettings.incomeGoal); return g > 0 ? g : null; }
+  function goalProgress(){
+    const goal = incomeGoal(); if(!goal) return null;
+    const r = monthBounds(0), rec = receivedIn(r);
+    const pending = state.income.filter(x=>x.status !== "received" && inRange(x.date, r)).reduce((a,x)=>a+x.amount,0);
+    const unpaid = openInvoices().reduce((a,i)=>a+Number(i.total||0),0);
+    return { goal, received:rec.total, pct: Math.floor(rec.total / goal * 100), remaining: Math.max(0, goal - rec.total), pending, unpaid, range:r };
+  }
+  function averageMonthlyIncome(n){
+    const totals = Array.from({ length:n }, (_, i)=>receivedIn(monthBounds(i+1)).total);
+    return totals.filter(t=>t > 0).length === n ? totals.reduce((a,t)=>a+t,0) / n : null;
+  }
+  function openIncomeGoal(){
+    const g = goalProgress(), avg = averageMonthlyIncome(3);
+    openSettingsModal(`<h2>Monthly income goal</h2>
+      ${g ? `<div class="goal-big"><b>${g.pct}%</b><span>of your ${money(g.goal)} goal for ${g.range.name}</span></div>
+        <div class="cl-bar goal-bar"><span style="width:${Math.min(100, g.pct)}%"></span></div>
+        <div class="explain-math">
+          <div><span>Monthly income goal</span><b>${money(g.goal)}</b></div>
+          <div><span>Recorded income toward it (${rangeText(g.range)})</span><b>${money(g.received)}</b></div>
+          <div class="total"><span>${g.remaining ? "Remaining" : "Goal reached"}</span><b>${g.remaining ? money(g.remaining) : "✓"}</b></div>
+        </div>
+        <p class="sa-sub">Counts money you've received this month. ${g.pending ? `${money(g.pending)} marked as pending and ` : ""}${g.unpaid ? `${money(g.unpaid)} in unpaid invoices ` : "Pending payments and unpaid invoices "}${g.pending || g.unpaid ? "aren't" : "aren't"} included until the money arrives.</p>`
+      : `<p class="settings-note">Pick a number you'd like to bring in each month. GigBooks tracks the income you've received toward it. That's it. No budgets.</p>`}
+      <div class="field"><label>${g ? "Change your goal" : "Your monthly income goal"}</label><input type="number" id="igAmt" min="1" step="50" inputmode="decimal" value="${g ? g.goal : ""}" placeholder="${avg ? Math.round(avg/50)*50 : "3000"}">
+        ${avg ? `<div class="sa-sub" style="margin-top:6px;">You averaged ${money(avg)} a month over the last three full months.</div>` : ""}</div>
+      <div class="modal-actions">${g ? `<button type="button" class="btn-secondary" id="igRemove">Remove goal</button>` : `<button type="button" class="btn-secondary" data-close-settings>Cancel</button>`}<button type="button" class="btn-primary" id="igSave">Save goal</button></div>`);
+    document.getElementById("igSave").addEventListener("click", async ()=>{
+      const v = Number(document.getElementById("igAmt").value);
+      if(!(v > 0)){ showToast("Type in a monthly amount.", true); return; }
+      state.creatorSettings.incomeGoal = Math.round(v*100)/100;
+      closeSettingsModal(); renderAll(); showToast("Goal saved.");
+      await saveCreatorSettings();
+    });
+    const rm = document.getElementById("igRemove");
+    if(rm) rm.addEventListener("click", async ()=>{
+      delete state.creatorSettings.incomeGoal;
+      closeSettingsModal(); renderAll(); showToast("Goal removed.");
+      await saveCreatorSettings();
+    });
+  }
+  document.addEventListener("click", e=>{ if(e.target.closest("[data-income-goal]")) openIncomeGoal(); });
+
+  /* ============================================================
+     Insights: plain-language facts with a clear date range.
+     Calculated here (never by AI), only when there's enough data,
+     and each one shows its math and supporting transactions.
+     ============================================================ */
+  const pctOf = (a, b) => Math.round(a / b * 100);
+  function computeInsights(offset){
+    if(offset === undefined) offset = 1;
+    const out = [], m1 = monthBounds(offset), m2 = monthBounds(offset + 1), m3 = monthBounds(offset + 2);
+    const i1 = receivedIn(m1), i2 = receivedIn(m2), e1 = spentIn(m1);
+    const when = m1.partial ? `so far in ${m1.name}` : `in ${m1.name}`;
+
+    if(i1.rows.length){
+      const p = i1.total - e1.total;
+      out.push({ id:"profit", range:m1,
+        text: p >= 0 ? `You earned ${money(p)} ${when} after recorded business expenses.` : `Your recorded business expenses ${when} were ${money(-p)} more than the money you received.`,
+        calc:[["Money received", money(i1.total)], ["Business expenses recorded", "−" + money(e1.total)], ["Profit before taxes", (p < 0 ? "−" : "") + money(Math.abs(p))]],
+        rows: i1.rows.map(r=>({ date:r.date, name:r.source, amount:r.amount })).concat(e1.rows.map(r=>({ date:r.date, name:r.description, amount:-r.amount }))) });
+    }
+    // A partial month is only compared when it's already ahead; "behind so far" would mislead.
+    if(i1.total > 0 && i2.total >= 100){
+      const d = (i1.total - i2.total) / i2.total;
+      if(Math.abs(d) >= 0.1 && (!m1.partial || d > 0))
+        out.push({ id:"trend", range:m1,
+          text: d > 0 ? `Your income ${when} was ${pctOf(Math.abs(d), 1)}% higher than in ${m2.name}.` : `Your income in ${m1.name} was ${pctOf(Math.abs(d), 1)}% lower than in ${m2.name}. Creator income often moves around month to month.`,
+          calc:[[`Received ${when}`, money(i1.total)], [`Received in ${m2.name}`, money(i2.total)], ["Change", `${d > 0 ? "+" : "−"}${pctOf(Math.abs(d), 1)}%`]],
+          rows: i1.rows.concat(i2.rows).map(r=>({ date:r.date, name:r.source, amount:r.amount })) });
+    }
+    // Client concentration, quarter to date.
+    const now = startOfToday(), qs = new Date(now.getFullYear(), Math.floor(now.getMonth()/3)*3, 1);
+    const qr = { start:isoLocal(qs), end:todayISO(), partial:true }, qi = receivedIn(qr);
+    if(qi.rows.length >= 3 && qi.total >= 500){
+      const by = new Map();
+      qi.rows.forEach(r=>{ const k = normText(r.source); const g = by.get(k) || { name:r.source, total:0, rows:[] }; g.total += r.amount; g.rows.push(r); by.set(k, g); });
+      const top = [...by.values()].sort((a,b)=>b.total - a.total)[0];
+      if(by.size >= 2 && top.total / qi.total >= 0.4)
+        out.push({ id:"concentration", range:qr,
+          text:`One client, ${top.name}, made up ${pctOf(top.total, qi.total)}% of your income this quarter so far.`,
+          calc:[[`From ${top.name}`, money(top.total)], ["All income received this quarter", money(qi.total)], ["Share", `${pctOf(top.total, qi.total)}%`]],
+          rows: qi.rows.map(r=>({ date:r.date, name:r.source, amount:r.amount })) });
+    }
+    // Recurring expenses: the same merchant in each of three full months.
+    if(!m1.partial){
+      const e2 = spentIn(m2), e3 = spentIn(m3);
+      const keys = rows => new Set(rows.map(r=>merchantKey(r.description)).filter(Boolean));
+      const k1 = keys(e1.rows), k2 = keys(e2.rows), k3 = keys(e3.rows);
+      const rec = [...k1].filter(k=>k2.has(k) && k3.has(k));
+      const sumRec = rows => rows.filter(r=>rec.includes(merchantKey(r.description)));
+      const a = sumRec(e1.rows), b = sumRec(e2.rows);
+      const ta = a.reduce((s,r)=>s+r.amount,0), tb = b.reduce((s,r)=>s+r.amount,0);
+      if(rec.length && tb > 0 && ta - tb >= 20 && (ta - tb) / tb >= 0.1)
+        out.push({ id:"recurring", range:m1,
+          text:`Your recurring expenses went up in ${m1.name}: ${money(ta)}, compared with ${money(tb)} in ${m2.name}.`,
+          calc:[[`Recurring ${when}`, money(ta)], [`Recurring in ${m2.name}`, money(tb)], ["Counted as recurring", "Merchants you paid in each of the last three months"]],
+          rows: a.concat(b).map(r=>({ date:r.date, name:r.description, amount:-r.amount })) });
+    }
+    // Consistency over six full months, every one with income.
+    const six = Array.from({ length:6 }, (_, i)=>monthBounds(offset + 5 - i)).filter(m=>!m.partial);
+    const totals = six.map(m=>receivedIn(m).total);
+    if(six.length === 6 && totals.every(t=>t > 0)){
+      const cv = arr => { const mean = arr.reduce((a,t)=>a+t,0)/arr.length; return Math.sqrt(arr.reduce((a,t)=>a+(t-mean)**2,0)/arr.length) / mean; };
+      const before = cv(totals.slice(0,3)), after = cv(totals.slice(3));
+      if(before - after >= 0.15)
+        out.push({ id:"consistency", range:{ start:six[0].start, end:six[5].end },
+          text:"Your monthly income has become more consistent over the past six months.",
+          calc: six.map((m,i)=>[m.name, money(totals[i])]).concat([["How we measure it", "The last three months varied less from their average than the three before"]]), rows:[] });
+    }
+    return out;
+  }
+  const INSIGHT_ORDER = {
+    profit:["profit","recurring","trend"], consistent:["consistency","trend","concentration"], grow:["trend","concentration","profit"],
+    taxes:["profit","trend"], paid:["concentration","trend"], organized:["recurring","profit"]
+  };
+  function homeInsight(){
+    const list = computeInsights(1); if(!list.length) return null;
+    const order = (INSIGHT_ORDER[moneyGoal()] || []).concat(["trend","profit","concentration","recurring","consistency"]);
+    return order.map(id=>list.find(x=>x.id === id)).find(Boolean) || list[0];
+  }
+  let insightsShown = {};
+  function insightCardHtml(x){
+    insightsShown[x.id] = x;
+    return `<div class="card insight-card">
+      <div class="hh-label">Insight <span class="est">From your records</span></div>
+      <p class="ins-text">${escapeHtml(x.text)}</p>
+      <div class="ins-foot"><span class="sa-sub">${rangeText(x.range)}</span><button type="button" class="hh-link" data-insight="${x.id}">See the numbers</button></div>
+    </div>`;
+  }
+  function renderInsight(){
+    const wrap = document.getElementById("ovInsight"); if(!wrap) return;
+    const x = homeInsight();
+    wrap.innerHTML = x ? insightCardHtml(x) : "";
+  }
+  function openInsight(x){
+    openSettingsModal(`<h2>The numbers behind it</h2>
+      <p class="settings-note">${escapeHtml(x.text)}</p>
+      <div class="sa-sub" style="margin-bottom:8px;">${rangeText(x.range)} · Recorded transactions only, no projections.</div>
+      <div class="explain-math">${x.calc.map(([l,v],i)=>`<div class="${i === x.calc.length-1 && x.id !== "consistency" && x.id !== "recurring" ? "total" : ""}"><span>${escapeHtml(l)}</span><b>${escapeHtml(v)}</b></div>`).join("")}</div>
+      ${x.rows.length ? `<details class="rules-log"><summary>Transactions (${x.rows.length})</summary><ul>${x.rows.slice().sort((a,b)=>a.date < b.date ? 1 : -1).slice(0,40).map(r=>`<li>${shortDate(r.date)} · ${escapeHtml(r.name || "")} · ${r.amount < 0 ? "−" : ""}${money(Math.abs(r.amount))}</li>`).join("")}</ul></details>` : ""}
+      <div class="modal-actions"><button type="button" class="btn-primary" data-close-settings>Got it</button></div>`);
+  }
+  document.addEventListener("click", e=>{ const b = e.target.closest("[data-insight]"); if(b && insightsShown[b.dataset.insight]) openInsight(insightsShown[b.dataset.insight]); });
+
+  /* ============================================================
+     Your Monthly Money Check-In: about two minutes, one question at
+     a time, and only the questions that apply this month.
+     Encouraging, never guilt-tripping.
      ============================================================ */
   function weekRange(offset){
     const end = addDays(startOfToday(), -7*offset), start = addDays(end, -6);
     return { start:isoLocal(start), end:isoLocal(end) };
   }
-  function weekNumbers(r){
-    const moneyIn = state.income.filter(x=>x.status === "received" && inRange(x.date, r)).reduce((a,x)=>a+x.amount,0);
-    const moneyOut = state.expenses.filter(x=>inRange(x.date, r)).reduce((a,x)=>a+x.amount,0);
-    return { moneyIn, moneyOut };
+  function weekNumbers(r){ return { moneyIn: receivedIn(r).total, moneyOut: spentIn(r).total }; }
+  // Early in a month the check-in covers the month that just ended; from the 25th, the current one.
+  function checkinMonth(){ return startOfToday().getDate() <= 10 ? monthBounds(1) : monthBounds(0); }
+  function checkinReady(){
+    const day = startOfToday().getDate(), m = checkinMonth();
+    if(day > 10 && day < 25) return null;
+    if(state.creatorSettings.checkinMonth === m.key) return null;
+    if(!receivedIn(m).rows.length && !spentIn(m).rows.length) return null;
+    return m;
   }
-  function openInvoices(){ return state.invoices.filter(i=>i.status === "sent" || i.status === "overdue"); }
-  // One fact the books actually support, or nothing.
-  function weekInsight(){
-    const now = weekNumbers(weekRange(0)), before = weekNumbers(weekRange(1));
-    if(now.moneyIn > 0 && before.moneyIn > 0 && now.moneyIn !== before.moneyIn)
-      return now.moneyIn > before.moneyIn ? `You brought in ${wholeMoney(now.moneyIn - before.moneyIn)} more than the week before.` : `Money in was quieter than the week before. That's normal for creator income.`;
-    const r = weekRange(0), rows = state.expenses.filter(x=>inRange(x.date, r));
-    if(rows.length >= 2){ const top = groupSum(rows, "category")[0]; if(top) return `Most of this week's spending went to ${String(top.name || "other things").toLowerCase()}.`; }
-    const paidThisWeek = state.invoices.filter(i=>i.status === "paid" && i.paidAt && inRange(i.paidAt.slice(0,10), r)).length;
-    if(paidThisWeek) return `${paidThisWeek} invoice${paidThisWeek===1?" was":"s were"} paid this week.`;
-    return "";
+  function checkinDoneThisWeek(){ return !checkinReady(); }
+  function checkinSteps(m){
+    const steps = [], q = reviewQueue().filter(x=>!x.later);
+    if(q.length) steps.push({ kind:"review", n:q.length });
+    openInvoices().slice().sort((a,b)=>(a.dueDate || "") < (b.dueDate || "") ? -1 : 1).slice(0,3).forEach(inv=>steps.push({ kind:"invoice", inv }));
+    const ways = new Set(businessProfile().ways);
+    if(ways.has("content") || ways.has("influencing") || ways.has("affiliate") || csList("gifts").length) steps.push({ kind:"barter" });
+    steps.push({ kind:"goal" });
+    return steps;
   }
-  function checkinDoneThisWeek(){ return state.creatorSettings.checkinWeek === weekKey(new Date()); }
   function openCheckIn(){
-    const w = weekNumbers(weekRange(0));
-    const q = reviewQueue().filter(x=>!x.later), inv = openInvoices();
-    const late = inv.filter(i=>effectiveInvoiceStatus(i) === "overdue");
-    const insight = weekInsight();
-    const parts = [];
-    if(q.length) parts.push(`${q.length} transaction${q.length===1?"":"s"} to check`);
-    if(inv.length) parts.push(`${inv.length === 1 ? "one invoice" : inv.length + " invoices"} waiting for payment`);
-    const hello = parts.length ? `Hey! You have ${parts.join(" and ")}. Let's knock that out.` : "Hey! Nothing needs you this week. Here's your quick summary.";
-    openSettingsModal(`<div class="ci">
-      <div class="moment-kicker">${shortDate(weekRange(0).start)} – ${shortDate(weekRange(0).end)}</div>
-      <h2>Your Weekly Money Check-In</h2>
-      <p class="ci-hello">${escapeHtml(hello)}</p>
-      <div class="ci-pair">
-        <div><span>Money in this week</span><b>${wholeMoney(w.moneyIn)}</b></div>
-        <div><span>Money out this week</span><b>${wholeMoney(w.moneyOut)}</b></div>
-      </div>
-      ${insight ? `<p class="ci-insight">${escapeHtml(insight)}</p>` : ""}
-      <div class="ci-steps">
-        <div class="ci-step ${q.length ? "" : "done"}">
-          <div><b>${q.length ? `Check ${q.length} transaction${q.length===1?"":"s"}` : "Transactions"}</b><span>${q.length ? `About ${Math.max(1, Math.round(q.length*10/60))} minute` : "All sorted"}</span></div>
-          ${q.length ? `<button type="button" class="fy-btn" id="ciReview">Review</button>` : `<span class="ci-check" aria-label="Done">✓</span>`}
+    const m = checkinMonth(), steps = checkinSteps(m);
+    let i = 0;
+    const notes = { gifts:false };
+    const head = () => `<div class="rv-top"><span>${m.name} check-in · ${Math.min(i+1, steps.length)} of ${steps.length}</span><button type="button" class="nudge-link" data-close-settings>Finish later</button></div>
+      <div class="rv-bar"><span style="width:${Math.round(i/steps.length*100)}%"></span></div>`;
+    const next = ()=>{ i++; draw(); };
+    const draw = ()=>{
+      if(i >= steps.length) return summary();
+      const s = steps[i];
+      let body = "";
+      if(s.kind === "review") body = `<div class="ci-q">Can we clear up ${s.n === 1 ? "this transaction" : `these ${s.n} transactions`}?</div>
+        <p class="settings-note">Including any purchases you weren't sure were business-related. About ${Math.max(1, Math.round(s.n*10/60))} minute.</p>
+        <div class="rv-actions"><button type="button" class="btn-primary" id="ciGo">Review now</button><button type="button" class="btn-secondary" id="ciSkip">Skip for now</button></div>`;
+      if(s.kind === "invoice"){
+        const late = effectiveInvoiceStatus(s.inv) === "overdue" ? invoiceDaysLate(s.inv) : 0;
+        body = `<div class="ci-q">Did ${escapeHtml(s.inv.clientName)} pay you yet?</div>
+          <p class="settings-note">${money(s.inv.total)} · invoice #${String(s.inv.number).padStart(4,"0")} · ${late ? `${late} day${late===1?"":"s"} past due` : `due ${s.inv.dueDate ? shortDate(s.inv.dueDate) : "soon"}`}</p>
+          <div class="rv-actions"><button type="button" class="btn-primary" id="ciPaid" data-mark-paid="${s.inv.id}">Yes, they paid</button><button type="button" class="btn-secondary" id="ciSkip">Not yet</button>
+          ${late ? `<button type="button" class="btn-secondary" data-chase-invoice="${s.inv.id}">Send a reminder</button>` : ""}</div>`;
+      }
+      if(s.kind === "barter") body = `<div class="ci-q">Did you receive any products or services in exchange for work this month?</div>
+        <p class="settings-note">Like free products for a post. They can count as income, so it's worth noting them.</p>
+        <div class="rv-actions"><button type="button" class="btn-primary" id="ciGift">Yes</button><button type="button" class="btn-secondary" id="ciSkip">No</button></div>`;
+      if(s.kind === "goal"){
+        const g = incomeGoal(), avg = averageMonthlyIncome(3);
+        body = `<div class="ci-q">Want to update your income goal for next month?</div>
+          <p class="settings-note">${g ? `Your goal is ${money(g)} a month.` : "You don't have one yet. It's optional."}${avg ? ` You averaged ${money(avg)} a month over the last three full months.` : ""}</p>
+          <div class="field"><input type="number" id="ciGoalAmt" min="1" step="50" inputmode="decimal" value="${g || ""}" placeholder="${avg ? Math.round(avg/50)*50 : "3000"}" aria-label="Monthly income goal"></div>
+          <div class="rv-actions"><button type="button" class="btn-primary" id="ciGoalSave">Save goal</button><button type="button" class="btn-secondary" id="ciSkip">${g ? "Keep it" : "Skip"}</button></div>`;
+      }
+      openSettingsModal(`<div class="ci rv">${head()}${body}</div>`);
+      const on = (id, fn) => { const el = document.getElementById(id); if(el) el.addEventListener("click", fn); };
+      on("ciSkip", next);
+      on("ciGo", ()=>openReviewFlow(false, ()=>{ next(); }));
+      on("ciGift", ()=>{ notes.gifts = true; next(); });
+      on("ciPaid", ()=>{
+        const inv = s.inv, t0 = Date.now();
+        const wait = ()=>{ if(inv.status === "paid") return next(); if(Date.now() - t0 > 4000) return next(); setTimeout(wait, 60); };
+        setTimeout(wait, 60);
+      });
+      on("ciGoalSave", async ()=>{
+        const v = Number(document.getElementById("ciGoalAmt").value);
+        if(!(v > 0)){ showToast("Type in a monthly amount, or skip.", true); return; }
+        state.creatorSettings.incomeGoal = Math.round(v*100)/100;
+        await saveCreatorSettings();
+        next();
+      });
+    };
+    const summary = ()=>{
+      const inc = receivedIn(m).total, exp = spentIn(m).total, p = inc - exp;
+      const inv = openInvoices(), left = reviewQueue().length;
+      const obs = computeInsights(m.offset).filter(x=>x.id !== "profit")[0];
+      openSettingsModal(`<div class="ci">
+        <div class="moment-kicker">${rangeText(m)}</div>
+        <h2>Your month at a glance</h2>
+        <div class="explain-math">
+          <div><span>Total income</span><b>${money(inc)}</b></div>
+          <div><span>Total expenses</span><b>${money(exp)}</b></div>
+          <div class="total"><span>Net profit <span class="sa-sub">(before taxes)</span></span><b>${p < 0 ? "−" : ""}${money(Math.abs(p))}</b></div>
+          <div><span>Outstanding invoices</span><b>${inv.length ? `${inv.length} · ${money(inv.reduce((a,x)=>a+Number(x.total||0),0))}` : "None"}</b></div>
+          <div><span>Items still needing review</span><b>${left || "None"}</b></div>
         </div>
-        <div class="ci-step ${inv.length ? "" : "done"}">
-          <div><b>${inv.length ? `${inv.length} unpaid invoice${inv.length===1?"":"s"}` : "Invoices"}</b><span>${inv.length ? `${wholeMoney(inv.reduce((a,i)=>a+Number(i.total),0))} on the way${late.length ? `, ${late.length} late` : ""}` : "Nothing waiting"}</span></div>
-          ${inv.length ? `<button type="button" class="fy-btn" id="ciInvoices">View</button>` : `<span class="ci-check" aria-label="Done">✓</span>`}
-        </div>
-      </div>
-      <div class="modal-actions"><button type="button" class="btn-secondary" data-close-settings>Later</button><button type="button" class="btn-primary" id="ciFinish">Finish check-in</button></div>
-    </div>`);
-    const rv = document.getElementById("ciReview"); if(rv) rv.addEventListener("click", ()=>openReviewFlow(false, openCheckIn));
-    const iv = document.getElementById("ciInvoices"); if(iv) iv.addEventListener("click", openCheckInInvoices);
-    document.getElementById("ciFinish").addEventListener("click", async ()=>{
-      state.creatorSettings.checkinWeek = weekKey(new Date());
-      state.creatorSettings.noteSeen = weekKey(new Date());
-      closeSettingsModal();
-      track("weekly_checkin_completed");
-      showToast("Check-in done. See you next week.");
-      renderNudges();
-      await saveCreatorSettings();
-    });
-  }
-  function openCheckInInvoices(){
-    const inv = openInvoices().slice().sort((a,b)=>(a.dueDate || "") < (b.dueDate || "") ? -1 : 1);
-    openSettingsModal(`<h2>Waiting to be paid</h2>
-      <div class="ci-list">${inv.map(i=>{ const late = effectiveInvoiceStatus(i) === "overdue" ? invoiceDaysLate(i) : 0;
-        return `<div class="ci-inv"><div><b>${escapeHtml(i.clientName)}</b><span>${money(i.total)} · ${late ? `<em>${late} days late</em>` : `due ${i.dueDate ? shortDate(i.dueDate) : "soon"}`}</span></div>
-          ${late ? `<button type="button" class="fy-btn" data-chase-invoice="${i.id}">Remind</button>` : ""}</div>`; }).join("")}</div>
-      <div class="modal-actions"><button type="button" class="btn-primary" id="ciBack">Back to check-in</button></div>`);
-    document.getElementById("ciBack").addEventListener("click", openCheckIn);
+        ${obs ? `<p class="ci-insight">${escapeHtml(obs.text)}</p>` : ""}
+        ${notes.gifts ? `<p class="settings-note">You said you received products or services this month. <button type="button" class="hh-link" data-goto="gifts" data-close-settings>Log them in Gifts</button> so they're counted correctly.</p>` : ""}
+        <p class="sa-sub">From the transactions you've recorded. Not tax advice.</p>
+        <div class="modal-actions"><button type="button" class="btn-primary" id="ciFinish">Finish check-in</button></div>
+      </div>`);
+      document.getElementById("ciFinish").addEventListener("click", async ()=>{
+        state.creatorSettings.checkinMonth = m.key;
+        closeSettingsModal();
+        track("weekly_checkin_completed");
+        showToast("Check-in done. Nice work staying on top of it.");
+        renderNudges();
+        await saveCreatorSettings();
+      });
+    };
+    draw();
   }
   // The old weekly note now opens the check-in.
   function openWeeklyNote(){ openCheckIn(); }

@@ -55,9 +55,9 @@ test("changing a category on an expense offers to remember it; a different answe
   await page.waitForSelector("#remYes");
   assert.match(await page.textContent("#settingsModalBox"), /Want GigBooks to remember this for next time\?/);
   await page.click("#remYes");
-  await page.waitForSelector("#rcReplace");
+  await page.waitForSelector("#ruleReplace");
   assert.match(await page.textContent("#settingsModalBox"), /You told GigBooks Camera is Equipment\. Change it to Software/);
-  await page.click("#rcReplace");
+  await page.click("#ruleReplace");
   await page.waitForTimeout(150);
   const cs = await lastSettings(page);
   assert.equal(cs.categoryRules.find(r => r.key === "camera").cat, "Software");
@@ -83,4 +83,15 @@ test("rules from the earlier version carry over without being deleted", async ()
     unclassified_expenses: [{ id:"u1", date:"2026-10-28", description:"Canva", amount:15 }] } });
   await page.click("#ovNudges .fy-btn:has-text('Review transactions')");
   assert.match(await page.textContent(".rv-hint"), /Your rule.*Canva → Software/);
+});
+
+test("rules are saved to the signed-in user's own profile only", async () => {
+  const page = await openApp({ tables: { unclassified_expenses: [{ id:"u1", date:"2026-10-28", description:"Adobe", amount:60 }] } });
+  await page.click("#ovNudges .fy-btn:has-text('Review transactions')");
+  await page.check("#rvRemember");
+  await page.click("#rvYes");
+  await page.waitForSelector(".rv-done");
+  const saves = await page.evaluate(() => window.__updates.filter(u => u.table === "profiles" && (u.values.creator_settings.categoryRules || []).length));
+  assert.ok(saves.length);
+  for(const u of saves) assert.deepEqual(u.filters, [["id", ME]]);
 });

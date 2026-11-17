@@ -20,17 +20,15 @@ After the billing migration, the app starts showing plans:
 ## 2. Stripe
 
 ### Products
-In the Stripe dashboard, create a product **GigBooks Pro** with two recurring prices:
-- $15.00 per month
-- $144.00 per year
+In the Stripe dashboard, create a product **GigBooks Pro** with one recurring price: **$12.00 per month**.
 
-Copy both price IDs (`price_…`).
+Copy its price ID (`price_…`).
 
 ### Connect (card payments on invoices)
-In **Settings → Connect**, turn on Connect with **Express** accounts. GigBooks takes a 1% application fee on Free and none on Pro; Stripe's own processing fee applies either way.
+In **Settings → Connect**, turn on Connect with **Express** accounts. Card payments are part of Pro and GigBooks takes no application fee; only Stripe's own processing fee applies.
 
 ### Customer portal
-In **Settings → Billing → Customer portal**, turn the portal on, and allow cancelling and switching between the monthly and yearly prices.
+In **Settings → Billing → Customer portal**, turn the portal on and allow cancelling.
 
 ## 3. Function secrets
 
@@ -40,8 +38,7 @@ In **Supabase → Edge Functions → Secrets**, add:
 | --- | --- |
 | `STRIPE_SECRET_KEY` | `sk_live_…` (or `sk_test_…` while testing) |
 | `STRIPE_WEBHOOK_SECRET` | `whsec_…` from step 5 |
-| `STRIPE_PRICE_MONTHLY` | the $15/month price ID |
-| `STRIPE_PRICE_YEARLY` | the $144/year price ID |
+| `STRIPE_PRICE_MONTHLY` | the $12/month price ID |
 | `APP_URL` | where GigBooks is hosted, e.g. `https://your-app.vercel.app/` |
 
 ## 4. Deploy the functions

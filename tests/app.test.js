@@ -13,18 +13,18 @@ const lastAnswer = page => page.$$eval(".ask-msg.assistant", els => els[els.leng
 test("Home lists what to check, with how long it takes", async () => {
   const page = await openApp(NEW_TXNS);
   const todo = await page.textContent("#ovNudges");
-  assert.match(todo, /A couple things to check/);
-  assert.match(todo, /Review 2 transactions/);
+  assert.match(todo, /Your Money Moves/);
+  assert.match(todo, /Just 2 transactions need your attention/);
   assert.match(todo, /About 1 minute/);
   assert.deepEqual(page.errors, []);
 });
 
 test("review goes one card at a time, with Giggy's guess, and Yes / No / I'm not sure", async () => {
   const page = await openApp(NEW_TXNS);
-  await page.click("#ovNudges .fy-btn:has-text('Start')");
+  await page.click("#ovNudges .fy-btn:has-text('Review transactions')");
   assert.match(await page.textContent(".rv-top"), /1 of 2/);
   assert.match(await page.textContent(".rv-name"), /Camera/);
-  assert.match(await page.textContent(".rv-hint"), /Giggy thinks this is an equipment expense/); // learned from history
+  assert.match(await page.textContent(".rv-hint"), /Suggested.*Giggy thinks this is an equipment expense/); // learned from history
   assert.match(await page.textContent(".rv-q"), /Was this purchase for your business\?/);
   await page.click("#rvYes");
   assert.match(await page.textContent(".rv-name"), /Mystery shop/);
@@ -37,7 +37,7 @@ test("review goes one card at a time, with Giggy's guess, and Yes / No / I'm not
 
 test("bank money-in asks about work, offers non-income choices, and flags likely duplicates", async () => {
   const page = await openApp({ tables: { bank_transactions: [{ id:"b1", date:"2026-10-11", amount:-6000, merchant_name:"GLOSSIER", status:"unclassified" }] } });
-  await page.click("#ovNudges .fy-btn:has-text('Start')");
+  await page.click("#ovNudges .fy-btn:has-text('Review transactions')");
   assert.match(await page.textContent(".rv-kind"), /Money in · from your bank/);
   assert.match(await page.textContent(".rv-q"), /Was this payment for work you did\?/);
   assert.match(await page.textContent(".rv"), /might be the same payment as Glossier on Oct 10, 2026/); // already logged on Oct 10
@@ -56,8 +56,8 @@ test("adding an expense takes three answers, with the date defaulting to today",
   await page.fill("#expenseForm [name=amount]", "59.99");
   assert.match(await page.textContent("#expGuess"), /Category: Software/);
   await page.click("#expenseSubmitBtn");
-  await page.waitForTimeout(200);
-  assert.match(await page.textContent("#view-expenses tbody"), /Adobe Creative Cloud/);
+  await page.waitForSelector("#view-expenses tbody tr:has-text('Adobe Creative Cloud')", { timeout:5000 });
+  assert.equal(await page.$("#remYes"), null); // the suggested category was kept, so nothing to remember
 });
 
 test("'No, personal' keeps it out of the books; 'I'm not sure' saves it and asks later", async () => {
@@ -79,7 +79,7 @@ test("'No, personal' keeps it out of the books; 'I'm not sure' saves it and asks
   await page.waitForTimeout(200);
   assert.match(await page.textContent("#view-expenses tbody"), /Ring light/);
   await go(page, "overview");
-  assert.match(await page.textContent("#ovNudges"), /Review 1 transaction/);
+  assert.match(await page.textContent("#ovNudges"), /Just 1 transaction needs your attention/);
 });
 
 test("Giggy answers everyday questions from the books, and says what it doesn't know", async () => {
@@ -109,6 +109,15 @@ test("Free accounts see the upgrade sheet for Pro features", async () => {
   await askAi(page);
   await page.waitForSelector(".upg");
   assert.match(await page.textContent(".upg h2"), /Ask Giggy is a Pro feature/);
+  assert.match(await page.textContent(".upg-price"), /\$12\/month, everything included/);
+  assert.equal(await page.$(".upg-toggle"), null); // one plan, no monthly/yearly choice
+});
+
+test("pricing everywhere says one plan at $12 a month, with no fees on payments", async () => {
+  const page = await openApp({ loggedOut:true });
+  const html = await page.content();
+  assert.doesNotMatch(html, /\$15|\$144|billed yearly|1% for GigBooks|Stripe fee \+ 1%/);
+  assert.match(await page.textContent("#page-pricing .pricing-hero h1"), /One plan\. \$12 a month\. Everything included\./);
 });
 
 test("new accounts get Pro during the 14-day trial", async () => {

@@ -1,5 +1,5 @@
 // Pro subscriptions: starts Stripe Checkout, or opens the customer portal.
-// Body: { action: "checkout", interval: "month" | "year" } or { action: "portal" }
+// Body: { action: "checkout" } or { action: "portal" }. One plan: $12/month.
 import { admin, APP_URL, billingRow, cors, json, requireUser, stripe, upsertBilling } from "../_shared/stripe.ts";
 
 Deno.serve(async (req) => {
@@ -7,7 +7,7 @@ Deno.serve(async (req) => {
   try {
     const user = await requireUser(req);
     if (!user) return json({ error: "Please sign in again." }, 401);
-    const { action, interval } = await req.json().catch(() => ({}));
+    const { action } = await req.json().catch(() => ({}));
     const row = await billingRow(user.id);
 
     let customer = row?.stripe_customer_id as string | undefined;
@@ -23,7 +23,7 @@ Deno.serve(async (req) => {
     }
 
     if (action === "checkout") {
-      const price = interval === "month" ? Deno.env.get("STRIPE_PRICE_MONTHLY") : Deno.env.get("STRIPE_PRICE_YEARLY");
+      const price = Deno.env.get("STRIPE_PRICE_MONTHLY");
       if (!price) return json({ error: "Pro prices aren't set up yet." }, 500);
       const s = await stripe.checkout.sessions.create({
         mode: "subscription",

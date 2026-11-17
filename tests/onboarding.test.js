@@ -10,14 +10,20 @@ const ME = "11111111-2222-3333-4444-555555555555";
 const NEW_USER = { tables: { income: [], expenses: [] } };
 const events = page => page.evaluate(() => (window.__inserts || []).filter(i => i.table === "product_events").map(i => i.row));
 
-test("new users get three steps: work, how to start, first transaction, then their first number", async () => {
+test("new users get four short steps: how they make money, their goal, how to start, first transaction", async () => {
   const page = await openApp(NEW_USER);
   await page.waitForSelector(".ob-options");
-  assert.match(await page.textContent("#settingsModalBox h2"), /What kind of work do you do\?/);
-  const kinds = await page.$$eval("[data-work] b", els => els.map(e => e.textContent));
-  assert.deepEqual(kinds, ["Content creator / influencer", "Freelancer", "Small business owner", "Something else"]);
-  await page.click("[data-work='freelancer']");
+  assert.match(await page.textContent("#settingsModalBox h2"), /How do you make money\?/);
+  const ways = await page.$$eval("[data-way] b", els => els.map(e => e.textContent));
+  assert.deepEqual(ways, ["Content creation and brand deals", "Freelance services", "Social media influencing", "Digital products", "Affiliate marketing", "Online selling", "Other gig or contract work"]);
+  assert.equal(await page.$eval("#wizNext", b => b.disabled), true); // needs at least one
+  await page.click("[data-way='freelance']");
+  await page.click("[data-way='digital']"); // more than one is fine
   await page.click("#wizNext");
+  assert.match(await page.textContent("#settingsModalBox h2"), /What's your biggest money goal right now\?/);
+  const goals = await page.$$eval("[data-goal] b", els => els.map(e => e.textContent));
+  assert.deepEqual(goals, ["Stay organized", "Understand my profit", "Make more consistent income", "Save for taxes", "Get paid on time", "Grow my business"]);
+  await page.click("[data-goal='paid']");
   assert.match(await page.textContent("#settingsModalBox h2"), /How would you like to get started\?/);
   assert.match(await page.textContent("[data-path='connect']"), /never your bank password/);
   await page.click("[data-path='manual']");
@@ -30,17 +36,35 @@ test("new users get three steps: work, how to start, first transaction, then the
   assert.match(await page.textContent(".ob-big"), /−\$15/);
   await page.click("#obDone");
   assert.match(await page.textContent("#homeSnapshot .hh-value"), /−\$15/);
+  const saved = await page.evaluate(() => window.__updates.filter(u => u.table === "profiles").pop().values.creator_settings.business);
+  assert.deepEqual(saved.ways, ["freelance", "digital"]);
+  assert.equal(saved.goal, "paid");
   assert.deepEqual(page.errors, []);
 });
 
 test("every step can be skipped, and progress is saved", async () => {
-  const page = await openApp({ tables: { income: [], expenses: [], profiles: [{ id:ME, creator_settings:{ workKind:"creator", onboarding:{ step:2 } } }] } });
+  const page = await openApp({ tables: { income: [], expenses: [], profiles: [{ id:ME, creator_settings:{ workKind:"creator", onboarding:{ step:3, v:2 } } }] } });
   await page.waitForSelector(".ob-options");
-  assert.match(await page.textContent("#settingsModalBox h2"), /How would you like to get started\?/); // picks up at step 2
+  assert.match(await page.textContent("#settingsModalBox h2"), /How would you like to get started\?/); // picks up where they left off
   await page.click("#wizSkip");
   await page.waitForTimeout(150);
   assert.equal(await page.$eval("#settingsModal", m => m.classList.contains("open")), false);
   assert.match(await page.textContent("#ovNudges"), /Log your first income/); // first step still offered, gently
+});
+
+test("the money-goal question can be skipped on its own", async () => {
+  const page = await openApp(NEW_USER);
+  await page.waitForSelector(".ob-options");
+  await page.click("[data-way='content']");
+  await page.click("#wizNext");
+  await page.click("#wizSkipStep");
+  assert.match(await page.textContent("#settingsModalBox h2"), /How would you like to get started\?/);
+});
+
+test("progress saved by the older three-step setup lands on the same question", async () => {
+  const page = await openApp({ tables: { income: [], expenses: [], profiles: [{ id:ME, creator_settings:{ workKind:"creator", onboarding:{ step:2 } } }] } });
+  await page.waitForSelector(".ob-options");
+  assert.match(await page.textContent("#settingsModalBox h2"), /How would you like to get started\?/);
 });
 
 test("existing accounts aren't sent through setup again", async () => {
@@ -62,8 +86,9 @@ test("empty pages say what to do next", async () => {
 test("analytics records milestones, never amounts or names", async () => {
   const page = await openApp(NEW_USER);
   await page.waitForSelector(".ob-options");
-  await page.click("[data-work='creator']");
+  await page.click("[data-way='content']");
   await page.click("#wizNext");
+  await page.click("[data-goal='taxes']");
   await page.click("[data-path='manual']");
   await page.fill("#obName", "Brand deal with Glossier");
   await page.fill("#obAmt", "1200");
@@ -73,7 +98,7 @@ test("analytics records milestones, never amounts or names", async () => {
   const evs = await events(page);
   const names = evs.map(e => e.event);
   for(const e of ["first_transaction_added", "onboarding_completed", "first_money_summary_viewed"]) assert.ok(names.includes(e), `${e} recorded`);
-  assert.deepEqual(evs.find(e => e.event === "onboarding_completed").props, { path:"manual", work:"creator" });
+  assert.deepEqual(evs.find(e => e.event === "onboarding_completed").props, { path:"manual", work:"creator", goal:"taxes" });
   const blob = JSON.stringify(evs);
   assert.doesNotMatch(blob, /1200|Glossier|amount/i);
   // "first" events are only sent once

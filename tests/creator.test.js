@@ -70,7 +70,7 @@ test("the homepage leads with outcomes and every button works", async () => {
   await page.waitForTimeout(200);
   assert.match(await page.textContent("#page-landing .hero h1"), /Make money\.\s*Not spreadsheets\./);
   assert.doesNotMatch(await page.textContent("#page-landing"), /Watch Demo/);
-  assert.match(await page.textContent("#page-landing"), /Free helps you understand your money\. Pro saves you the time of managing it\./);
+  assert.match(await page.textContent("#page-landing"), /One plan, \$12 a month, with everything included\./);
   const steps = await page.$$eval("#howItWorks li b", els => els.map(e => e.textContent));
   assert.equal(steps.length, 3);
   await page.click("#watchDemoBtn");

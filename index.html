@@ -1855,6 +1855,15 @@ input[data-money],input[data-pct]{-moz-appearance:textfield;appearance:textfield
 .sw-gap{font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:999px;background:#fbf3e4;color:#9a5b13;}
 .sw-gap.ok{background:var(--cream-100);color:var(--green-800);}
 .sw-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.sw-grid{display:block;}
+@media (min-width:760px){
+  #settingsModalBox:has(.sw){max-width:880px;width:94vw;max-height:94vh;}
+  .sw-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 28px;align-items:start;}
+  .sw-col{min-width:0;}
+  .sw-card{padding:18px 20px;}
+  .sw-card .field{margin-bottom:12px;}
+  .sw-nav{grid-template-columns:1fr 3fr;}
+}
 .sw-row .field{min-width:0;}
 .sw-chips{display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
 .sw-chips select{max-width:100%;}
@@ -10476,6 +10485,7 @@ table.m-cards td .empty-state{width:100%;}
       ${sorterScopeChips()}
       <div class="sw-card" id="swCard">
         <div class="sw-gaps">${gaps.length ? gaps.map(g=>`<span class="sw-gap">${GAP_LABEL[g]}</span>`).join("") : `<span class="sw-gap ok">All set</span>`}</div>
+        <div class="sw-grid"><div class="sw-col">
         <div class="field"><label for="swDesc">What was it?</label><input id="swDesc" value="${escapeHtml(e.description || "")}" autocomplete="off"></div>
         <div class="sw-row">
           <div class="field"><label for="swAmt">Amount</label><input data-money id="swAmt" type="number" step="0.01" min="0" inputmode="decimal" value="${e.amount}"></div>
@@ -10485,6 +10495,7 @@ table.m-cards td .empty-state{width:100%;}
           <div class="sw-chips">${chips.map(c=>`<button type="button" class="preset-chip ${c === e.category ? "on" : ""}" data-sw-cat="${escapeHtml(c)}">${escapeHtml(c)}${guess && guess.name === c && c !== e.category ? ` <span class="rv-tag">${guess.from === "rule" ? "Your rule" : "Suggested"}</span>` : ""}</button>`).join("")}
             <select id="swCat" aria-label="All categories"><option value="">More…</option>${state.expenseCategoryList.map(c=>`<option ${c.name === e.category && !chips.includes(c.name) ? "selected" : ""}>${escapeHtml(c.name)}</option>`).join("")}</select></div>
           <div id="swRemember"></div></div>
+        </div><div class="sw-col">
         <div class="field"><label>Tax write-off?</label>
           <div class="biz-choice"><button type="button" data-sw-ded="yes" class="${e.deductible ? "on" : ""}">Yes, business</button><button type="button" data-sw-ded="no" class="${e.deductible ? "" : "on"}">No</button></div></div>
         <div class="field"><label>Receipt</label>
@@ -10496,6 +10507,7 @@ table.m-cards td .empty-state{width:100%;}
         <label class="rv-remember"><input type="checkbox" id="swReimb" ${rb ? "checked" : ""} ${rb && rb.status === "paid" ? "disabled" : ""}> Someone will pay me back for this${rb && rb.status === "paid" ? ` <span class="sa-sub">(paid back ${shortDate(rb.paidAt)})</span>` : ""}</label>
         <div id="swReimbMore" ${rb && rb.status === "owed" ? "" : "hidden"}><div class="field" style="margin-top:8px;"><input id="swReimbFrom" list="swPayers" placeholder="Who's paying you back?" value="${escapeHtml(rb ? rb.from || "" : "")}" autocomplete="off"><datalist id="swPayers">${reimbPayers().map(n=>`<option value="${escapeHtml(n)}">`).join("")}</datalist></div></div>
         ${state.projects.length ? `<div class="field" style="margin-top:12px;"><label for="swProj">Project <span class="field-hint">Optional</span></label><select id="swProj"><option value="">No project</option>${state.projects.map(p=>`<option value="${p.id}" ${p.id === e.projectId ? "selected" : ""}>${escapeHtml(p.name)}</option>`).join("")}</select></div>` : ""}
+        </div></div>
         <div class="sw-saved" id="swSaved" aria-live="polite"></div>
       </div>
       <div class="sw-nav"><button type="button" class="btn-secondary" id="swPrev" ${s.i === 0 ? "disabled" : ""}>Back</button><button type="button" class="btn-primary" id="swNext">${s.i === s.ids.length - 1 ? "Finish" : "Next"}</button></div>

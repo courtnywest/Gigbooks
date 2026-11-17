@@ -1834,6 +1834,24 @@ body[data-view="ask"] .giggy-fab{display:none;}
 .rule-issue{font-size:12.5px;color:#9a5b13;background:#fbf3e4;border-radius:8px;padding:6px 9px;margin-top:6px;}
 .rules-log{margin-top:12px;font-size:13px;color:var(--ink-700);}
 .rules-log summary{cursor:pointer;font-weight:600;}
+.reimb-tag{display:inline-block;margin-left:6px;font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;background:#fbf3e4;color:#9a5b13;white-space:nowrap;vertical-align:1px;}
+.reimb-tag.paid{background:var(--cream-100);color:var(--ink-500);}
+.reimb-strip{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 20px;margin-bottom:14px;flex-wrap:wrap;}
+.reimb-strip b{display:block;font-size:15px;color:var(--ink-900);}
+.reimb-strip span{font-size:13px;color:var(--ink-500);}
+.reimb-total{display:flex;flex-direction:column;gap:2px;margin:2px 0 14px;}
+.reimb-total b{font-size:32px;color:var(--green-800);font-weight:600;}
+.reimb-total span{font-size:13px;color:var(--ink-500);}
+.reimb-group{border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:10px;}
+.reimb-ghead{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap;margin-bottom:6px;}
+.reimb-ghead b{display:block;font-size:15px;color:var(--ink-900);}
+.reimb-ghead span{font-size:12.5px;color:var(--ink-500);}
+.reimb-ghead em{font-style:normal;color:#9a5b13;}
+.reimb-gact{display:flex;gap:10px;align-items:center;}
+.reimb-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--cream-100);font-size:13.5px;}
+.reimb-item > span:first-child{color:var(--ink-500);white-space:nowrap;}
+.reimb-item .ri-name{flex:1;min-width:0;display:flex;flex-direction:column;color:var(--ink-900);}
+.reimb-item .ri-name em{font-style:normal;font-size:12px;color:var(--ink-500);}
 .deal-exp{display:flex;flex-direction:column;max-height:40vh;overflow-y:auto;border:1px solid var(--line);border-radius:12px;}
 .deal-exp-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--cream-100);cursor:pointer;font-size:13.5px;}
 .deal-exp-row:last-child{border-bottom:none;}
@@ -2854,6 +2872,8 @@ table.m-cards td .empty-state{width:100%;}
         </div>
       </div>
 
+      <div id="reimbStrip"></div>
+
       <div class="card attn-card" id="expenseAttnCard" style="display:none;">
         <div class="attn-head">
           <div>
@@ -2870,6 +2890,7 @@ table.m-cards td .empty-state{width:100%;}
             <button class="active" data-tab="all">All Expenses</button>
             <button data-tab="deductible">Deductible</button>
             <button data-tab="nondeductible">Non-Deductible</button>
+            <button data-tab="reimbursable">To be paid back</button>
           </div>
           <div class="filters">
             <select class="select-btn" id="expenseCategoryFilter" aria-label="Filter by category"><option value="">All Categories</option></select>
@@ -2960,6 +2981,7 @@ table.m-cards td .empty-state{width:100%;}
       </div>
 
       <div id="monthlyRecap"></div>
+      <div id="reimbReportCard"></div>
       <h2 class="recap-h">Income trend</h2>
         <div class="card chart-card">
           <div class="ch-head">
@@ -3438,6 +3460,14 @@ table.m-cards td .empty-state{width:100%;}
       <div class="field"><label>Was this for your business?</label>
         <input type="hidden" name="business" value="yes">
         <div class="biz-choice"><button type="button" data-biz="yes" class="on">Yes, for work</button><button type="button" data-biz="no">No, personal</button><button type="button" data-biz="unsure">I'm not sure</button></div>
+      </div>
+      <div class="field reimb-field">
+        <label class="rv-remember" style="margin:0;"><input type="checkbox" name="reimbursable" id="expReimb"> Someone will pay me back for this</label>
+        <div id="expReimbPaid" class="sa-sub"></div>
+        <div id="expReimbMore" hidden>
+          <div class="field" style="margin-top:10px;"><label>Who's paying you back?</label><input type="text" name="reimbFrom" list="reimbFromOptions" placeholder="e.g. Glossier" autocomplete="off"><datalist id="reimbFromOptions"></datalist></div>
+          <div class="field"><label>When do you expect it? <span class="field-hint">Optional</span></label><input type="date" name="reimbBy"></div>
+        </div>
       </div>
       <div class="giggy-suggest" id="expGuess"></div>
       <details class="more-details" id="expMore"><summary>Add more details</summary>
@@ -4247,6 +4277,7 @@ table.m-cards td .empty-state{width:100%;}
   function renderExpenseTable(){
     const body = document.getElementById("expenseTableBody");
     if(!body) return;
+    renderReimbStrip();
     const catSel = document.getElementById("expenseCategoryFilter");
     const paySel = document.getElementById("expensePaymentFilter");
     fillFilterSelect(catSel, state.expenses.map(r=>r.category), "All Categories");
@@ -4259,6 +4290,7 @@ table.m-cards td .empty-state{width:100%;}
       if(!inPeriod(r.date, month)) return false;
       if(expenseTab === "deductible" && !r.deductible) return false;
       if(expenseTab === "nondeductible" && r.deductible) return false;
+      if(expenseTab === "reimbursable" && !reimbFor(r.id)) return false;
       if(catFilter && r.category !== catFilter) return false;
       if(payFilter && r.payment !== payFilter) return false;
       return true;
@@ -4267,7 +4299,7 @@ table.m-cards td .empty-state{width:100%;}
     body.innerHTML = rows.length ? rows.map(r=>`
       <tr data-id="${r.id}">
         <td>${shortDate(r.date)}</td>
-        <td><div class="cell-name"><span class="glyph">${escapeHtml(r.glyph)}</span>${escapeHtml(r.description)}${r.receiptPath ? ' <span class="receipt-indicator" data-view-receipt="'+r.receiptPath+'" title="View receipt" style="cursor:pointer;opacity:.6;">📎</span>' : ''}</div></td>
+        <td><div class="cell-name"><span class="glyph">${escapeHtml(r.glyph)}</span>${escapeHtml(r.description)}${(rb => rb ? ` <span class="reimb-tag ${rb.status}">${rb.status === "paid" ? "Paid back" : `Owed by ${escapeHtml(rb.from)}`}</span>` : "")(reimbFor(r.id))}${r.receiptPath ? ' <span class="receipt-indicator" data-view-receipt="'+r.receiptPath+'" title="View receipt" style="cursor:pointer;opacity:.6;">📎</span>' : ''}</div></td>
         <td><span class="tag">${escapeHtml(r.category)}</span></td>
         <td>${escapeHtml(r.payment)}</td>
         <td>${escapeHtml(projectName(r.projectId))}</td>
@@ -4280,6 +4312,7 @@ table.m-cards td .empty-state{width:100%;}
           <button type="button" class="row-action-btn" data-row-menu="${r.id}">···</button>
           <div class="row-menu" data-row-menu-panel="${r.id}">
             <button type="button" data-edit-expense="${r.id}">Edit</button>
+            ${(reimbFor(r.id) || {}).status === "owed" ? `<button type="button" data-reimb-paid="${r.id}">Mark paid back</button>` : ""}
             ${r.receiptPath ? `<button type="button" data-view-receipt="${r.receiptPath}">View Receipt</button>` : ""}
             <button type="button" class="danger" data-delete-expense="${r.id}">Delete</button>
           </div>
@@ -6426,6 +6459,7 @@ table.m-cards td .empty-state{width:100%;}
         title.textContent = "Add Expense";
         document.getElementById("expenseSubmitBtn").lastChild.textContent = " Add Expense";
         form.elements.deductible.checked = true;
+        fillReimbForm(null);
         pendingReceiptFile = null;
         removeExistingReceiptFlag = false;
         currentExpenseReceiptPath = null;
@@ -6558,6 +6592,11 @@ table.m-cards td .empty-state{width:100%;}
   }
 
   wireModal("expenseModal","openAddExpense","expenseForm", async (data)=>{
+    if(data.reimbursable === "on" && !(data.reimbFrom || "").trim() && !(data.id && reimbFor(data.id) && reimbFor(data.id).status === "paid")){
+      showToast("Add who's paying you back.", true);
+      document.querySelector("#expenseForm [name=reimbFrom]").focus();
+      return false;
+    }
     const answer = data.id ? null : expenseBusinessAnswer(data);
     if(answer && answer.skip){ showToast("Got it. Personal spending stays out of your business books."); return; }
     if(!data.date) data.date = todayISO();
@@ -6573,6 +6612,7 @@ table.m-cards td .empty-state{width:100%;}
       if(error) return false;
       const item = state.expenses.find(r=>r.id===data.id);
       if(item){ item.date=updated.date; item.description=updated.description; item.category=updated.category; item.payment=updated.payment_method; item.deductible=updated.deductible; item.amount=Number(updated.amount); item.projectId=updated.project_id||null; }
+      await saveReimbFromForm(data.id, data);
       const finalPath = await handleReceiptAfterSave(data.id);
       if(item) item.receiptPath = finalPath;
     } else {
@@ -6583,6 +6623,7 @@ table.m-cards td .empty-state{width:100%;}
       if(error) return false;
       const newItem = { id:created.id, date:created.date, description:created.description, glyph:created.glyph, category:created.category, payment:created.payment_method, deductible:created.deductible, amount:Number(created.amount), receiptPath:null, projectId:created.project_id||null };
       state.expenses.unshift(newItem);
+      await saveReimbFromForm(created.id, data);
       track("first_transaction_added", { source:"manual" });
       const finalPath = await handleReceiptAfterSave(created.id);
       newItem.receiptPath = finalPath;
@@ -6633,6 +6674,7 @@ table.m-cards td .empty-state{width:100%;}
         form.elements.amount.value = item.amount;
         form.elements.deductible.checked = !!item.deductible;
         if(form.elements.projectId) form.elements.projectId.value = item.projectId || "";
+        fillReimbForm(item.id);
         pendingReceiptFile = null;
         removeExistingReceiptFlag = false;
         currentExpenseReceiptPath = item.receiptPath || null;
@@ -6690,6 +6732,7 @@ table.m-cards td .empty-state{width:100%;}
       const { error } = await dbDelete("expenses", id);
       if(error){ btn.disabled = false; btn.dataset.confirming = "0"; btn.textContent = btn.dataset.originalText; return; }
       state.expenses = state.expenses.filter(r=>r.id!==id);
+      if(reimbFor(id)){ delete reimbursements()[id]; saveCreatorSettings(); }
       renderExpenseTable(); renderStats();
     }
     document.querySelectorAll(".row-menu.open").forEach(m=>m.classList.remove("open"));
@@ -8425,6 +8468,14 @@ table.m-cards td .empty-state{width:100%;}
         title:`${inv.clientName}'s ${money(inv.total)} invoice is due ${days === 0 ? "today" : `in ${days} day${days===1?"":"s"}`}.`,
         sub:`They've paid ${p.onTimeKnown - p.onTime} of ${p.onTimeKnown} invoices late before. A friendly reminder before the due date can help.`,
         label:"Send a reminder", attrs:`data-nudge-type="late" data-chase-invoice="${inv.id}"` });
+    });
+
+    reimbOwed().filter(reimbNeedsFollowUp).forEach(g=>{
+      moves.push({ id:`reimb-${g.key}-${g.lastFollowUp || "none"}-${weekKey(new Date())}`, type:"reimb", score:52 + Math.min(10, g.total/100) + boost("paid","consistent"),
+        title:`${g.from} owes you ${money(g.total)} for ${g.items.length === 1 ? "an expense you covered" : `${g.items.length} expenses you covered`}.`,
+        sub: g.overdueBy !== null ? `It was expected ${g.overdueBy} day${g.overdueBy===1?"":"s"} ago. A quick follow-up usually gets it paid.`
+          : `The oldest is ${g.oldest} days old${g.lastFollowUp ? `, and you last followed up on ${shortDate(g.lastFollowUp)}` : ""}. A quick follow-up usually gets it paid.`,
+        label:"Follow up", attrs:`data-reimb-follow="${escapeHtml(g.key)}"` });
     });
 
     const ux = unusualExpense();
@@ -11013,6 +11064,223 @@ table.m-cards td .empty-state{width:100%;}
     render();
   }
 
+  /* ============================================================
+     Reimbursements: expenses someone has agreed to pay you back for.
+     Stored per expense in this user's own settings (no schema change):
+       { from, expectBy, status:"owed"|"paid", markedAt, followUps:[iso],
+         paidAt, paidAmount, incomeId }
+     The expense itself is never changed. When it's paid back and the
+     expense is a business write-off, the repayment is recorded as
+     money in so the two cancel out; the user can untick that.
+     ============================================================ */
+  function reimbursements(){ const cs = state.creatorSettings; if(!cs.reimbursements || typeof cs.reimbursements !== "object") cs.reimbursements = {}; return cs.reimbursements; }
+  function reimbSettings(){ return Object.assign({ on:true, days:14 }, state.creatorSettings.reimbReminders || {}); }
+  function reimbFor(expenseId){ return reimbursements()[expenseId] || null; }
+  const daysSince = iso => Math.max(0, Math.round((startOfToday() - parseISODate(iso)) / DAY_MS));
+  // Outstanding items, grouped by who owes them.
+  function reimbOwed(){
+    const groups = new Map();
+    state.expenses.forEach(e=>{
+      const r = reimbFor(e.id);
+      if(!r || r.status !== "owed") return;
+      const key = normText(r.from) || "someone";
+      const g = groups.get(key) || { key, from:r.from || "Someone", items:[], total:0, oldest:0, lastFollowUp:null, overdueBy:null };
+      const age = daysSince(e.date);
+      g.items.push({ e, r, age });
+      g.total += e.amount;
+      g.oldest = Math.max(g.oldest, age);
+      (r.followUps || []).forEach(f=>{ if(!g.lastFollowUp || f > g.lastFollowUp) g.lastFollowUp = f; });
+      if(r.expectBy && r.expectBy < todayISO()){ const late = daysSince(r.expectBy); g.overdueBy = Math.max(g.overdueBy || 0, late); }
+      groups.set(key, g);
+    });
+    return [...groups.values()].map(g=>{ g.items.sort((a,b)=>a.e.date < b.e.date ? -1 : 1); return g; }).sort((a,b)=>b.total - a.total);
+  }
+  function reimbPaidRecently(days){
+    const cutoff = isoLocal(addDays(new Date(), -(days || 90)));
+    return state.expenses.map(e=>({ e, r:reimbFor(e.id) })).filter(x=>x.r && x.r.status === "paid" && (x.r.paidAt || "") >= cutoff)
+      .sort((a,b)=>a.r.paidAt < b.r.paidAt ? 1 : -1);
+  }
+  // A group needs a nudge when it's past the expected date, or older than the
+  // reminder setting, and hasn't been followed up on in the last week.
+  function reimbNeedsFollowUp(g){
+    const s = reimbSettings();
+    if(!s.on) return false;
+    if(g.lastFollowUp && daysSince(g.lastFollowUp) < 7) return false;
+    return g.overdueBy !== null || g.oldest >= s.days;
+  }
+  function reimbPayers(){
+    const names = new Set();
+    state.clients.forEach(c=>c.name && names.add(c.name));
+    state.pipelineDeals.forEach(d=>d.brandName && names.add(d.brandName));
+    state.invoices.forEach(i=>i.clientName && names.add(i.clientName));
+    Object.values(reimbursements()).forEach(r=>r.from && names.add(r.from));
+    return [...names].sort((a,b)=>a.localeCompare(b));
+  }
+  function reimbIncomeType(){
+    const list = state.incomeCategoryList;
+    return ((list.find(c=>/reimburs/i.test(c.name)) || list.find(c=>/^other/i.test(c.name)) || list[0] || {}).name) || "Other Income";
+  }
+
+  // Expense form: "Someone will pay me back for this"
+  function syncReimbForm(){
+    const form = document.getElementById("expenseForm"); if(!form) return;
+    const on = form.elements.reimbursable.checked;
+    document.getElementById("expReimbMore").hidden = !on;
+    const dl = document.getElementById("reimbFromOptions");
+    if(dl && on) dl.innerHTML = reimbPayers().map(n=>`<option value="${escapeHtml(n)}">`).join("");
+  }
+  function fillReimbForm(expenseId){
+    const form = document.getElementById("expenseForm"); if(!form) return;
+    const r = expenseId ? reimbFor(expenseId) : null;
+    form.elements.reimbursable.checked = !!r;
+    form.elements.reimbursable.disabled = !!(r && r.status === "paid");
+    form.elements.reimbFrom.value = r ? r.from || "" : "";
+    form.elements.reimbBy.value = r ? r.expectBy || "" : "";
+    document.getElementById("expReimbPaid").textContent = r && r.status === "paid" ? `Paid back on ${shortDate(r.paidAt)}.` : "";
+    syncReimbForm();
+  }
+  // Called after the expense is saved. Returns nothing; never blocks the save.
+  async function saveReimbFromForm(expenseId, data){
+    const all = reimbursements(), cur = all[expenseId];
+    if(cur && cur.status === "paid") return;
+    if(data.reimbursable === "on" && (data.reimbFrom || "").trim()){
+      all[expenseId] = Object.assign({ status:"owed", markedAt:todayISO(), followUps:[] }, cur, { from:data.reimbFrom.trim(), expectBy:data.reimbBy || null });
+    } else if(cur){ delete all[expenseId]; }
+    else return;
+    await saveCreatorSettings();
+    renderReimbStrip();
+  }
+  document.addEventListener("change", e=>{ if(e.target && e.target.id === "expReimb") syncReimbForm(); });
+
+  // Marking paid back
+  async function markReimbPaid(ids, opts){
+    const date = opts.date || todayISO();
+    let ok = 0;
+    for(const id of ids){
+      const e = state.expenses.find(x=>x.id === id), r = reimbFor(id);
+      if(!e || !r || r.status !== "owed") continue;
+      let incomeId = null;
+      if(opts.record){
+        const { data, error } = await dbInsert("income", { user_id:workspaceOwnerId(), date, source:`${r.from} (reimbursement)`, glyph:"↩️", type:reimbIncomeType(), status:"received", amount:e.amount });
+        if(error) continue;
+        incomeId = data.id;
+        state.income.unshift({ id:data.id, date:data.date, source:data.source, glyph:data.glyph, type:data.type, status:data.status, amount:Number(data.amount), projectId:null });
+      }
+      Object.assign(r, { status:"paid", paidAt:date, paidAmount:e.amount, incomeId });
+      ok++;
+    }
+    await saveCreatorSettings();
+    renderReimbStrip(); renderExpenseTable(); renderIncomeTable(); renderStats(); renderHome(); renderNudges(); renderReimbCard();
+    return ok;
+  }
+  function openReimbPaid(ids, after){
+    const items = ids.map(id=>({ e:state.expenses.find(x=>x.id === id), r:reimbFor(id) })).filter(x=>x.e && x.r && x.r.status === "owed");
+    if(!items.length) return;
+    const total = items.reduce((a,x)=>a+x.e.amount,0), anyDeductible = items.some(x=>x.e.deductible);
+    openSettingsModal(`<h2>Paid back</h2>
+      <p class="settings-note">${items.length === 1 ? `${escapeHtml(items[0].r.from)} paid you back ${money(total)} for ${escapeHtml(items[0].e.description)}.` : `${escapeHtml(items[0].r.from)} paid you back ${money(total)} for ${items.length} expenses.`}</p>
+      <div class="field"><label>When did it arrive?</label><input type="date" id="rpDate" value="${todayISO()}"></div>
+      <label class="rv-remember"><input type="checkbox" id="rpRecord" ${anyDeductible ? "checked" : ""}> Record ${money(total)} as money in</label>
+      <p class="sa-sub" style="margin-top:6px;">${anyDeductible ? "This expense counts as a business write-off, so the repayment is recorded as money in and the two cancel out. If your tax pro treats client expenses differently, untick this." : "This expense isn't a write-off, so the repayment doesn't need to count as income."}${state.bankConnections.length ? " If the payment also shows up from your bank, say it's a reimbursement when you review it so it isn't counted twice." : ""}</p>
+      <div class="modal-actions"><button type="button" class="btn-secondary" id="rpCancel">Cancel</button><button type="button" class="btn-primary" id="rpSave">Mark as paid back</button></div>`);
+    document.getElementById("rpCancel").addEventListener("click", ()=>{ if(after) after(); else closeSettingsModal(); });
+    document.getElementById("rpSave").addEventListener("click", async e=>{
+      e.target.disabled = true;
+      const n = await markReimbPaid(items.map(x=>x.e.id), { date:document.getElementById("rpDate").value || todayISO(), record:document.getElementById("rpRecord").checked });
+      if(n) showToast(n === 1 ? "Marked as paid back." : `${n} expenses marked as paid back.`);
+      if(after) after(); else closeSettingsModal();
+    });
+  }
+
+  // Following up
+  function reimbMessage(g){
+    const lines = g.items.map(x=>`- ${x.e.description} (${shortDate(x.e.date)}): ${money(x.e.amount)}`).join("\n");
+    const me = (state.business && state.business.name) || (currentUser && currentUser.name) || "";
+    return `Hi ${g.from} team,\n\nJust following up on the expense${g.items.length === 1 ? "" : "s"} I covered that you'll be reimbursing:\n\n${lines}\n\nTotal: ${money(g.total)}\n\nCould you let me know when the reimbursement will be sent? Happy to resend receipts if helpful.\n\nThanks!${me ? "\n" + me : ""}`;
+  }
+  async function recordFollowUp(g){
+    g.items.forEach(x=>{ x.r.followUps = (x.r.followUps || []).concat(todayISO()).slice(-10); });
+    await saveCreatorSettings();
+    renderNudges(); renderReimbCard();
+  }
+  function openReimbFollowUp(key, after){
+    const g = reimbOwed().find(x=>x.key === key); if(!g) return;
+    const client = state.clients.find(c=>normText(c.name) === g.key && c.email);
+    const msg = reimbMessage(g), subject = `Reimbursement for ${money(g.total)}`;
+    openSettingsModal(`<h2>Follow up with ${escapeHtml(g.from)}</h2>
+      <p class="settings-note">${money(g.total)} for ${g.items.length} expense${g.items.length===1?"":"s"}, the oldest from ${g.oldest} day${g.oldest===1?"":"s"} ago.${g.lastFollowUp ? ` You last followed up on ${shortDate(g.lastFollowUp)}.` : ""}</p>
+      <div class="field"><label>Message</label><textarea id="rfMsg" rows="10">${escapeHtml(msg)}</textarea></div>
+      <div class="modal-actions" style="flex-wrap:wrap;">
+        <button type="button" class="btn-secondary" id="rfBack">${after ? "Back" : "Cancel"}</button>
+        <button type="button" class="btn-secondary" id="rfCopy">Copy message</button>
+        <a class="btn-primary" id="rfEmail" href="mailto:${client ? encodeURIComponent(client.email) : ""}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(msg)}">Email it</a>
+      </div>
+      <button type="button" class="nudge-link" id="rfDone" style="margin-top:10px;">I followed up another way</button>`);
+    const done = async label => { await recordFollowUp(g); showToast(label); if(after) after(); else closeSettingsModal(); };
+    document.getElementById("rfBack").addEventListener("click", ()=>{ if(after) after(); else closeSettingsModal(); });
+    document.getElementById("rfCopy").addEventListener("click", async ()=>{
+      try{ await navigator.clipboard.writeText(document.getElementById("rfMsg").value); }catch(err){}
+      done("Copied. We'll remind you again in a week if it's still unpaid.");
+    });
+    document.getElementById("rfEmail").addEventListener("click", ()=>{
+      const a = document.getElementById("rfEmail");
+      a.href = `mailto:${client ? encodeURIComponent(client.email) : ""}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(document.getElementById("rfMsg").value)}`;
+      setTimeout(()=>done("Follow-up noted. We'll remind you again in a week if it's still unpaid."), 0);
+    });
+    document.getElementById("rfDone").addEventListener("click", ()=>done("Follow-up noted."));
+  }
+
+  // The report
+  function openReimbReport(){
+    const owed = reimbOwed(), paid = reimbPaidRecently(90);
+    const total = owed.reduce((a,g)=>a+g.total,0), count = owed.reduce((a,g)=>a+g.items.length,0);
+    const back = ()=>openReimbReport();
+    openSettingsModal(`<div class="reimb-report">
+      <h2>Reimbursements owed to you</h2>
+      ${owed.length ? `<div class="reimb-total"><b>${money(total)}</b><span>${count} expense${count===1?"":"s"} from ${owed.length === 1 ? "1 person or brand" : `${owed.length} people or brands`}, as of ${shortDate(todayISO())}</span></div>
+        ${owed.map(g=>`<div class="reimb-group">
+          <div class="reimb-ghead"><div><b>${escapeHtml(g.from)}</b><span>${money(g.total)} · oldest ${g.oldest} day${g.oldest===1?"":"s"}${g.overdueBy !== null ? ` · <em>${g.overdueBy} day${g.overdueBy===1?"":"s"} past the date you expected</em>` : ""}${g.lastFollowUp ? ` · followed up ${shortDate(g.lastFollowUp)}` : " · not followed up yet"}</span></div>
+            <div class="reimb-gact"><button type="button" class="fy-btn" data-rr-follow="${escapeHtml(g.key)}">Follow up</button><button type="button" class="fy-later" data-rr-paid-all="${escapeHtml(g.key)}">All paid back</button></div></div>
+          ${g.items.map(x=>`<div class="reimb-item"><span>${shortDate(x.e.date)}</span><span class="ri-name">${escapeHtml(x.e.description)}${x.r.expectBy ? `<em>expected by ${shortDate(x.r.expectBy)}</em>` : ""}</span><b>${money(x.e.amount)}</b>
+            <button type="button" class="nudge-link" data-rr-paid="${x.e.id}">Paid back</button></div>`).join("")}
+        </div>`).join("")}`
+      : `<div class="settings-note">Nothing outstanding. When you add an expense someone will pay you back for, tick “Someone will pay me back for this” and it shows up here until it's paid.</div>`}
+      ${paid.length ? `<details class="rules-log"><summary>Paid back in the last 90 days (${paid.length})</summary><ul>${paid.map(x=>`<li>${shortDate(x.r.paidAt)} · ${escapeHtml(x.r.from)} · ${escapeHtml(x.e.description)} · ${money(x.r.paidAmount || x.e.amount)}</li>`).join("")}</ul></details>` : ""}
+      <div class="modal-actions">${owed.length || paid.length ? `<button type="button" class="btn-secondary" id="rrCsv">Download CSV</button>` : ""}<button type="button" class="btn-primary" data-close-settings>Done</button></div>
+    </div>`);
+    document.querySelectorAll("[data-rr-follow]").forEach(b=>b.addEventListener("click", ()=>openReimbFollowUp(b.dataset.rrFollow, back)));
+    document.querySelectorAll("[data-rr-paid]").forEach(b=>b.addEventListener("click", ()=>openReimbPaid([b.dataset.rrPaid], back)));
+    document.querySelectorAll("[data-rr-paid-all]").forEach(b=>b.addEventListener("click", ()=>{ const g = owed.find(x=>x.key === b.dataset.rrPaidAll); if(g) openReimbPaid(g.items.map(x=>x.e.id), back); }));
+    const csv = document.getElementById("rrCsv");
+    if(csv) csv.addEventListener("click", ()=>{
+      const rows = [["Status","Owed by","Expense","Expense date","Amount","Expected by","Days waiting","Last follow-up","Paid back on"]];
+      owed.forEach(g=>g.items.forEach(x=>rows.push(["Owed", g.from, x.e.description, x.e.date, x.e.amount.toFixed(2), x.r.expectBy || "", String(x.age), g.lastFollowUp || "", ""])));
+      paid.forEach(x=>rows.push(["Paid back", x.r.from, x.e.description, x.e.date, (x.r.paidAmount || x.e.amount).toFixed(2), x.r.expectBy || "", "", "", x.r.paidAt]));
+      const text = rows.map(r=>r.map(v=>/[",\n]/.test(v) ? `"${String(v).replace(/"/g,'""')}"` : v).join(",")).join("\n");
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(new Blob([text], { type:"text/csv" }));
+      a.download = `gigbooks-reimbursements-${todayISO()}.csv`;
+      document.body.appendChild(a); a.click(); a.remove();
+    });
+  }
+  function reimbSummaryHtml(){
+    const owed = reimbOwed(); if(!owed.length) return "";
+    const total = owed.reduce((a,g)=>a+g.total,0), due = owed.filter(reimbNeedsFollowUp).length;
+    return `<div class="card reimb-strip"><div><b>${money(total)} waiting to be paid back</b><span>${owed.length === 1 ? `From ${escapeHtml(owed[0].from)}` : `From ${owed.length} people or brands`}${due ? ` · ${due} ready for a follow-up` : ""}</span></div>
+      <button type="button" class="fy-btn" data-reimb-report="1">See report</button></div>`;
+  }
+  function renderReimbStrip(){ const w = document.getElementById("reimbStrip"); if(w) w.innerHTML = reimbSummaryHtml(); }
+  function renderReimbCard(){
+    const w = document.getElementById("reimbReportCard"); if(!w) return;
+    const owed = reimbOwed(), paid = reimbPaidRecently(90);
+    w.innerHTML = owed.length || paid.length ? `<h2 class="recap-h">Reimbursements</h2>${reimbSummaryHtml() || `<div class="card reimb-strip"><div><b>Nothing waiting to be paid back</b><span>${paid.length} paid back in the last 90 days</span></div><button type="button" class="fy-btn" data-reimb-report="1">See report</button></div>`}` : "";
+  }
+  document.addEventListener("click", e=>{
+    if(e.target.closest("[data-reimb-report]")){ openReimbReport(); return; }
+    const f = e.target.closest("[data-reimb-follow]"); if(f){ openReimbFollowUp(f.dataset.reimbFollow); return; }
+    const p = e.target.closest("[data-reimb-paid]"); if(p){ openReimbPaid([p.dataset.reimbPaid]); document.querySelectorAll(".row-menu.open").forEach(m=>m.classList.remove("open")); }
+  });
+
   /* ---------- Add an expense in three answers ---------- */
   (function simpleExpenseForm(){
     const form = document.getElementById("expenseForm");
@@ -11104,13 +11372,18 @@ table.m-cards td .empty-state{width:100%;}
     if(/owe|unpaid|outstanding|haven'?t paid|late|still waiting|pending/i.test(q)){
       const open = state.invoices.filter(i=>i.status === "sent" || i.status === "overdue");
       const pending = state.income.filter(r=>r.status !== "received");
+      const reimbG = reimbOwed();
+      if(!open.length && !pending.length && reimbG.length) return { lines:[`No invoices are waiting, but <b>${money(reimbG.reduce((a,g)=>a+g.total,0))}</b> in expenses you covered hasn't been paid back yet:`,
+        `<ul class="ask-list">${reimbG.map(g=>`<li><b>${escapeHtml(g.from)}</b>: ${money(g.total)} <span class="sa-sub">${g.items.length} expense${g.items.length===1?"":"s"}, oldest ${g.oldest} days</span></li>`).join("")}</ul>`],
+        kind:"records", actions:[askAction("See reimbursements", ()=>{ closeGiggy(); openReimbReport(); })] };
       if(!open.length && !pending.length) return { lines:["Nobody owes you anything right now. Every invoice you've sent is paid."], actions:[askAction("Create an invoice", ()=>{ closeGiggy(); showView("invoices"); openInvoiceModal(null); })] };
       const rows = open.map(i=>{ const late = effectiveInvoiceStatus(i) === "overdue" ? invoiceDaysLate(i) : 0;
         return `<li><b>${escapeHtml(i.clientName)}</b>: ${money(i.total)} ${late ? `<span class="late">${late} days late</span>` : `due ${i.dueDate ? shortDate(i.dueDate) : "soon"}`}</li>`; })
-        .concat(pending.map(r=>`<li><b>${escapeHtml(r.source)}</b>: ${money(r.amount)} <span class="sa-sub">marked pending</span></li>`));
-      const total = open.reduce((a,i)=>a+Number(i.total),0) + pending.reduce((a,r)=>a+r.amount,0);
+        .concat(pending.map(r=>`<li><b>${escapeHtml(r.source)}</b>: ${money(r.amount)} <span class="sa-sub">marked pending</span></li>`))
+        .concat(reimbG.map(g=>`<li><b>${escapeHtml(g.from)}</b>: ${money(g.total)} <span class="sa-sub">to pay you back for expenses</span></li>`));
+      const total = open.reduce((a,i)=>a+Number(i.total),0) + pending.reduce((a,r)=>a+r.amount,0) + reimbG.reduce((a,g)=>a+g.total,0);
       const firstLate = open.find(i=>effectiveInvoiceStatus(i) === "overdue");
-      return { lines:[`${open.length + pending.length === 1 ? "One payment is" : `${open.length + pending.length} payments are`} still on the way, <b>${money(total)}</b> in total:`, `<ul class="ask-list">${rows.join("")}</ul>`],
+      return { lines:[`${open.length + pending.length + reimbG.length === 1 ? "One payment is" : `${open.length + pending.length + reimbG.length} payments are`} still on the way, <b>${money(total)}</b> in total:`, `<ul class="ask-list">${rows.join("")}</ul>`],
         kind:"records", actions:[...(firstLate ? [askAction(`Remind ${firstLate.clientName}`, ()=>{ closeGiggy(); openChaseModal(firstLate.id); })] : []), askAction("See invoices", ()=>{ closeGiggy(); showView("invoices"); })] };
     }
     // Where did the money go
@@ -11666,6 +11939,7 @@ table.m-cards td .empty-state{width:100%;}
     const steps = [], q = reviewQueue().filter(x=>!x.later);
     if(q.length) steps.push({ kind:"review", n:q.length });
     openInvoices().slice().sort((a,b)=>(a.dueDate || "") < (b.dueDate || "") ? -1 : 1).slice(0,3).forEach(inv=>steps.push({ kind:"invoice", inv }));
+    reimbOwed().slice(0,2).forEach(g=>steps.push({ kind:"reimb", g }));
     const ways = new Set(businessProfile().ways);
     if(ways.has("content") || ways.has("influencing") || ways.has("affiliate") || csList("gifts").length) steps.push({ kind:"barter" });
     steps.push({ kind:"goal" });
@@ -11692,6 +11966,10 @@ table.m-cards td .empty-state{width:100%;}
           <div class="rv-actions"><button type="button" class="btn-primary" id="ciPaid" data-mark-paid="${s.inv.id}">Yes, they paid</button><button type="button" class="btn-secondary" id="ciSkip">Not yet</button>
           ${late ? `<button type="button" class="btn-secondary" data-chase-invoice="${s.inv.id}">Send a reminder</button>` : ""}</div>`;
       }
+      if(s.kind === "reimb") body = `<div class="ci-q">Did ${escapeHtml(s.g.from)} pay you back yet?</div>
+          <p class="settings-note">${money(s.g.total)} for ${s.g.items.map(x=>escapeHtml(x.e.description)).join(", ")} · oldest ${s.g.oldest} day${s.g.oldest===1?"":"s"}</p>
+          <div class="rv-actions"><button type="button" class="btn-primary" id="ciReimbPaid">Yes, they paid me back</button><button type="button" class="btn-secondary" id="ciSkip">Not yet</button>
+          <button type="button" class="btn-secondary" id="ciReimbFollow">Send a follow-up</button></div>`;
       if(s.kind === "barter") body = `<div class="ci-q">Did you receive any products or services in exchange for work this month?</div>
         <p class="settings-note">Like free products for a post. They can count as income, so it's worth noting them.</p>
         <div class="rv-actions"><button type="button" class="btn-primary" id="ciGift">Yes</button><button type="button" class="btn-secondary" id="ciSkip">No</button></div>`;
@@ -11707,6 +11985,8 @@ table.m-cards td .empty-state{width:100%;}
       on("ciSkip", next);
       on("ciGo", ()=>openReviewFlow(false, ()=>{ next(); }));
       on("ciGift", ()=>{ notes.gifts = true; next(); });
+      on("ciReimbPaid", ()=>openReimbPaid(s.g.items.map(x=>x.e.id), next));
+      on("ciReimbFollow", ()=>openReimbFollowUp(s.g.key, next));
       on("ciPaid", ()=>{
         const inv = s.inv, t0 = Date.now();
         const wait = ()=>{ if(inv.status === "paid") return next(); if(Date.now() - t0 > 4000) return next(); setTimeout(wait, 60); };
@@ -11732,6 +12012,7 @@ table.m-cards td .empty-state{width:100%;}
           <div><span>Total expenses</span><b>${money(exp)}</b></div>
           <div class="total"><span>Net profit <span class="sa-sub">(before taxes)</span></span><b>${p < 0 ? "−" : ""}${money(Math.abs(p))}</b></div>
           <div><span>Outstanding invoices</span><b>${inv.length ? `${inv.length} · ${money(inv.reduce((a,x)=>a+Number(x.total||0),0))}` : "None"}</b></div>
+          ${(o => o.length ? `<div><span>Waiting to be paid back</span><b>${money(o.reduce((a,g)=>a+g.total,0))}</b></div>` : "")(reimbOwed())}
           <div><span>Items still needing review</span><b>${left || "None"}</b></div>
         </div>
         ${obs ? `<p class="ci-insight">${escapeHtml(obs.text)}</p>` : ""}
@@ -11766,6 +12047,7 @@ table.m-cards td .empty-state{width:100%;}
   function renderMonthlyRecap(){
     const wrap = document.getElementById("monthlyRecap");
     if(!wrap) return;
+    renderReimbCard();
     const key = state.dateRangeMonth;
     const r = { start: periodStartDate(key), end: periodEndDate(key) };
     const pk = prevPeriodKey(key), pr = { start: periodStartDate(pk), end: periodEndDate(pk) };
@@ -12147,6 +12429,9 @@ table.m-cards td .empty-state{width:100%;}
         ${toggleRowHtml("notifIncomeAlerts", n.incomeAlerts, "Income alerts", "Get notified when new income is logged.")}
         ${toggleRowHtml("notifExpenseAlerts", n.expenseAlerts, "Expense alerts", "Get notified when new expenses are logged.")}
         ${toggleRowHtml("notifProductUpdates", n.productUpdates, "Product updates", "Occasional news about new GigBooks features.")}
+        ${toggleRowHtml("notifReimb", reimbSettings().on, "Reimbursement reminders", "A Money Move on Home when someone hasn't paid you back, then weekly until it's paid or you follow up.")}
+        <div class="toggle-row"><div><div class="t1">Remind me after</div><div class="t2">How long to wait after the expense before the first reminder. A date you expect it by is always respected.</div></div>
+          <select id="notifReimbDays" aria-label="Remind me after">${[7,14,30].map(d=>`<option value="${d}" ${reimbSettings().days === d ? "selected" : ""}>${d} days</option>`).join("")}</select></div>
       </div>
       <div class="settings-note" style="margin-top:14px;">Prototype note: these preferences are saved, but no real emails are sent from this demo.</div>
       <div class="settings-form-actions"><button type="button" class="btn-primary" data-close-settings>Done</button></div>
@@ -12157,6 +12442,9 @@ table.m-cards td .empty-state{width:100%;}
       notifExpenseAlerts:  ["expenseAlerts",  "notif_expense_alerts"],
       notifProductUpdates: ["productUpdates", "notif_product_updates"]
     };
+    const saveReimbPref = async patch => { state.creatorSettings.reimbReminders = Object.assign(reimbSettings(), patch); renderNudges(); await saveCreatorSettings(); };
+    document.getElementById("notifReimb").addEventListener("change", e=>saveReimbPref({ on:e.target.checked }));
+    document.getElementById("notifReimbDays").addEventListener("change", e=>saveReimbPref({ days:Number(e.target.value) }));
     Object.keys(map).forEach(id=>{
       document.getElementById(id).addEventListener("change", async (e)=>{
         const [localKey, dbKey] = map[id];

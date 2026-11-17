@@ -6,7 +6,7 @@ const fs = require("fs");
 const path = require("path");
 
 const src = fs.readFileSync(path.join(__dirname, "..", "index.html"), "utf8");
-const body = src.slice(src.indexOf("  function parseReceipt(text){"), src.indexOf("  async function scanReceipt(file){"));
+const body = src.slice(src.indexOf("  function parseReceipt(text){"), src.lastIndexOf("/*", src.indexOf("     Swipe through expenses")));
 const parseReceipt = new Function("pad2", "parseISODate", "todayISO", body + "\nreturn parseReceipt;")(
   n => String(n).padStart(2, "0"), s => new Date(s + "T00:00:00"), () => "2026-10-30");
 

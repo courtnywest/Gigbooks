@@ -41,3 +41,15 @@ test("recurring expenses are switched off: no button, nothing created on load", 
   assert.equal(await page.$("#openRecurring"), null);
   assert.equal(await page.evaluate(() => (window.__inserts || []).filter(i => i.table === "expenses").length), 0);
 });
+
+test("Tax write-off shows a centered check for yes and nothing for no", async () => {
+  const page = await openApp();
+  await go(page, "expenses");
+  await page.click("#view-expenses [data-tab='nondeductible']");
+  const html = await page.evaluate(() => document.getElementById("expenseTableBody").innerHTML);
+  assert.doesNotMatch(html, /dcross/);
+  await page.click("#view-expenses [data-tab='all']");
+  const cell = await page.$eval("#expenseTableBody td.wo-cell", td => ({ align:getComputedStyle(td).textAlign, check:!!td.querySelector(".dcheck") }));
+  assert.deepEqual(cell, { align:"center", check:true });
+  assert.equal(await page.$eval("th.wo-cell", th => getComputedStyle(th).textAlign), "center");
+});

@@ -1834,6 +1834,16 @@ body[data-view="ask"] .giggy-fab{display:none;}
 .rule-issue{font-size:12.5px;color:#9a5b13;background:#fbf3e4;border-radius:8px;padding:6px 9px;margin-top:6px;}
 .rules-log{margin-top:12px;font-size:13px;color:var(--ink-700);}
 .rules-log summary{cursor:pointer;font-weight:600;}
+input[data-money]{padding-left:26px !important;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='16'%3E%3Ctext x='0' y='12.5' font-family='Inter,Arial,sans-serif' font-size='14' fill='%237a7a72'%3E%24%3C/text%3E%3C/svg%3E");background-repeat:no-repeat;background-position:12px 50%;}
+input[data-pct]{padding-right:30px !important;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='16'%3E%3Ctext x='0' y='12.5' font-family='Inter,Arial,sans-serif' font-size='14' fill='%237a7a72'%3E%25%3C/text%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;}
+input[data-money]::-webkit-inner-spin-button,input[data-money]::-webkit-outer-spin-button,input[data-pct]::-webkit-inner-spin-button,input[data-pct]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0;}
+input[data-money],input[data-pct]{-moz-appearance:textfield;appearance:textfield;}
+.money-echo{font-size:12px;color:var(--ink-500);margin-top:4px;font-variant-numeric:tabular-nums;}
+.money-echo:empty{display:none;}
+.reimb-field{margin-top:16px;padding-top:14px;border-top:1px solid var(--cream-100);}
+#expenseForm > .field,#incomeForm > .field{margin-bottom:16px;}
+#expenseForm .date-row{margin-top:8px;}
+#expenseForm .reimb-field{margin-bottom:6px;}
 .sw-scope{display:flex;gap:6px;margin:4px 0 12px;flex-wrap:wrap;}
 .sw-scope button{appearance:none;border:1px solid var(--line);background:var(--white);border-radius:999px;padding:6px 12px;font:inherit;font-size:12.5px;color:var(--ink-700);cursor:pointer;}
 .sw-scope button.on{background:var(--green-800);border-color:var(--green-800);color:#F5F3ED;}
@@ -2729,12 +2739,12 @@ table.m-cards td .empty-state{width:100%;}
           </div>
           <div class="field"><label>How many hours will it take?</label><input type="number" id="rcHours" min="0" step="0.5" value="10">
             <div style="font-size:11.5px;color:var(--ink-500);margin-top:4px;">Count planning, filming, editing and revisions.</div></div>
-          <div class="field"><label>What do you want to earn for your time, per hour?</label><input type="number" id="rcHourlyRate" min="0" step="1" value="75" inputmode="decimal">
+          <div class="field"><label>What do you want to earn for your time, per hour?</label><input data-money type="number" id="rcHourlyRate" min="0" step="1" value="75" inputmode="decimal">
             <div style="font-size:11.5px;color:var(--ink-500);margin-top:4px;">Pick what your time is worth to you. You can change it for every project.</div>
             <button type="button" class="hh-link" id="rcFromTarget" style="margin-top:6px;">Work it out from what I want to earn in a year</button></div>
           <div class="field">
             <label>Anything you'll need to buy or pay for?</label>
-            <input type="number" id="rcExpenses" min="0" step="1" value="0">
+            <input data-money type="number" id="rcExpenses" min="0" step="1" value="0">
             <div style="font-size:11.5px;color:var(--ink-500);margin-top:4px;">Products, props, travel, an editor. Leave at 0 if nothing.</div>
           </div>
 
@@ -2743,12 +2753,12 @@ table.m-cards td .empty-state{width:100%;}
             Advanced: manager fee, licensing, exclusivity, margin
           </button>
           <div id="rcAdditionalCosts" style="display:none;padding-top:6px;">
-          <div class="field"><label>Manager or agent fee (%)</label><input type="number" id="rcManagerFee" min="0" max="95" step="1" value="0"></div>
-          <div class="field"><label>Profit margin (%)</label><input type="number" id="rcProfitMargin" min="0" max="95" step="1" value="20"></div>
-            <div class="field"><label>Usage / Licensing Fee</label><input type="number" id="rcUsageFee" min="0" step="1" value="0"></div>
-            <div class="field"><label>Exclusivity Fee</label><input type="number" id="rcExclusivityFee" min="0" step="1" value="0"></div>
-            <div class="field"><label>Platform / Payment Processing Fees</label><input type="number" id="rcPlatformFee" min="0" step="1" value="0"></div>
-            <div class="field"><label>Additional Deliverables</label><input type="number" id="rcAdditionalDeliverables" min="0" step="1" value="0"></div>
+          <div class="field"><label>Manager or agent fee (%)</label><input data-pct type="number" id="rcManagerFee" min="0" max="95" step="1" value="0"></div>
+          <div class="field"><label>Profit margin (%)</label><input data-pct type="number" id="rcProfitMargin" min="0" max="95" step="1" value="20"></div>
+            <div class="field"><label>Usage / Licensing Fee</label><input data-money type="number" id="rcUsageFee" min="0" step="1" value="0"></div>
+            <div class="field"><label>Exclusivity Fee</label><input data-money type="number" id="rcExclusivityFee" min="0" step="1" value="0"></div>
+            <div class="field"><label>Platform / Payment Processing Fees</label><input data-money type="number" id="rcPlatformFee" min="0" step="1" value="0"></div>
+            <div class="field"><label>Additional Deliverables</label><input data-money type="number" id="rcAdditionalDeliverables" min="0" step="1" value="0"></div>
           </div>
           <button type="button" class="hh-link" id="rcSaveDefaults" style="margin-top:8px;">Save my hourly rate, costs, fee and margin as defaults</button>
         </div>
@@ -2870,7 +2880,6 @@ table.m-cards td .empty-state{width:100%;}
             <select class="dateselect" data-daterange aria-label="Select month"></select>
             <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><path d="m6 9 6 6 6-6"/></svg>
           </div>
-          <button type="button" id="openRecurring" class="pill-btn" style="appearance:none;cursor:pointer;">Recurring</button>
           <button class="btn-primary" id="openAddExpense">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
             Add Expense
@@ -3461,7 +3470,7 @@ table.m-cards td .empty-state{width:100%;}
       <div class="field"><label>Project (optional)</label>
         <select name="projectId" id="incomeProjectSelect"><option value="">— No project —</option></select>
       </div>
-      <div class="field"><label>Amount</label><input type="number" name="amount" step="0.01" min="0" placeholder="0.00" required></div>
+      <div class="field"><label>Amount</label><input data-money type="number" name="amount" step="0.01" min="0" placeholder="0.00" required></div>
       <div class="modal-actions">
         <button type="button" class="btn-secondary" data-close-modal>Cancel</button>
         <button type="submit" class="btn-primary" id="incomeSubmitBtn">
@@ -3480,7 +3489,7 @@ table.m-cards td .empty-state{width:100%;}
     <form id="expenseForm">
       <input type="hidden" name="id">
       <div class="field"><label>What did you buy?</label><input type="text" name="description" placeholder="e.g. CapCut Pro subscription" required autocomplete="off"></div>
-      <div class="field"><label>How much was it?</label><input type="number" name="amount" step="0.01" min="0" placeholder="0.00" required inputmode="decimal">
+      <div class="field"><label>How much was it?</label><input data-money type="number" name="amount" step="0.01" min="0" placeholder="0.00" required inputmode="decimal">
         <div class="date-row">Date: <b id="expDateLabel">Today</b> <button type="button" class="hh-link" data-change-date="1">Change</button></div></div>
       <div class="field"><label>Was this for your business?</label>
         <input type="hidden" name="business" value="yes">
@@ -4290,9 +4299,9 @@ table.m-cards td .empty-state{width:100%;}
     renderOutstandingPayments();
   }
   function projectName(projectId){
-    if(!projectId) return `<span style="color:var(--ink-400);">—</span>`;
+    if(!projectId) return "";
     const proj = state.projects.find(p=>p.id===projectId);
-    return proj ? escapeHtml(proj.name) : `<span style="color:var(--ink-400);">—</span>`;
+    return proj ? escapeHtml(proj.name) : "";
   }
 
   /* ============================================================
@@ -5703,7 +5712,7 @@ table.m-cards td .empty-state{width:100%;}
     const d = state.creatorSettings.rateDefaults || {};
     openSettingsModal(`<h2>Work out your hourly rate</h2>
       <p class="settings-note">Start from what you want to earn in a year, before taxes, and how many hours you can actually bill. Nothing here is guessed from other creators.</p>
-      <div class="field"><label>What do you want to earn in a year?</label><input type="number" id="rtTarget" min="0" step="500" inputmode="decimal" value="${d.target || ""}" placeholder="60000"></div>
+      <div class="field"><label>What do you want to earn in a year?</label><input data-money type="number" id="rtTarget" min="0" step="500" inputmode="decimal" value="${d.target || ""}" placeholder="60000"></div>
       <div class="field"><label>Hours a week you spend on paid work</label><input type="number" id="rtHours" min="1" max="80" step="1" value="${d.weeklyHours || 20}">
         <div class="sa-sub" style="margin-top:4px;">Not admin, pitching or emails. Just the hours that turn into paid deliverables.</div></div>
       <div class="field"><label>Weeks a year you work</label><input type="number" id="rtWeeks" min="1" max="52" step="1" value="${d.weeks || 46}"></div>
@@ -7481,7 +7490,7 @@ table.m-cards td .empty-state{width:100%;}
       <h2>Tax set-aside</h2>
       <p class="settings-note">GigBooks multiplies your profit by this percentage so you know how much to leave untouched for taxes. Most creators land between 25% and 35% (federal income tax plus the 15.3% self-employment tax, and state tax if you have one).</p>
       <div class="field"><label>Percent of profit to set aside</label>
-        <input type="number" id="rateInput" min="5" max="60" step="1" value="${pct}"></div>
+        <input data-pct type="number" id="rateInput" min="5" max="60" step="1" value="${pct}"></div>
       <div class="preset-row">${[25,30,35,40].map(v=>`<button type="button" class="preset-chip" data-rate-preset="${v}">${v}%</button>`).join("")}</div>
       <div class="modal-actions">
         <button type="button" class="btn-secondary" data-close-settings>Cancel</button>
@@ -7590,9 +7599,12 @@ table.m-cards td .empty-state{width:100%;}
     const last = new Date(y, tm+1, 0).getDate();
     return isoLocal(new Date(y, tm, Math.min(anchorDay || d, last)));
   }
+  // Recurring expenses are off for now: card and bank transactions should come
+  // through and be matched first. Saved rules are kept, just not used.
+  const RECURRING_ON = false;
   let recurringBusy = false;
   async function generateRecurringExpenses(){
-    if(recurringBusy || !isOwnWorkspace() || !canWriteInWorkspace()) return;
+    if(!RECURRING_ON || recurringBusy || !isOwnWorkspace() || !canWriteInWorkspace()) return;
     const list = state.creatorSettings.recurring.filter(r=>r.active);
     if(!list.length) return;
     recurringBusy = true;
@@ -7634,7 +7646,7 @@ table.m-cards td .empty-state{width:100%;}
       <form id="recForm" style="display:flex;flex-direction:column;gap:10px;margin-top:6px;">
         <div class="field"><label>What is it?</label><input name="description" required placeholder="e.g. Adobe Creative Cloud"></div>
         <div style="display:flex;gap:10px;">
-          <div class="field" style="flex:1"><label>Amount</label><input type="number" name="amount" step="0.01" min="0.01" required></div>
+          <div class="field" style="flex:1"><label>Amount</label><input data-money type="number" name="amount" step="0.01" min="0.01" required></div>
           <div class="field" style="flex:1"><label>Repeats</label><select name="frequency"><option value="monthly">Monthly</option><option value="weekly">Weekly</option><option value="yearly">Yearly</option></select></div>
         </div>
         <div style="display:flex;gap:10px;">
@@ -7759,7 +7771,7 @@ table.m-cards td .empty-state{width:100%;}
     openSettingsModal(`
       <h2>Log a tax payment</h2>
       <form id="taxPayForm" style="display:flex;flex-direction:column;gap:10px;">
-        <div class="field"><label>Amount paid</label><input type="number" name="amount" step="0.01" min="0.01" required value="${nd.suggested ? nd.suggested.toFixed(2) : ""}"></div>
+        <div class="field"><label>Amount paid</label><input data-money type="number" name="amount" step="0.01" min="0.01" required value="${nd.suggested ? nd.suggested.toFixed(2) : ""}"></div>
         <div class="field"><label>Which quarter is it for?</label><select name="qtr">${opts.map(([yy,q])=>`<option value="${yy}|${q}" ${defVal===`${yy}|${q}`?"selected":""}>${q} ${yy}</option>`).join("")}</select></div>
         <div class="field"><label>Date paid</label><input type="date" name="date" value="${todayISO()}" required></div>
         <div class="field"><label>Note (optional)</label><input name="note" placeholder="e.g. IRS Direct Pay, state estimate"></div>
@@ -7809,18 +7821,18 @@ table.m-cards td .empty-state{width:100%;}
   }
   function dedFieldsHtml(key){
     const t = todayISO();
-    const amt = (label,id) => `<div class="field"><label>${escapeHtml(label)}</label><input type="number" id="${id||"dedAmount"}" step="0.01" min="0.01" required></div>`;
+    const amt = (label,id) => `<div class="field"><label>${escapeHtml(label)}</label><input data-money type="number" id="${id||"dedAmount"}" step="0.01" min="0.01" required></div>`;
     const desc = (ph) => `<div class="field"><label>What was it?</label><input id="dedDesc" required placeholder="${ph}"></div>`;
     const date = `<div class="field"><label>Date</label><input type="date" id="dedDate" value="${t}" required></div>`;
     switch(key){
       case "equipment": return desc("e.g. Sony ZV-E10 camera") + amt("Price") + date;
       case "software": return desc("e.g. CapCut Pro") + amt("Price") +
-        `<div class="field"><label>How often?</label><select id="dedFreq"><option value="monthly">Every month (set it to repeat)</option><option value="yearly">Every year (set it to repeat)</option><option value="once">One time only</option></select></div>` + date;
+        (RECURRING_ON ? `<div class="field"><label>How often?</label><select id="dedFreq"><option value="monthly">Every month (set it to repeat)</option><option value="yearly">Every year (set it to repeat)</option><option value="once">One time only</option></select></div>` : "") + date;
       case "home": return `<div class="field"><label>Square feet used only for work (max 300)</label><input type="number" id="dedSqft" min="1" max="300" step="1" required></div><div class="ded-calc" id="dedCalc">Deduction: $0.00</div><div class="settings-note">Once per tax year. The space must be used regularly and exclusively for your business.</div>`;
-      case "phone": return `<div class="field"><label>Monthly bill</label><input type="number" id="dedBill" step="0.01" min="0.01" required></div>
-        <div class="field"><label>Percent used for work</label><input type="number" id="dedPct" min="1" max="100" value="50" required></div>
+      case "phone": return `<div class="field"><label>Monthly bill</label><input data-money type="number" id="dedBill" step="0.01" min="0.01" required></div>
+        <div class="field"><label>Percent used for work</label><input data-pct type="number" id="dedPct" min="1" max="100" value="50" required></div>
         <div class="ded-calc" id="dedCalc">Deduction: $0.00 a month</div>
-        <div class="field check-field"><input type="checkbox" id="dedRepeat" checked><label for="dedRepeat" style="margin:0;">Repeat every month</label></div>`;
+        ${RECURRING_ON ? `<div class="field check-field"><input type="checkbox" id="dedRepeat" checked><label for="dedRepeat" style="margin:0;">Repeat every month</label></div>` : ""}`;
       case "mileage": return `<div class="field"><label>Miles driven</label><input type="number" id="dedMiles" min="0.1" step="0.1" required></div>
         <div class="field"><label>Purpose</label><input id="dedDesc" required placeholder="e.g. Drive to brand shoot"></div>${date}
         <div class="ded-calc" id="dedCalc"></div>`;
@@ -7868,13 +7880,13 @@ table.m-cards td .empty-state{width:100%;}
       } else if(key === "phone"){
         const amount = n("dedBill") * Math.min(100, n("dedPct"))/100;
         ok = await addExpenseRecord({ date:todayISO(), description:`Phone & internet (${Math.round(n("dedPct"))}% business use)`, category:"Phone & Internet", amount, payment:"Bill" });
-        if(ok && $("dedRepeat").checked){
+        if(ok && $("dedRepeat") && $("dedRepeat").checked){
           const next = nextRecurDate(todayISO(), "monthly", parseInt(todayISO().slice(8,10),10));
           state.creatorSettings.recurring.push({ id:rid(), description:ok.description, category:ok.category, amount, frequency:"monthly", nextDate:next, anchorDay:parseInt(todayISO().slice(8,10),10), active:true });
           await saveCreatorSettings();
         }
       } else if(key === "software"){
-        const freq = v("dedFreq");
+        const freq = $("dedFreq") ? v("dedFreq") : "once";
         ok = await addExpenseRecord({ date:v("dedDate"), description:v("dedDesc").trim(), category:"Software & Subscriptions", amount:n("dedAmount"), payment:"Card", glyph:"💻" });
         if(ok && freq !== "once"){
           const dt = v("dedDate");
@@ -8261,7 +8273,7 @@ table.m-cards td .empty-state{width:100%;}
       </div>
       <div class="ng-list">${flags.map((f,i)=>`<label class="check-row ng-row"><input type="checkbox" data-ng-flag="${i}"${picked.has(i)?" checked":""}>
         <span><b>${escapeHtml(f.title)}</b> <span class="rating-pill ${f.severity==="high"?"bad":(f.severity==="medium"?"warn":"muted")}">${SEV_LABEL[f.severity]||"Note"}</span><br><span class="sa-sub">${escapeHtml(f.suggestion)}</span></span></label>`).join("")}</div>
-      <div class="field"><label>Counter-offer fee (optional)</label><input type="number" id="ngFee" min="0" step="50" placeholder="${c.result.totalAmount ? "Offered: " + money(c.result.totalAmount) : "e.g. 5000"}">
+      <div class="field"><label>Counter-offer fee (optional)</label><input data-money type="number" id="ngFee" min="0" step="50" placeholder="${c.result.totalAmount ? "Offered: " + money(c.result.totalAmount) : "e.g. 5000"}">
         ${hist ? `<div class="sa-sub" style="margin-top:4px;">Your average paid invoice is ${money(hist.avg)} across ${hist.n} invoice${hist.n===1?"":"s"}.</div>` : ""}</div>
       <div style="display:flex;gap:10px;flex-wrap:wrap;">
         <div class="field" style="flex:1;min-width:160px;"><label>To</label><input id="ngTo" type="email" placeholder="partnerships@brand.com"></div>
@@ -8320,7 +8332,7 @@ table.m-cards td .empty-state{width:100%;}
       events.push({ date:when, label:`${d.brandName} deal${d.deliverable ? " (" + d.deliverable + ")" : ""}`, amount:Number(d.estimatedValue), kind:"deal", note:"signed, not invoiced yet" });
     });
     let monthlyRecurring = 0;
-    cs.recurring.filter(r=>r.active).forEach(r=>{
+    cs.recurring.filter(r=>RECURRING_ON && r.active).forEach(r=>{
       monthlyRecurring += r.frequency === "weekly" ? r.amount*4.345 : (r.frequency === "yearly" ? r.amount/12 : r.amount);
       let dt = r.nextDate, g = 0;
       while(dt && parseISODate(dt) <= end && g++ < 60){
@@ -9010,8 +9022,8 @@ table.m-cards td .empty-state{width:100%;}
     openSettingsModal(`
       <h2>Paycheck &amp; savings</h2>
       <p class="settings-note">Choose what you want to pay yourself each month, and tell GigBooks how much you have saved. Leave the paycheck empty to use the suggestion.</p>
-      <div class="field"><label>Monthly paycheck to yourself</label><input type="number" id="smPay" min="0" step="50" value="${cs.paycheck||""}" placeholder="Use suggestion"></div>
-      <div class="field"><label>Savings / cash on hand</label><input type="number" id="smCash" min="0" step="100" value="${cs.cashOnHand||""}" placeholder="0"></div>
+      <div class="field"><label>Monthly paycheck to yourself</label><input data-money type="number" id="smPay" min="0" step="50" value="${cs.paycheck||""}" placeholder="Use suggestion"></div>
+      <div class="field"><label>Savings / cash on hand</label><input data-money type="number" id="smCash" min="0" step="100" value="${cs.cashOnHand||""}" placeholder="0"></div>
       <div class="modal-actions">
         <button type="button" class="btn-secondary" data-close-settings>Cancel</button>
         <button type="button" class="btn-primary" id="smSave">Save</button>
@@ -9100,7 +9112,7 @@ table.m-cards td .empty-state{width:100%;}
           <div class="field" style="flex:1"><label>What did they send?</label><input name="what" required value="${escapeHtml(g?g.item:"")}" placeholder="e.g. Ring light kit"></div>
         </div>
         <div style="display:flex;gap:10px;">
-          <div class="field" style="flex:1"><label>Retail value ($)</label><input type="number" name="worth" min="0" step="0.01" required value="${g?g.value:""}"></div>
+          <div class="field" style="flex:1"><label>Retail value ($)</label><input data-money type="number" name="worth" min="0" step="0.01" required value="${g?g.value:""}"></div>
           <div class="field" style="flex:1"><label>Date received</label><input type="date" name="date" required value="${g?g.date:todayISO()}"></div>
         </div>
         <div style="display:flex;gap:10px;">
@@ -9776,9 +9788,9 @@ table.m-cards td .empty-state{width:100%;}
       <div class="smooth-head"><h3>What would I actually keep?</h3></div>
       <p class="feature-sub" style="margin-top:0;">Pop in a deal amount before you say yes.${quipSpan("takeHome")}</p>
       <div class="th-inputs">
-        <div class="field"><label>Deal amount</label><input type="number" min="0" step="50" id="${prefix}Gross" placeholder="2500"></div>
-        <div class="field"><label>Manager / agent %</label><input type="number" min="0" max="90" step="1" id="${prefix}Agent" value="${agent}"></div>
-        <div class="field"><label>Platform fees %</label><input type="number" min="0" max="50" step="0.5" id="${prefix}Fee" value="${fee}"></div>
+        <div class="field"><label>Deal amount</label><input data-money type="number" min="0" step="50" id="${prefix}Gross" placeholder="2500"></div>
+        <div class="field"><label>Manager / agent %</label><input data-pct type="number" min="0" max="90" step="1" id="${prefix}Agent" value="${agent}"></div>
+        <div class="field"><label>Platform fees %</label><input data-pct type="number" min="0" max="50" step="0.5" id="${prefix}Fee" value="${fee}"></div>
       </div>
       <div class="th-result" id="${prefix}Out"></div>
     </div>`;
@@ -9840,8 +9852,8 @@ table.m-cards td .empty-state{width:100%;}
   function openGoalModal(){
     openSettingsModal(`<h2>New money goal</h2>
       <div class="field"><label>What are you saving for?</label><input id="goalName" placeholder="e.g. New camera, 3-month cushion"></div>
-      <div class="field"><label>Target amount</label><input type="number" id="goalTarget" min="1" step="1"></div>
-      <div class="field"><label>Already saved</label><input type="number" id="goalSaved" min="0" step="1" value="0"></div>
+      <div class="field"><label>Target amount</label><input data-money type="number" id="goalTarget" min="1" step="1"></div>
+      <div class="field"><label>Already saved</label><input data-money type="number" id="goalSaved" min="0" step="1" value="0"></div>
       <div class="field"><label>By when? <span class="field-hint">Optional</span></label><input type="date" id="goalBy"></div>
       <div class="modal-actions"><button type="button" class="btn-secondary" data-close-settings>Cancel</button><button type="button" class="btn-primary" id="goalSave">Save goal</button></div>`);
     document.getElementById("goalSave").addEventListener("click", async ()=>{
@@ -9858,7 +9870,7 @@ table.m-cards td .empty-state{width:100%;}
     if(add){
       const g = goalsList().find(x=>x.id === add.dataset.goalAdd); if(!g) return;
       openSettingsModal(`<h2>Add to “${escapeHtml(g.name)}”</h2>
-        <div class="field"><label>Amount you put aside</label><input type="number" id="goalAmt" min="0.01" step="0.01"></div>
+        <div class="field"><label>Amount you put aside</label><input data-money type="number" id="goalAmt" min="0.01" step="0.01"></div>
         <div class="modal-actions"><button type="button" class="btn-secondary" data-close-settings>Cancel</button><button type="button" class="btn-primary" id="goalAmtSave">Add</button></div>`);
       document.getElementById("goalAmtSave").addEventListener("click", async ()=>{
         const amt = Number(document.getElementById("goalAmt").value); if(!(amt > 0)) return;
@@ -10465,7 +10477,7 @@ table.m-cards td .empty-state{width:100%;}
         <div class="sw-gaps">${gaps.length ? gaps.map(g=>`<span class="sw-gap">${GAP_LABEL[g]}</span>`).join("") : `<span class="sw-gap ok">All set</span>`}</div>
         <div class="field"><label for="swDesc">What was it?</label><input id="swDesc" value="${escapeHtml(e.description || "")}" autocomplete="off"></div>
         <div class="sw-row">
-          <div class="field"><label for="swAmt">Amount</label><input id="swAmt" type="number" step="0.01" min="0" inputmode="decimal" value="${e.amount}"></div>
+          <div class="field"><label for="swAmt">Amount</label><input data-money id="swAmt" type="number" step="0.01" min="0" inputmode="decimal" value="${e.amount}"></div>
           <div class="field"><label for="swDate">Date</label><input id="swDate" type="date" value="${e.date}"></div>
         </div>
         <div class="field"><label>Category</label>
@@ -10708,7 +10720,7 @@ table.m-cards td .empty-state{width:100%;}
     if(!requirePro("mediakit")) return;
     const mk = mediaKitData();
     const plRow = (pl, i) => `<div class="mk-row" data-mk-pl="${i}"><input placeholder="Platform" value="${escapeHtml(pl.platform||"")}" data-k="platform"><input placeholder="@handle" value="${escapeHtml(pl.handle||"")}" data-k="handle"><input placeholder="Followers" value="${escapeHtml(pl.followers||"")}" data-k="followers"></div>`;
-    const rtRow = (r, i) => `<div class="mk-row two" data-mk-rt="${i}"><input placeholder="Deliverable" value="${escapeHtml(r.item||"")}" data-k="item"><input type="number" placeholder="Price" value="${r.price||""}" data-k="price"></div>`;
+    const rtRow = (r, i) => `<div class="mk-row two" data-mk-rt="${i}"><input placeholder="Deliverable" value="${escapeHtml(r.item||"")}" data-k="item"><input data-money type="number" placeholder="Price" value="${r.price||""}" data-k="price"></div>`;
     const plats = mk.platforms.length ? mk.platforms : [{},{}];
     const rates = mk.rates.length ? mk.rates : [{},{}];
     openSettingsModal(`<h2>Media kit</h2>
@@ -10823,7 +10835,7 @@ table.m-cards td .empty-state{width:100%;}
   function openAfford(){
     openSettingsModal(`<h2>Can I afford it?</h2>
       <p class="settings-note">Giggy checks it against your safe-to-spend money, upcoming bills and taxes.</p>
-      <div class="field"><label>How much is it?</label><input type="number" id="affAmt" min="1" step="1" placeholder="1200" inputmode="decimal"></div>
+      <div class="field"><label>How much is it?</label><input data-money type="number" id="affAmt" min="1" step="1" placeholder="1200" inputmode="decimal"></div>
       <div id="affOut" class="afford-out"></div>
       <div class="modal-actions"><button type="button" class="btn-primary" data-close-settings>Done</button></div>`);
     const inp = document.getElementById("affAmt"), out = document.getElementById("affOut");
@@ -10939,7 +10951,7 @@ table.m-cards td .empty-state{width:100%;}
     const cs = state.creatorSettings;
     openSettingsModal(`<h2>What can you safely spend?</h2>
       <p class="settings-note">Your profit isn't the same as cash in the bank, so GigBooks needs one number from you. Check your banking app and type in what's there.</p>
-      <div class="field"><label>How much is in your business account right now?</label><input type="number" id="ssCash" min="0" step="0.01" inputmode="decimal" value="${cs.cashOnHand ?? ""}" placeholder="0.00"></div>
+      <div class="field"><label>How much is in your business account right now?</label><input data-money type="number" id="ssCash" min="0" step="0.01" inputmode="decimal" value="${cs.cashOnHand ?? ""}" placeholder="0.00"></div>
       <div class="field"><label>Do you keep money for taxes in a separate account?</label>
         <div class="biz-choice" id="ssSep"><button type="button" data-v="no" class="${cs.taxSeparate ? "" : "on"}">No, it's all together</button><button type="button" data-v="yes" class="${cs.taxSeparate ? "on" : ""}">Yes, it's separate</button></div></div>
       <p class="sa-sub">We'll hold back what you'll owe in taxes and bills due in the next 30 days. Update the balance whenever you like; we'll ask again in a month.</p>
@@ -11977,7 +11989,7 @@ table.m-cards td .empty-state{width:100%;}
           <p class="settings-note">Add one thing you were paid or spent recently. That's enough for your first real number.</p>
           <div class="biz-choice ob-dir"><button type="button" data-dir="in" class="${dir==="in"?"on":""}">Money in</button><button type="button" data-dir="out" class="${dir==="out"?"on":""}">Money out</button></div>
           <div class="field"><label>${dir === "in" ? "What were you paid for?" : "What did you buy?"}</label><input id="obName" placeholder="e.g. ${escapeHtml(dir === "in" ? ex.inEx : ex.outEx)}" autocomplete="off"></div>
-          <div class="field"><label>How much?</label><input type="number" id="obAmt" min="0.01" step="0.01" inputmode="decimal" placeholder="0.00"></div>
+          <div class="field"><label>How much?</label><input data-money type="number" id="obAmt" min="0.01" step="0.01" inputmode="decimal" placeholder="0.00"></div>
           <div class="sa-sub" style="margin:-4px 0 14px;">Dated today. ${dir === "in" ? "We'll count it as money you've received." : "We'll count it as a business expense."} You can change anything later.</div>
           <div class="modal-actions"><button type="button" class="btn-secondary" id="wizBack">Back</button><button type="button" class="btn-primary" id="obSave">Add it</button></div>
           <button type="button" class="nudge-link ob-skip" id="wizSkip">I'll do this later</button>`);
@@ -12078,7 +12090,7 @@ table.m-cards td .empty-state{width:100%;}
         </div>
         <p class="sa-sub">Counts money you've received this month. ${g.pending ? `${money(g.pending)} marked as pending and ` : ""}${g.unpaid ? `${money(g.unpaid)} in unpaid invoices ` : "Pending payments and unpaid invoices "}${g.pending || g.unpaid ? "aren't" : "aren't"} included until the money arrives.</p>`
       : `<p class="settings-note">Pick a number you'd like to bring in each month. GigBooks tracks the income you've received toward it. That's it. No budgets.</p>`}
-      <div class="field"><label>${g ? "Change your goal" : "Your monthly income goal"}</label><input type="number" id="igAmt" min="1" step="50" inputmode="decimal" value="${g ? g.goal : ""}" placeholder="${avg ? Math.round(avg/50)*50 : "3000"}">
+      <div class="field"><label>${g ? "Change your goal" : "Your monthly income goal"}</label><input data-money type="number" id="igAmt" min="1" step="50" inputmode="decimal" value="${g ? g.goal : ""}" placeholder="${avg ? Math.round(avg/50)*50 : "3000"}">
         ${avg ? `<div class="sa-sub" style="margin-top:6px;">You averaged ${money(avg)} a month over the last three full months.</div>` : ""}</div>
       <div class="modal-actions">${g ? `<button type="button" class="btn-secondary" id="igRemove">Remove goal</button>` : `<button type="button" class="btn-secondary" data-close-settings>Cancel</button>`}<button type="button" class="btn-primary" id="igSave">Save goal</button></div>`);
     document.getElementById("igSave").addEventListener("click", async ()=>{
@@ -12261,7 +12273,7 @@ table.m-cards td .empty-state{width:100%;}
         const g = incomeGoal(), avg = averageMonthlyIncome(3);
         body = `<div class="ci-q">Want to update your income goal for next month?</div>
           <p class="settings-note">${g ? `Your goal is ${money(g)} a month.` : "You don't have one yet. It's optional."}${avg ? ` You averaged ${money(avg)} a month over the last three full months.` : ""}</p>
-          <div class="field"><input type="number" id="ciGoalAmt" min="1" step="50" inputmode="decimal" value="${g || ""}" placeholder="${avg ? Math.round(avg/50)*50 : "3000"}" aria-label="Monthly income goal"></div>
+          <div class="field"><input data-money type="number" id="ciGoalAmt" min="1" step="50" inputmode="decimal" value="${g || ""}" placeholder="${avg ? Math.round(avg/50)*50 : "3000"}" aria-label="Monthly income goal"></div>
           <div class="rv-actions"><button type="button" class="btn-primary" id="ciGoalSave">Save goal</button><button type="button" class="btn-secondary" id="ciSkip">${g ? "Keep it" : "Skip"}</button></div>`;
       }
       openSettingsModal(`<div class="ci rv">${head()}${body}</div>`);
@@ -12457,10 +12469,27 @@ table.m-cards td .empty-state{width:100%;}
   const settingsModalBox = document.getElementById("settingsModalBox");
 
   function closeSettingsModal(){ if(settingsModal) settingsModal.classList.remove("open"); }
+  // "$" before money inputs (CSS), plus the formatted amount under bigger numbers.
+  function moneyEcho(el){
+    if(!el || !el.matches || !el.matches("input[data-money]")) return;
+    let echo = el.nextElementSibling && el.nextElementSibling.classList.contains("money-echo") ? el.nextElementSibling : null;
+    const v = Number(el.value);
+    const text = el.value !== "" && isFinite(v) && Math.abs(v) >= 1000 ? money(v) : "";
+    if(!echo && !text) return;
+    if(!echo){ echo = document.createElement("div"); echo.className = "money-echo"; echo.setAttribute("aria-hidden", "true"); el.insertAdjacentElement("afterend", echo); }
+    echo.textContent = text;
+  }
+  function refreshMoneyEchoes(root){ (root || document).querySelectorAll("input[data-money]").forEach(moneyEcho); }
+  document.addEventListener("input", e=>moneyEcho(e.target));
+  // Forms filled in by code (Edit, receipts) get their echoes when their window opens.
+  if(window.MutationObserver) new MutationObserver(list=>list.forEach(m=>{ if(m.target.classList && m.target.classList.contains("modal-overlay") && m.target.classList.contains("open")) setTimeout(()=>refreshMoneyEchoes(m.target), 0); }))
+    .observe(document.body, { subtree:true, attributes:true, attributeFilter:["class"] });
+  document.addEventListener("change", e=>moneyEcho(e.target));
   function openSettingsModal(html){
     if(!settingsModalBox) return;
     settingsModalBox.innerHTML = html;
     settingsModal.classList.add("open");
+    refreshMoneyEchoes(document.getElementById("settingsModalBox"));
   }
   if(settingsModal){
     settingsModal.addEventListener("click", (e)=>{ if(e.target===settingsModal) closeSettingsModal(); });

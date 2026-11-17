@@ -36,7 +36,7 @@
     from: query,
     rpc: (name) => Promise.resolve((F.rpc && name in F.rpc) ? { data:F.rpc[name], error:null } : { data:null, error:{ message:"function not found" } }),
     channel: () => ({ on(){ return this; }, subscribe(){ return this; } }),
-    storage: { from: () => ({ upload: ok, createSignedUrl: () => ok({ signedUrl:"about:blank" }), getPublicUrl: () => ({ data:{ publicUrl:"" } }) }) },
+    storage: { from: () => ({ upload: (path, file) => { (window.__uploads = window.__uploads || []).push({ path, type: file && file.type }); return ok({ path }); }, createSignedUrl: () => ok({ signedUrl:"about:blank" }), getPublicUrl: () => ({ data:{ publicUrl:"" } }) }) },
     functions: { invoke: (name) => Promise.resolve((F.functions && name in F.functions) ? { data:F.functions[name], error:null } : { data:null, error:{ context:{ status:404 } } }) },
     auth: {
       getSession: () => ok({ session: F.loggedOut ? null : { user } }),

@@ -1834,6 +1834,31 @@ body[data-view="ask"] .giggy-fab{display:none;}
 .rule-issue{font-size:12.5px;color:#9a5b13;background:#fbf3e4;border-radius:8px;padding:6px 9px;margin-top:6px;}
 .rules-log{margin-top:12px;font-size:13px;color:var(--ink-700);}
 .rules-log summary{cursor:pointer;font-weight:600;}
+.sw-scope{display:flex;gap:6px;margin:4px 0 12px;flex-wrap:wrap;}
+.sw-scope button{appearance:none;border:1px solid var(--line);background:var(--white);border-radius:999px;padding:6px 12px;font:inherit;font-size:12.5px;color:var(--ink-700);cursor:pointer;}
+.sw-scope button.on{background:var(--green-800);border-color:var(--green-800);color:#F5F3ED;}
+.sw-card{border:1px solid var(--line);border-radius:16px;padding:16px;background:var(--white);touch-action:pan-y;will-change:transform;}
+.sw-gaps{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
+.sw-gap{font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:999px;background:#fbf3e4;color:#9a5b13;}
+.sw-gap.ok{background:var(--cream-100);color:var(--green-800);}
+.sw-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.sw-row .field{min-width:0;}
+.sw-chips{display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
+.sw-chips select{max-width:100%;}
+.sw-receipt{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.sw-upload{display:inline-flex;align-items:center;gap:6px;cursor:pointer;}
+.sw-has{font-size:13.5px;color:var(--green-800);font-weight:600;}
+.sw-note{font-size:13px;color:var(--ink-700);background:var(--cream-50);border-radius:10px;padding:8px 10px;margin-top:8px;line-height:1.45;}
+.sw-saved{font-size:12px;color:var(--green-800);min-height:16px;margin-top:8px;text-align:right;}
+.sw-nav{display:grid;grid-template-columns:1fr 2fr;gap:10px;margin-top:14px;position:sticky;bottom:-1px;background:var(--white);padding:10px 0 4px;z-index:2;}
+.sw-nav button{justify-content:center;}
+.sw-hint{text-align:center;margin-top:8px;}
+.sw-match{border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:2px;margin:6px 0 4px;}
+.sw-match b{font-size:15px;color:var(--ink-900);} .sw-match span{font-size:13px;color:var(--ink-500);}
+.sw-reading{text-align:center;padding:12px 0;}
+.sw-spin{width:34px;height:34px;border-radius:50%;border:3px solid var(--cream-200);border-top-color:var(--green-800);margin:6px auto 12px;animation:swspin 1s linear infinite;}
+@keyframes swspin{to{transform:rotate(360deg);}}
+@media (prefers-reduced-motion: reduce){.sw-spin{animation:none;}.sw-card{transition:none !important;}}
 .reimb-tag{display:inline-block;margin-left:6px;font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;background:#fbf3e4;color:#9a5b13;white-space:nowrap;vertical-align:1px;}
 .reimb-tag.paid{background:var(--cream-100);color:var(--ink-500);}
 .reimb-strip{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 20px;margin-bottom:14px;flex-wrap:wrap;}
@@ -4250,7 +4275,7 @@ table.m-cards td .empty-state{width:100%;}
         <td><div class="cell-name"><span class="glyph">${escapeHtml(r.glyph)}</span>${escapeHtml(r.source)}</div></td>
         <td><span class="tag">${escapeHtml(r.type)}</span></td>
         <td><span class="status ${r.status==='pending'?'pending':''}"><span class="sdot"></span>${r.status==='pending'?'Pending':'Received'}</span></td>
-        <td>${escapeHtml(projectName(r.projectId))}</td>
+        <td>${projectName(r.projectId)}</td>
         <td class="num amount-pos">+${money(r.amount)}</td>
         <td class="row-action">
           <button type="button" class="row-edit-btn" data-edit-income="${r.id}" title="Edit" aria-label="Edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
@@ -4267,7 +4292,7 @@ table.m-cards td .empty-state{width:100%;}
   function projectName(projectId){
     if(!projectId) return `<span style="color:var(--ink-400);">—</span>`;
     const proj = state.projects.find(p=>p.id===projectId);
-    return proj ? proj.name : `<span style="color:var(--ink-400);">—</span>`;
+    return proj ? escapeHtml(proj.name) : `<span style="color:var(--ink-400);">—</span>`;
   }
 
   /* ============================================================
@@ -4302,7 +4327,7 @@ table.m-cards td .empty-state{width:100%;}
         <td><div class="cell-name"><span class="glyph">${escapeHtml(r.glyph)}</span>${escapeHtml(r.description)}${(rb => rb ? ` <span class="reimb-tag ${rb.status}">${rb.status === "paid" ? "Paid back" : `Owed by ${escapeHtml(rb.from)}`}</span>` : "")(reimbFor(r.id))}${r.receiptPath ? ' <span class="receipt-indicator" data-view-receipt="'+r.receiptPath+'" title="View receipt" style="cursor:pointer;opacity:.6;">📎</span>' : ''}</div></td>
         <td><span class="tag">${escapeHtml(r.category)}</span></td>
         <td>${escapeHtml(r.payment)}</td>
-        <td>${escapeHtml(projectName(r.projectId))}</td>
+        <td>${projectName(r.projectId)}</td>
         <td>${r.deductible
               ? '<svg class="dcheck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>'
               : '<svg class="dcross" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6 6 18"/></svg>'}</td>
@@ -8478,6 +8503,15 @@ table.m-cards td .empty-state{width:100%;}
         label:"Follow up", attrs:`data-reimb-follow="${escapeHtml(g.key)}"` });
     });
 
+    const needs = sorterRows("needs");
+    if(writable && needs.length >= 3){
+      const nr = needs.filter(e=>expenseGaps(e).includes("receipt")).length, nc = needs.filter(e=>expenseGaps(e).includes("category")).length;
+      moves.push({ id:`sorter-${weekKey(new Date())}`, type:"sorter", score:28 + boost("organized","taxes"),
+        title:`${needs.length} expenses are missing details.`,
+        sub:[nr ? `${nr} bigger purchase${nr===1?"":"s"} without a receipt` : "", nc ? `${nc} without a category` : ""].filter(Boolean).join(", ") + `. Swipe through them in about ${Math.max(1, Math.round(needs.length*15/60))} minute${Math.round(needs.length*15/60) > 1 ? "s" : ""}.`,
+        label:"Go through them", attrs:`data-open-sorter="1"` });
+    }
+
     const ux = unusualExpense();
     if(ux) moves.push({ id:`unusual-${normText(ux.cat)}-${ux.month}`, type:"unusual", score:50 + boost("profit","organized"),
       title:`Your ${ux.cat.toLowerCase()} expenses are higher than usual this month.`,
@@ -10357,29 +10391,277 @@ table.m-cards td .empty-state{width:100%;}
     const merchant = lines.find(l=>/[a-z]{3,}/i.test(l) && (l.replace(/[^0-9]/g,"").length < l.length/3) && !/receipt|invoice|welcome|thank/i.test(l)) || "";
     return { total, date, merchant: merchant.replace(/[^\w&'.\- ]+/g," ").replace(/\s+/g," ").trim().slice(0,60) };
   }
-  async function scanReceipt(file){
-    if(!file) return;
-    if(!canWriteInWorkspace()){ showToast("You don't have permission to add expenses here.", true); return; }
+  /* ============================================================
+     Swipe through expenses: one card at a time, every field editable,
+     each change saved as you go. Starts with what's missing details.
+     ============================================================ */
+  const RECEIPT_RECOMMENDED = 75;
+  function expenseGaps(e){
+    const gaps = [];
+    if(!e.category || /^other$/i.test(e.category) || !state.expenseCategoryList.some(c=>c.name === e.category)) gaps.push("category");
+    if(!e.receiptPath && e.amount >= RECEIPT_RECOMMENDED) gaps.push("receipt");
+    return gaps;
+  }
+  const GAP_LABEL = { category:"Needs a category", receipt:`Receipt recommended` };
+  function sorterRows(scope){
+    const rows = state.expenses.slice().sort((a,b)=>a.date < b.date ? 1 : -1);
+    if(scope === "needs") return rows.filter(e=>expenseGaps(e).length);
+    if(scope === "month") return rows.filter(e=>String(e.date).slice(0,7) === todayISO().slice(0,7));
+    return rows;
+  }
+  async function uploadReceiptFor(e, file){
+    const ext = ((file.name || "").split(".").pop() || (file.type === "application/pdf" ? "pdf" : "jpg")).toLowerCase();
+    const path = `${workspaceOwnerId()}/${e.id}-${Date.now()}.${ext}`;
+    const { error: upErr } = await sb.storage.from("receipts").upload(path, file, { contentType: file.type });
+    if(upErr){ showToast("Couldn't upload that receipt. Try again.", true); return false; }
+    const { error } = await dbUpdate("expenses", e.id, { receipt_path: path });
+    if(error) return false;
+    e.receiptPath = path;
+    return true;
+  }
+  async function readReceipt(file){
+    if(!file || !/^image\//.test(file.type || "")) return null;
+    const T = await loadOcr();
+    const { data } = await T.recognize(file, "eng");
+    return parseReceipt(data.text || "");
+  }
+
+  let sorter = null;
+  function openSorter(scope){
+    if(!canWriteInWorkspace()){ showToast("You don't have permission to edit expenses here.", true); return; }
+    scope = scope || (sorterRows("needs").length ? "needs" : "month");
+    sorter = { scope, ids: sorterRows(scope).map(e=>e.id), i:0, changed:new Set(), read:{} };
+    drawSorter();
+  }
+  function sorterScopeChips(){
+    const n = sorterRows("needs").length, m = sorterRows("month").length;
+    return `<div class="sw-scope" role="tablist">${[["needs", `Needs details${n ? ` (${n})` : ""}`], ["month", `This month${m ? ` (${m})` : ""}`], ["all", "All"]]
+      .map(([k,l])=>`<button type="button" role="tab" aria-selected="${sorter.scope === k}" class="${sorter.scope === k ? "on" : ""}" data-sw-scope="${k}">${l}</button>`).join("")}</div>`;
+  }
+  function drawSorter(){
+    const s = sorter; if(!s) return;
+    s.ids = s.ids.filter(id=>state.expenses.some(e=>e.id === id));
+    if(!s.ids.length || s.i >= s.ids.length){
+      const left = sorterRows("needs").length;
+      openSettingsModal(`<div class="sw">${sorterScopeChips()}
+        <div class="rv-done"><h2>${s.changed.size ? "Nice, all done" : s.ids.length ? "That's all of them" : s.scope === "needs" ? "Nothing's missing details" : "No expenses here yet"}</h2>
+        <p class="settings-note">${s.changed.size ? `You updated ${s.changed.size} expense${s.changed.size===1?"":"s"}.` : ""} ${left ? `${left} still ${left===1?"needs":"need"} details.` : "Every expense has a category, and receipts for the bigger ones."}</p>
+        <div class="modal-actions"><button type="button" class="btn-primary" data-close-settings>Done</button></div></div></div>`);
+      bindSorterScope();
+      refreshAfterSorter();
+      return;
+    }
+    const e = state.expenses.find(x=>x.id === s.ids[s.i]);
+    const gaps = expenseGaps(e), rb = reimbFor(e.id);
+    const guess = guessExpenseCategory(e.description || "");
+    const used = groupSum(state.expenses, "category").map(g=>g.name).filter(n=>state.expenseCategoryList.some(c=>c.name === n));
+    const chips = [...new Set([guess && guess.name, e.category, ...used, ...state.expenseCategoryList.map(c=>c.name)].filter(n=>n && state.expenseCategoryList.some(c=>c.name === n)))].slice(0, 6);
+    const r = s.read[e.id];
+    openSettingsModal(`<div class="sw">
+      <div class="rv-top"><span>${s.i+1} of ${s.ids.length}</span><button type="button" class="nudge-link" id="swClose">Done</button></div>
+      <div class="rv-bar"><span style="width:${Math.round(s.i/s.ids.length*100)}%"></span></div>
+      ${sorterScopeChips()}
+      <div class="sw-card" id="swCard">
+        <div class="sw-gaps">${gaps.length ? gaps.map(g=>`<span class="sw-gap">${GAP_LABEL[g]}</span>`).join("") : `<span class="sw-gap ok">All set</span>`}</div>
+        <div class="field"><label for="swDesc">What was it?</label><input id="swDesc" value="${escapeHtml(e.description || "")}" autocomplete="off"></div>
+        <div class="sw-row">
+          <div class="field"><label for="swAmt">Amount</label><input id="swAmt" type="number" step="0.01" min="0" inputmode="decimal" value="${e.amount}"></div>
+          <div class="field"><label for="swDate">Date</label><input id="swDate" type="date" value="${e.date}"></div>
+        </div>
+        <div class="field"><label>Category</label>
+          <div class="sw-chips">${chips.map(c=>`<button type="button" class="preset-chip ${c === e.category ? "on" : ""}" data-sw-cat="${escapeHtml(c)}">${escapeHtml(c)}${guess && guess.name === c && c !== e.category ? ` <span class="rv-tag">${guess.from === "rule" ? "Your rule" : "Suggested"}</span>` : ""}</button>`).join("")}
+            <select id="swCat" aria-label="All categories"><option value="">More…</option>${state.expenseCategoryList.map(c=>`<option ${c.name === e.category && !chips.includes(c.name) ? "selected" : ""}>${escapeHtml(c.name)}</option>`).join("")}</select></div>
+          <div id="swRemember"></div></div>
+        <div class="field"><label>Tax write-off?</label>
+          <div class="biz-choice"><button type="button" data-sw-ded="yes" class="${e.deductible ? "on" : ""}">Yes, business</button><button type="button" data-sw-ded="no" class="${e.deductible ? "" : "on"}">No</button></div></div>
+        <div class="field"><label>Receipt</label>
+          <div class="sw-receipt">${e.receiptPath
+            ? `<span class="sw-has">✓ Receipt saved</span><button type="button" class="hh-link" data-view-receipt="${escapeHtml(e.receiptPath)}">View</button><label class="hh-link" style="cursor:pointer;">Replace<input type="file" id="swFile" accept="image/*,application/pdf" hidden></label>`
+            : `<label class="btn-secondary sw-upload"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="12" r="3"/></svg> Add a receipt<input type="file" id="swFile" accept="image/*,application/pdf" hidden></label>
+               <span class="sa-sub">Take a photo or pick one. We'll read it for you.</span>`}</div>
+          <div id="swRead" aria-live="polite">${r ? readNoteHtml(e, r) : ""}</div></div>
+        <label class="rv-remember"><input type="checkbox" id="swReimb" ${rb ? "checked" : ""} ${rb && rb.status === "paid" ? "disabled" : ""}> Someone will pay me back for this${rb && rb.status === "paid" ? ` <span class="sa-sub">(paid back ${shortDate(rb.paidAt)})</span>` : ""}</label>
+        <div id="swReimbMore" ${rb && rb.status === "owed" ? "" : "hidden"}><div class="field" style="margin-top:8px;"><input id="swReimbFrom" list="swPayers" placeholder="Who's paying you back?" value="${escapeHtml(rb ? rb.from || "" : "")}" autocomplete="off"><datalist id="swPayers">${reimbPayers().map(n=>`<option value="${escapeHtml(n)}">`).join("")}</datalist></div></div>
+        ${state.projects.length ? `<div class="field" style="margin-top:12px;"><label for="swProj">Project <span class="field-hint">Optional</span></label><select id="swProj"><option value="">No project</option>${state.projects.map(p=>`<option value="${p.id}" ${p.id === e.projectId ? "selected" : ""}>${escapeHtml(p.name)}</option>`).join("")}</select></div>` : ""}
+        <div class="sw-saved" id="swSaved" aria-live="polite"></div>
+      </div>
+      <div class="sw-nav"><button type="button" class="btn-secondary" id="swPrev" ${s.i === 0 ? "disabled" : ""}>Back</button><button type="button" class="btn-primary" id="swNext">${s.i === s.ids.length - 1 ? "Finish" : "Next"}</button></div>
+      <div class="sa-sub sw-hint">Swipe left or right to move between expenses. Changes save as you go.</div>
+    </div>`);
+    bindSorter(e);
+  }
+  function readNoteHtml(e, r){
+    if(r === "reading") return `<div class="sw-note">Reading your receipt…</div>`;
+    if(r === "failed") return `<div class="sw-note">Saved. We couldn't read this one, so check the details above.</div>`;
+    if(r === "pdf") return `<div class="sw-note">Saved. We can read photos; PDFs are kept but not read.</div>`;
+    const fixes = [];
+    if(r.total && Math.abs(r.total - e.amount) >= 0.01) fixes.push(`<button type="button" class="preset-chip" data-sw-use="amount" data-v="${r.total}">Use ${money(r.total)}</button>`);
+    if(r.date && r.date !== e.date) fixes.push(`<button type="button" class="preset-chip" data-sw-use="date" data-v="${r.date}">Use ${shortDate(r.date)}</button>`);
+    if(r.merchant && normText(r.merchant) !== normText(e.description) && !normText(e.description).includes(normText(r.merchant))) fixes.push(`<button type="button" class="preset-chip" data-sw-use="description" data-v="${escapeHtml(r.merchant)}">Call it “${escapeHtml(r.merchant)}”</button>`);
+    const read = [r.merchant, r.total ? money(r.total) : "", r.date ? shortDate(r.date) : ""].filter(Boolean).join(" · ");
+    return `<div class="sw-note">${read ? `We read: <b>${escapeHtml(read)}</b>.` : "Saved, but we couldn't make out the details."}${fixes.length ? ` It doesn't quite match. Fix it?<div class="sw-chips" style="margin-top:6px;">${fixes.join("")}</div>` : read ? " Everything matches." : ""}</div>`;
+  }
+  async function sorterSave(e, patch, local){
+    const { error } = await dbUpdate("expenses", e.id, patch);
+    const el = document.getElementById("swSaved");
+    if(error){ if(el) el.textContent = "Couldn't save that change."; return false; }
+    Object.assign(e, local);
+    sorter.changed.add(e.id);
+    if(el){ el.textContent = "Saved"; clearTimeout(el._t); el._t = setTimeout(()=>{ el.textContent = ""; }, 1500); }
+    const gapsEl = document.querySelector(".sw-gaps");
+    if(gapsEl){ const g = expenseGaps(e); gapsEl.innerHTML = g.length ? g.map(x=>`<span class="sw-gap">${GAP_LABEL[x]}</span>`).join("") : `<span class="sw-gap ok">All set</span>`; }
+    return true;
+  }
+  function bindSorterScope(){
+    document.querySelectorAll("[data-sw-scope]").forEach(b=>b.addEventListener("click", ()=>{
+      sorter.scope = b.dataset.swScope; sorter.ids = sorterRows(sorter.scope).map(e=>e.id); sorter.i = 0; drawSorter();
+    }));
+  }
+  function refreshAfterSorter(){ renderExpenseTable(); renderStats(); renderHome(); renderNudges(); }
+  function sorterGo(d){
+    const s = sorter; if(!s) return;
+    const n = s.i + d;
+    if(n < 0) return;
+    const card = document.getElementById("swCard");
+    if(card){ card.style.transition = "transform .18s ease, opacity .18s ease"; card.style.transform = `translateX(${d > 0 ? -40 : 40}px)`; card.style.opacity = "0"; }
+    setTimeout(()=>{ s.i = n; drawSorter(); }, card ? 150 : 0);
+  }
+  function bindSorter(e){
+    const $ = id => document.getElementById(id);
+    bindSorterScope();
+    $("swClose").addEventListener("click", ()=>{ closeSettingsModal(); refreshAfterSorter(); });
+    $("swPrev").addEventListener("click", ()=>sorterGo(-1));
+    $("swNext").addEventListener("click", ()=>sorterGo(1));
+    $("swDesc").addEventListener("change", ev=>{ const v = ev.target.value.trim(); if(v) sorterSave(e, { description:v }, { description:v }); });
+    $("swAmt").addEventListener("change", ev=>{ const v = Math.round(Number(ev.target.value)*100)/100; if(v > 0) sorterSave(e, { amount:v }, { amount:v }); });
+    $("swDate").addEventListener("change", ev=>{ const v = ev.target.value; if(v) sorterSave(e, { date:v }, { date:v }); });
+    const setCat = async cat => {
+      if(!cat || cat === e.category) return;
+      const before = e.category;
+      if(!(await sorterSave(e, { category:cat }, { category:cat }))) return;
+      logCategoryChange({ what:"edit", name:e.description, from:before, to:cat });
+      document.querySelectorAll("[data-sw-cat]").forEach(b=>b.classList.toggle("on", b.dataset.swCat === cat));
+      const rule = ruleFor(e.description, "expense"), key = merchantKey(e.description) || normText(e.description);
+      const rem = $("swRemember");
+      if(rem && key && key.length >= 3 && !(rule && ruleOutcome(rule) === cat)){
+        rem.innerHTML = `<button type="button" class="nudge-link" id="swRem">${rule ? `Change your saved rule: ${escapeHtml(e.description)} → ${escapeHtml(cat)}` : `Remember ${escapeHtml(e.description)} → ${escapeHtml(cat)} for next time`}</button>`;
+        $("swRem").addEventListener("click", async ()=>{ if(await saveRule(e.description, "expense", { cat }, true)) rem.innerHTML = `<span class="sa-sub">Got it. GigBooks will suggest ${escapeHtml(cat)} next time.</span>`; });
+      }
+    };
+    document.querySelectorAll("[data-sw-cat]").forEach(b=>b.addEventListener("click", ()=>setCat(b.dataset.swCat)));
+    $("swCat").addEventListener("change", ev=>setCat(ev.target.value));
+    document.querySelectorAll("[data-sw-ded]").forEach(b=>b.addEventListener("click", async ()=>{
+      const v = b.dataset.swDed === "yes";
+      if(v === !!e.deductible) return;
+      if(await sorterSave(e, { deductible:v }, { deductible:v })) document.querySelectorAll("[data-sw-ded]").forEach(x=>x.classList.toggle("on", x === b));
+    }));
+    const file = $("swFile");
+    if(file) file.addEventListener("change", async ()=>{
+      const f = file.files[0]; file.value = ""; if(!f) return;
+      const note = $("swRead");
+      if(note) note.innerHTML = `<div class="sw-note">Uploading…</div>`;
+      if(!(await uploadReceiptFor(e, f))){ if(note) note.innerHTML = ""; return; }
+      sorter.changed.add(e.id);
+      if(!/^image\//.test(f.type || "")){ sorter.read[e.id] = "pdf"; drawSorter(); return; }
+      sorter.read[e.id] = "reading"; drawSorter();
+      try{ sorter.read[e.id] = (await readReceipt(f)) || "failed"; }catch(err){ sorter.read[e.id] = "failed"; }
+      if(sorter && sorter.ids[sorter.i] === e.id) drawSorter();
+    });
+    document.querySelectorAll("[data-sw-use]").forEach(b=>b.addEventListener("click", async ()=>{
+      const k = b.dataset.swUse, v = k === "amount" ? Number(b.dataset.v) : b.dataset.v;
+      if(await sorterSave(e, { [k]:v }, { [k]:v })) drawSorter();
+    }));
+    const reimb = $("swReimb"), more = $("swReimbMore"), from = $("swReimbFrom");
+    reimb.addEventListener("change", async ()=>{
+      more.hidden = !reimb.checked;
+      const cur = reimbFor(e.id);
+      if(reimb.checked){ from.focus(); if(from.value.trim()) await setReimb(); }
+      else if(cur && cur.status === "owed"){ delete reimbursements()[e.id]; sorter.changed.add(e.id); await saveCreatorSettings(); }
+    });
+    const setReimb = async ()=>{
+      const v = from.value.trim(); if(!v) return;
+      reimbursements()[e.id] = Object.assign({ status:"owed", markedAt:todayISO(), followUps:[] }, reimbFor(e.id), { from:v });
+      sorter.changed.add(e.id);
+      await saveCreatorSettings();
+      const el = $("swSaved"); if(el) el.textContent = "Saved";
+    };
+    from.addEventListener("change", setReimb);
+    const proj = $("swProj");
+    if(proj) proj.addEventListener("change", ()=>sorterSave(e, { project_id: proj.value || null }, { projectId: proj.value || null }));
+
+    // Swipe
+    const card = $("swCard");
+    let sx = null, sy = 0, dx = 0, locked = null;
+    card.addEventListener("touchstart", ev=>{ if(ev.target.closest("input, select, textarea")) return; sx = ev.touches[0].clientX; sy = ev.touches[0].clientY; dx = 0; locked = null; card.style.transition = "none"; }, { passive:true });
+    card.addEventListener("touchmove", ev=>{
+      if(sx === null) return;
+      dx = ev.touches[0].clientX - sx; const dy = ev.touches[0].clientY - sy;
+      if(locked === null && (Math.abs(dx) > 10 || Math.abs(dy) > 10)) locked = Math.abs(dx) > Math.abs(dy) ? "x" : "y";
+      if(locked === "x") card.style.transform = `translateX(${dx}px) rotate(${dx/40}deg)`;
+    }, { passive:true });
+    card.addEventListener("touchend", ()=>{
+      if(sx === null) return;
+      card.style.transition = "transform .18s ease";
+      if(locked === "x" && Math.abs(dx) > 70 && !(dx > 0 && sorter.i === 0)) sorterGo(dx < 0 ? 1 : -1);
+      else card.style.transform = "";
+      sx = null;
+    });
+  }
+  document.addEventListener("keydown", ev=>{
+    if(!sorter || !document.getElementById("swCard") || ev.target.closest("input, select, textarea")) return;
+    if(ev.key === "ArrowRight") sorterGo(1);
+    if(ev.key === "ArrowLeft") sorterGo(-1);
+  });
+  document.addEventListener("click", ev=>{ if(ev.target.closest("[data-open-sorter]")) openSorter(); });
+
+  /* ---------- Upload a receipt: read it, then attach it or add an expense ---------- */
+  // An existing expense with the same total within a few days and no receipt yet.
+  function receiptMatch(r){
+    if(!r || !r.total) return null;
+    const near = e => r.date ? Math.abs((parseISODate(e.date) - parseISODate(r.date)) / DAY_MS) <= 5 : daysSince(e.date) <= 30;
+    return state.expenses.filter(e=>!e.receiptPath && Math.abs(e.amount - r.total) < 0.01 && near(e))
+      .sort((a,b)=>r.date ? Math.abs(parseISODate(a.date) - parseISODate(r.date)) - Math.abs(parseISODate(b.date) - parseISODate(r.date)) : (a.date < b.date ? 1 : -1))[0] || null;
+  }
+  function addExpenseFromReceipt(file, r){
+    closeSettingsModal();
     showView("expenses");
     document.getElementById("openAddExpense").click();
     pendingReceiptFile = file; removeExistingReceiptFlag = false;
     renderReceiptStatus(null);
     const form = document.getElementById("expenseForm");
     const status = document.getElementById("receiptStatusWrap");
-    const note = document.createElement("span");
-    note.className = "sa-sub"; note.textContent = "Reading your receipt…";
-    if(status) status.appendChild(note);
-    try{
-      const T = await loadOcr();
-      const { data } = await T.recognize(file, "eng");
-      const r = parseReceipt(data.text || "");
+    if(r && typeof r === "object"){
       const set = (name, v) => { const el = form.elements[name]; if(el && v && !el.value) el.value = v; };
-      set("description", r.merchant); set("amount", r.total ? r.total.toFixed(2) : ""); if(r.date) form.elements.date.value = r.date;
+      set("description", r.merchant); set("amount", r.total ? r.total.toFixed(2) : "");
+      if(r.date){ form.elements.date.value = r.date; const lbl = document.getElementById("expDateLabel"); if(lbl) lbl.textContent = r.date === todayISO() ? "Today" : shortDate(r.date); }
       if(r.merchant) form.elements.description.dispatchEvent(new Event("input", { bubbles:true }));
-      note.textContent = r.total ? "Filled in from your receipt. Check it and save." : "Couldn't read the total. Fill it in and save.";
-    }catch(e){
-      note.textContent = "Couldn't read that photo. The receipt is attached; fill in the rest.";
     }
+    const note = document.createElement("span");
+    note.className = "sa-sub";
+    note.textContent = r === "pdf" ? "PDF attached. We can read photos, so fill in the details." : r && r.total ? "Filled in from your receipt. Check it and save." : "Receipt attached. We couldn't read the total, so fill it in and save.";
+    if(status) status.appendChild(note);
+    const g = document.getElementById("expGuess");
+    if(g && r && typeof r === "object" && r.total) g.insertAdjacentHTML("afterbegin", `<div class="sw-note" style="margin-bottom:6px;">We read: <b>${escapeHtml([r.merchant, money(r.total), r.date ? shortDate(r.date) : ""].filter(Boolean).join(" · "))}</b></div>`);
+  }
+  async function scanReceipt(file){
+    if(!file) return;
+    if(!canWriteInWorkspace()){ showToast("You don't have permission to add expenses here.", true); return; }
+    if(!/^image\//.test(file.type || "")){ addExpenseFromReceipt(file, "pdf"); return; }
+    openSettingsModal(`<div class="sw-reading"><div class="sw-spin" aria-hidden="true"></div><h2>Reading your receipt…</h2><p class="settings-note">This happens on your device. It usually takes a few seconds.</p></div>`);
+    let r = null;
+    try{ r = await readReceipt(file); }catch(e){ r = null; }
+    const m = receiptMatch(r);
+    if(!m){ addExpenseFromReceipt(file, r); return; }
+    openSettingsModal(`<h2>Is this receipt for an expense you already have?</h2>
+      <p class="settings-note">We read <b>${escapeHtml([r.merchant, money(r.total), r.date ? shortDate(r.date) : ""].filter(Boolean).join(" · "))}</b>. It matches:</p>
+      <div class="sw-match"><b>${escapeHtml(m.description)}</b><span>${money(m.amount)} · ${shortDate(m.date)} · ${escapeHtml(m.category || "")}</span></div>
+      <div class="modal-actions"><button type="button" class="btn-secondary" id="rmNew">No, add a new expense</button><button type="button" class="btn-primary" id="rmAttach">Yes, attach it</button></div>`);
+    document.getElementById("rmNew").addEventListener("click", ()=>addExpenseFromReceipt(file, r));
+    document.getElementById("rmAttach").addEventListener("click", async ev=>{
+      ev.target.disabled = true;
+      if(await uploadReceiptFor(m, file)){ closeSettingsModal(); renderExpenseTable(); renderNudges(); showToast(`Receipt attached to ${m.description}.`); }
+      else ev.target.disabled = false;
+    });
   }
   document.addEventListener("change", e=>{ if(e.target && e.target.id === "scanReceiptInput"){ scanReceipt(e.target.files[0]); e.target.value = ""; } });
 
@@ -10565,8 +10847,10 @@ table.m-cards td .empty-state{width:100%;}
   function decorateGrowthUI(){
     const exp = document.querySelector("#view-expenses .topbar .actions");
     if(exp && !document.getElementById("scanReceiptBtn")){
-      exp.insertAdjacentHTML("afterbegin", `<label class="pill-btn" id="scanReceiptBtn" style="cursor:pointer;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="12" r="3"/></svg>Scan receipt<input type="file" id="scanReceiptInput" accept="image/*" capture="environment" hidden></label>`);
+      exp.insertAdjacentHTML("afterbegin", `<label class="pill-btn" id="scanReceiptBtn" style="cursor:pointer;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="12" r="3"/></svg>Upload receipt<input type="file" id="scanReceiptInput" accept="image/*,application/pdf" hidden></label>`);
     }
+    if(exp && !document.getElementById("openSorterBtn"))
+      document.getElementById("scanReceiptBtn").insertAdjacentHTML("afterend", `<button type="button" class="pill-btn" id="openSorterBtn" data-open-sorter="1" style="appearance:none;cursor:pointer;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="16" rx="2"/><path d="M9 9h6M9 13h4"/></svg>Go through expenses</button>`);
     const ask = document.querySelector("#view-ask .topbar .actions");
     if(ask && !document.getElementById("askAfford")){
       ask.insertAdjacentHTML("afterbegin", `<button type="button" class="pack-btn" id="askAfford" data-afford="1">Can I afford it?</button><button type="button" class="pack-btn" data-weekly-note="1">Monthly check-in</button>`);
@@ -10904,7 +11188,7 @@ table.m-cards td .empty-state{width:100%;}
           ${issues.map(t=>`<div class="rule-issue">${t}</div>`).join("")}
         </div>`; }).join("")
         : `<div class="settings-note">No rules yet. When you change a category, GigBooks will ask if you want it remembered.</div>`}</div>
-      ${log.length ? `<details class="rules-log"><summary>Recent category decisions</summary><ul>${log.map(l=>`<li>${new Date(l.at).toLocaleDateString("en-US",{month:"short",day:"numeric"})} · ${escapeHtml(l.name || "")}: ${l.from ? `${escapeHtml(l.from)} → ` : ""}${escapeHtml(l.to || "")} <span class="sa-sub">(${escapeHtml(l.what === "rule" ? "rule saved" : l.what === "rule-deleted" ? "rule deleted" : "confirmed in review")})</span></li>`).join("")}</ul></details>` : ""}
+      ${log.length ? `<details class="rules-log"><summary>Recent category decisions</summary><ul>${log.map(l=>`<li>${new Date(l.at).toLocaleDateString("en-US",{month:"short",day:"numeric"})} · ${escapeHtml(l.name || "")}: ${l.from ? `${escapeHtml(l.from)} → ` : ""}${escapeHtml(l.to || "")} <span class="sa-sub">(${escapeHtml(l.what === "rule" ? "rule saved" : l.what === "rule-deleted" ? "rule deleted" : l.what === "edit" ? "changed" : "confirmed in review")})</span></li>`).join("")}</ul></details>` : ""}
       <div class="settings-form-actions" style="margin-top:14px;"><button type="button" class="btn-primary" data-close-settings>Done</button></div>`);
     document.querySelectorAll("[data-rule-cat]").forEach(sel=>sel.addEventListener("change", async ()=>{
       const r = categoryRules().find(x=>x.id === sel.dataset.ruleCat); if(!r) return;

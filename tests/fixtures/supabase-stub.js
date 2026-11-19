@@ -26,6 +26,8 @@
         };
         if(k === "update") return (patch) => { (window.__updates = window.__updates || []).push({ table, values: JSON.parse(JSON.stringify(patch)), filters }); inserted = Object.assign({}, rows[0] || {}, patch); return chain; };
         if(k === "eq") return (col, val) => { filters.push([col, val]); return chain; };
+        if(k === "in") return (col, vals) => { filters.push([col, vals]); return chain; };
+        if(k === "delete") return () => { (window.__deletes = window.__deletes || []).push({ table, filters }); return chain; };
         return () => chain;
       }
     });

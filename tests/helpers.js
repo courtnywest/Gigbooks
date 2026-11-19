@@ -57,7 +57,7 @@ async function openApp(overrides = {}, viewport = { width:1280, height:900 }, op
 async function closeAll(){ if(browser){ await browser.close(); browser = null; } }
 
 const GROUPS = { overview:"home", all:"money", help:"more", income:"money", expenses:"money", gifts:"more", bank:"money", invoices:"getpaid",
-  pipeline:"getpaid", rateCalculator:"getpaid", reports:"reports", taxes:"reports", ask:"more", contracts:"more", settings:"more" };
+  owed:"getpaid", pipeline:"getpaid", rateCalculator:"getpaid", reports:"reports", taxes:"reports", ask:"more", contracts:"more", settings:"more" };
 async function go(page, view){
   await page.click(`.nav-item[data-group="${GROUPS[view]}"]`);
   const tab = await page.$(`[data-goto="${view}"]`);

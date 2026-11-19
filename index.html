@@ -1837,6 +1837,37 @@ body[data-view="ask"] .giggy-fab{display:none;}
 .rule-issue{font-size:12.5px;color:#9a5b13;background:#fbf3e4;border-radius:8px;padding:6px 9px;margin-top:6px;}
 .rules-log{margin-top:12px;font-size:13px;color:var(--ink-700);}
 .rules-log summary{cursor:pointer;font-weight:600;}
+.owed-sum{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:14px;}
+.owed-sum .card{padding:18px 20px;display:flex;flex-direction:column;gap:4px;}
+.owed-sum span{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-500);}
+.owed-sum b{font-family:var(--font-serif);font-size:30px;font-weight:500;color:var(--ink-900);}
+.owed-sum em{font-style:normal;font-size:12.5px;color:var(--ink-500);}
+.owed-sum .warn b{color:#9a5b13;}
+.owed-sec{padding:18px 20px;margin-bottom:14px;}
+.owed-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:6px;}
+.owed-head h3{margin:0;font-size:16px;}
+.owed-head p{margin:3px 0 0;font-size:13px;color:var(--ink-500);}
+.owed-head b{font-size:16px;color:var(--ink-900);white-space:nowrap;}
+.owed-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:14px;align-items:center;padding:11px 0;border-top:1px solid var(--cream-100);}
+.owed-main{min-width:0;display:flex;flex-direction:column;gap:2px;}
+.owed-main b{font-size:14px;color:var(--ink-900);}
+.owed-main span{font-size:12.5px;color:var(--ink-500);}
+.owed-main span.late{color:#9a5b13;font-weight:600;}
+.owed-amt{font-weight:600;font-size:14px;white-space:nowrap;font-variant-numeric:tabular-nums;}
+.owed-act{display:flex;gap:10px;align-items:center;justify-content:flex-end;}
+.owed-empty{font-size:13.5px;color:var(--ink-500);padding:6px 0 2px;}
+.owed-attn{display:flex;flex-direction:column;gap:10px;margin-top:8px;}
+.owed-sub{font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-500);margin:16px 0 2px;}
+.env-badge{position:fixed;left:50%;bottom:10px;transform:translateX(-50%);z-index:3000;background:#1f3a5f;color:#fff;font-size:11.5px;font-weight:600;letter-spacing:.04em;padding:5px 12px;border-radius:999px;box-shadow:0 4px 14px rgba(0,0,0,.18);pointer-events:none;white-space:nowrap;}
+.env-badge.live-db{background:#9a2b1e;}
+@media (max-width:760px){.env-badge{bottom:calc(76px + env(safe-area-inset-bottom));}}
+.sample-banner{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:#fbf3e4;border:1px solid #f0dcb8;color:#6b4410;border-radius:14px;padding:12px 16px;margin-bottom:16px;font-size:13.5px;}
+@media (max-width:760px){
+  .owed-sum{grid-template-columns:1fr;gap:10px;}
+  .owed-sum b{font-size:26px;}
+  .owed-row{grid-template-columns:minmax(0,1fr) auto;}
+  .owed-act{grid-column:1 / -1;justify-content:flex-start;}
+}
 input[data-money]{padding-left:26px !important;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='16'%3E%3Ctext x='0' y='12.5' font-family='Inter,Arial,sans-serif' font-size='14' fill='%237a7a72'%3E%24%3C/text%3E%3C/svg%3E");background-repeat:no-repeat;background-position:12px 50%;}
 input[data-pct]{padding-right:30px !important;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='16'%3E%3Ctext x='0' y='12.5' font-family='Inter,Arial,sans-serif' font-size='14' fill='%237a7a72'%3E%25%3C/text%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;}
 input[data-money]::-webkit-inner-spin-button,input[data-money]::-webkit-outer-spin-button,input[data-pct]::-webkit-inner-spin-button,input[data-pct]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0;}
@@ -2690,6 +2721,16 @@ table.m-cards td .empty-state{width:100%;}
     </section>
 
     <!-- ============ INVOICES ============ -->
+    <section class="view" id="view-owed">
+      <div class="topbar">
+        <div class="titles">
+          <h1>Owed to you</h1>
+          <p>Every dollar that's still on its way, in one place.</p>
+        </div>
+      </div>
+      <div id="owedWrap"></div>
+    </section>
+
     <section class="view" id="view-invoices">
       <div class="topbar">
         <div class="titles">
@@ -3393,6 +3434,10 @@ table.m-cards td .empty-state{width:100%;}
             </div>
           </div>
           <div class="settings-list">
+            <button type="button" class="settings-row owner-only-row" data-setting="sampleData">
+              <div><div class="t1">Sample data</div><div class="t2">Try GigBooks with fictional figures, then remove them in one click</div></div>
+              <svg class="chev-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+            </button>
             <button type="button" class="settings-row" data-setting="exportData">
               <div><div class="t1">Export My Data</div><div class="t2">Download your income, expenses, and reports as CSV</div></div>
               <svg class="chev-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
@@ -3608,8 +3653,39 @@ table.m-cards td .empty-state{width:100%;}
   /* ============================================================
      Supabase client
      ============================================================ */
-  const SUPABASE_URL = "https://wtgsycggukkvxknovmia.supabase.co";
-  const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_24s6MDyOFnrcYJbwT39K7Q_YOSL-kA4";
+  /* Environments (see docs/environments.md)
+       production: the main branch on the live site, real database
+       dev:        the dev branch (gigbooks-git-dev-…vercel.app) and this computer
+       preview:    the test link GitHub/Vercel makes for every pull request
+     Dev and preview use the dev database once it's filled in below. Anything
+     we don't recognize is treated as production, so the live site can never
+     point at the dev database by accident. */
+  const DATABASES = {
+    production: { url:"https://wtgsycggukkvxknovmia.supabase.co", key:"sb_publishable_24s6MDyOFnrcYJbwT39K7Q_YOSL-kA4" },
+    dev:        { url:"", key:"" }   // fill in after creating the dev Supabase project
+  };
+  const APP_ENV = (()=>{
+    const h = location.hostname || "";
+    if(location.protocol === "file:" || h === "localhost" || h === "127.0.0.1") return "dev";
+    if(/-git-dev-/.test(h)) return "dev";
+    if(/-git-main-/.test(h)) return "production";
+    if(/-git-|^gigbooks-[a-z0-9]{8,}-/.test(h)) return "preview";
+    return "production";
+  })();
+  const USING_DEV_DB = APP_ENV !== "production" && !!DATABASES.dev.url;
+  const SUPABASE_URL = USING_DEV_DB ? DATABASES.dev.url : DATABASES.production.url;
+  const SUPABASE_PUBLISHABLE_KEY = USING_DEV_DB ? DATABASES.dev.key : DATABASES.production.key;
+  // A small badge outside production so it's always clear which one you're in.
+  if(APP_ENV !== "production" && !window.__FIXTURE){
+    const showBadge = ()=>{
+      const b = document.createElement("div");
+      b.className = "env-badge" + (USING_DEV_DB ? "" : " live-db");
+      b.setAttribute("role", "status");
+      b.textContent = `${APP_ENV === "dev" ? "DEV" : "TEST PREVIEW"} · ${USING_DEV_DB ? "dev database" : "LIVE database (dev database not set up yet)"}`;
+      document.body.appendChild(b);
+    };
+    if(document.body) showBadge(); else document.addEventListener("DOMContentLoaded", showBadge);
+  }
 
   // Session storage respects the "Remember me" checkbox: when checked,
   // the session persists in localStorage (survives closing the browser);
@@ -3879,14 +3955,14 @@ table.m-cards td .empty-state{width:100%;}
   const NAV_GROUPS = {
     home:    { label:"Home",     views:["overview"] },
     money:   { label:"Money",    views:["all","income","expenses","bank"] },
-    getpaid: { label:"Get Paid", views:["invoices","pipeline","rateCalculator"] },
+    getpaid: { label:"Get Paid", views:["owed","invoices","pipeline","rateCalculator"] },
     reports: { label:"Reports",  views:["reports","taxes"] },
     more:    { label:"More",     views:["gifts","contracts","help","settings","ask"] }
   };
   // Ask Giggy lives in the floating button on every page, so it isn't a tab.
   const ALWAYS_HIDDEN_TABS = ["ask"];
   const VIEW_LABELS = { overview:"Home", all:"All", income:"Money in", expenses:"Money out", bank:"Accounts", gifts:"Gifts & freebies",
-    invoices:"Invoices", pipeline:"Brand deals", rateCalculator:"What to charge", reports:"Monthly recap", taxes:"Taxes",
+    owed:"Owed to you", invoices:"Invoices", pipeline:"Brand deals", rateCalculator:"What to charge", reports:"Monthly recap", taxes:"Taxes",
     ask:"Ask Giggy", contracts:"Contract reader", help:"Help", settings:"Settings" };
   const groupOf = v => Object.keys(NAV_GROUPS).find(g => NAV_GROUPS[g].views.includes(v)) || "home";
   const lastInGroup = {};
@@ -3915,6 +3991,7 @@ table.m-cards td .empty-state{width:100%;}
     views.forEach(v => v.classList.toggle("active", v.id === "view-" + name));
     renderSectionTabs(name);
     if(name === "taxes") renderTaxesPage();
+    if(name === "owed") renderOwed();
     if(name === "invoices") renderInvoicesTable();
     if(name === "rateCalculator") renderRateCalculator();
     if(name === "pipeline") renderPipeline();
@@ -4451,6 +4528,7 @@ table.m-cards td .empty-state{width:100%;}
       if(kind === "income"){
         const { data, error } = await dbInsert("income", { user_id:workspaceOwnerId(), date:item.date, source:item.source, glyph:item.glyph, type:chosen, status:"received", amount:item.amount });
         if(error) return false;
+        if(isSample("unclassified_income", id)) sampleAdopt("income", data.id);
         state.income.unshift({ id:data.id, date:data.date, source:data.source, glyph:data.glyph, type:data.type, status:data.status, amount:Number(data.amount) });
       } else {
         const { data, error } = await dbInsert("expenses", { user_id:workspaceOwnerId(), date:item.date, description:item.description, glyph:item.glyph, category:chosen, payment_method:"Uncategorized", deductible:true, amount:item.amount });
@@ -4595,7 +4673,7 @@ table.m-cards td .empty-state{width:100%;}
     const id = btn.dataset.attnApprove || btn.dataset.attnDismiss;
     const kind = btn.dataset.attnKind;
     btn.disabled = true;
-    const pick = approve ? document.querySelector(`[data-attn-pick="${id}"]`) : null;
+    const pick = approve ? (btn.closest(".attn-item") || document).querySelector(`[data-attn-pick="${id}"]`) : null;
     const chosen = approve ? (pick ? pick.value : (kind === "income" ? "Other Income" : "Other")) : null;
     if(!(await approveAttnItem(kind, id, chosen))){ btn.disabled = false; return; }
     renderAttentionLists();
@@ -6431,6 +6509,7 @@ table.m-cards td .empty-state{width:100%;}
         source: inv.clientName, glyph: "📄", type: "Invoice Payment", status: "received", amount: inv.total
       });
       if(!incomeError && incomeRow){
+        if(isSample("invoices", inv.id)) sampleAdopt("income", incomeRow.id);
         state.income.unshift({ id:incomeRow.id, date:incomeRow.date, source:incomeRow.source, glyph:incomeRow.glyph, type:incomeRow.type, status:incomeRow.status, amount:Number(incomeRow.amount), projectId:null });
         renderIncomeTable(); renderStats();
         showToast(`Logged ${money(inv.total)} as income from ${inv.clientName}.`);
@@ -8580,6 +8659,8 @@ table.m-cards td .empty-state{width:100%;}
   }
   let movesGo = [];
   function renderNudges(){
+    renderSampleBanner();
+    if(document.body.dataset.view === "owed") renderOwed();
     const wrap = document.getElementById("ovNudges");
     if(!wrap) return;
     const all = moneyMoves(), shown = all.slice(0, 3);
@@ -11590,6 +11671,182 @@ table.m-cards td .empty-state{width:100%;}
     const p = e.target.closest("[data-reimb-paid]"); if(p){ openReimbPaid([p.dataset.reimbPaid]); document.querySelectorAll(".row-menu.open").forEach(m=>m.classList.remove("open")); }
   });
 
+  /* ============================================================
+     Owed to you: one place for every dollar still on its way.
+     Unpaid invoices, payments marked pending, reimbursements,
+     agreed deals not invoiced yet, and payments spotted in email.
+     ============================================================ */
+  function owedData(){
+    const inv = openInvoices().slice().sort((a,b)=>(a.dueDate || "9999") < (b.dueDate || "9999") ? -1 : 1);
+    const pending = state.income.filter(r=>r.status !== "received").sort((a,b)=>a.date < b.date ? -1 : 1);
+    const reimb = reimbOwed();
+    const toInvoice = state.pipelineDeals.filter(d=>DEAL_INVOICE_STAGES.includes(d.stage) && !d.linkedInvoiceId && d.estimatedValue);
+    const email = state.unclassifiedIncome.filter(i=>i.glyph === "📧" || i.glyph === "🤝");
+    const leads = state.opportunities || [];
+    const sum = (arr, f) => arr.reduce((a,x)=>a + (Number(f(x)) || 0), 0);
+    const late = inv.filter(i=>effectiveInvoiceStatus(i) === "overdue");
+    return { inv, pending, reimb, toInvoice, email, leads, late,
+      owed: sum(inv, i=>i.total) + sum(pending, r=>r.amount) + sum(reimb, g=>g.total),
+      lateTotal: sum(late, i=>i.total) + sum(reimb.filter(g=>g.overdueBy !== null), g=>g.total),
+      upcoming: sum(toInvoice, d=>d.estimatedValue), emailTotal: sum(email, i=>i.amount) };
+  }
+  function owedSection(title, sub, total, rows){
+    if(!rows.length) return "";
+    return `<div class="card owed-sec"><div class="owed-head"><div><h3>${title}</h3><p>${sub}</p></div>${total !== null ? `<b>${money(total)}</b>` : ""}</div>${rows.join("")}</div>`;
+  }
+  function owedRow(name, meta, amount, actions, warn){
+    return `<div class="owed-row"><div class="owed-main"><b>${name}</b><span class="${warn ? "late" : ""}">${meta}</span></div><div class="owed-amt">${amount}</div><div class="owed-act">${actions}</div></div>`;
+  }
+  function renderOwed(){
+    const wrap = document.getElementById("owedWrap"); if(!wrap) return;
+    const d = owedData(), w = canWriteInWorkspace();
+    const btn = (label, attrs, primary) => w ? `<button type="button" class="${primary ? "fy-btn" : "fy-later"}" ${attrs}>${escapeHtml(label)}</button>` : "";
+    const summary = `<div class="owed-sum">
+      <div class="card"><span>Owed to you</span><b>${money(d.owed)}</b><em>Invoices, pending payments and money you're due back</em></div>
+      <div class="card ${d.lateTotal ? "warn" : ""}"><span>Late</span><b>${money(d.lateTotal)}</b><em>${d.lateTotal ? "Past the due or expected date" : "Nothing is late"}</em></div>
+      <div class="card"><span>Coming up</span><b>${money(d.upcoming)}</b><em>Agreed deals you haven't invoiced yet</em></div>
+    </div>`;
+    const sections = [
+      owedSection("Invoices waiting for payment", "Sent and not paid yet.", d.inv.reduce((a,i)=>a+Number(i.total||0),0), d.inv.map(i=>{
+        const late = effectiveInvoiceStatus(i) === "overdue" ? invoiceDaysLate(i) : 0;
+        return owedRow(escapeHtml(i.clientName), `Invoice #${String(i.number).padStart(4,"0")} · ${late ? `${late} day${late===1?"":"s"} late` : i.dueDate ? `due ${shortDate(i.dueDate)}` : "no due date"}`, money(i.total),
+          btn(late ? "Send reminder" : "Remind", `data-chase-invoice="${i.id}"`, !!late) + btn("Mark paid", `data-mark-paid="${i.id}"`, !late), late);
+      })),
+      owedSection("Payments you're expecting", "Income you logged as pending. It counts once it arrives.", d.pending.reduce((a,r)=>a+r.amount,0), d.pending.map(r=>
+        owedRow(escapeHtml(r.source), `Logged ${shortDate(r.date)} · ${escapeHtml(r.type || "")}`, money(r.amount), btn("It arrived", `data-owed-arrived="${r.id}"`, true)))),
+      owedSection("Money you're due back", "Expenses you covered that someone is paying back.", d.reimb.reduce((a,g)=>a+g.total,0), d.reimb.map(g=>
+        owedRow(escapeHtml(g.from), `${g.items.length} expense${g.items.length===1?"":"s"} · oldest ${g.oldest} day${g.oldest===1?"":"s"}${g.overdueBy !== null ? ` · ${g.overdueBy} day${g.overdueBy===1?"":"s"} past the expected date` : ""}`, money(g.total),
+          btn("Follow up", `data-reimb-follow="${escapeHtml(g.key)}"`, true) + btn("Paid back", `data-owed-reimb-paid="${escapeHtml(g.key)}"`), g.overdueBy !== null))),
+      owedSection("Deals to invoice", "Agreed brand deals with no invoice yet. Invoice them so the clock starts.", d.upcoming, d.toInvoice.map(x=>
+        owedRow(escapeHtml(x.brandName), `${escapeHtml(x.deliverable || "Brand deal")} · ${x.stage === "delivered" ? "delivered" : "in progress"}${x.expectedDate ? ` · expected ${shortDate(x.expectedDate)}` : ""}`, money(x.estimatedValue),
+          btn("Create invoice", `data-owed-invoice-deal="${x.id}"`, x.stage === "delivered")))),
+    ].join("");
+    const gm = state.gmailConnection;
+    const emailBlock = `<div class="card owed-sec">
+      <div class="owed-head"><div><h3>Spotted in your email</h3><p>Giggy reads payment emails and suggests income. Nothing counts until you approve it.</p></div>${d.email.length ? `<b>${money(d.emailTotal)}</b>` : ""}</div>
+      ${d.email.length ? `<div class="owed-attn">${d.email.map(i=>attnItemHtml(i, "income")).join("")}</div>`
+        : `<div class="owed-empty">${gm ? "No new payments spotted. Giggy keeps checking." : `Connect your email and Giggy will spot payments for you. <button type="button" class="hh-link" data-owed-gmail="1">Connect email</button>`}</div>`}
+      ${d.leads.length ? `<div class="owed-leads"><div class="owed-sub">Possible deals from your inbox</div>${d.leads.map(o=>owedRow(escapeHtml(o.brandName), escapeHtml(o.summary || ""), o.amount !== null ? "~" + money(o.amount) : "", btn("Dismiss", `data-dismiss-opportunity="${o.id}"`))).join("")}</div>` : ""}
+    </div>`;
+    const nothing = !d.inv.length && !d.pending.length && !d.reimb.length && !d.toInvoice.length;
+    wrap.innerHTML = summary + (nothing ? `<div class="card owed-sec">${emptyState("Nobody owes you anything right now", "When you send an invoice, log a payment as pending, or cover an expense someone will pay back, it shows up here until the money arrives.", w ? `<button type="button" class="btn-primary" data-goto="invoices">Create an invoice</button>` : "")}</div>` : sections) + emailBlock;
+  }
+  document.addEventListener("click", async e=>{
+    const a = e.target.closest("[data-owed-arrived]");
+    if(a){
+      a.disabled = true;
+      const r = state.income.find(x=>x.id === a.dataset.owedArrived);
+      if(r){ const { error } = await dbUpdate("income", r.id, { status:"received", date:todayISO() }); if(!error){ r.status = "received"; r.date = todayISO(); showToast(`${r.source} marked as received.`); renderIncomeTable(); renderStats(); renderHome(); renderNudges(); } }
+      renderOwed(); return;
+    }
+    const rp = e.target.closest("[data-owed-reimb-paid]");
+    if(rp){ const g = reimbOwed().find(x=>x.key === rp.dataset.owedReimbPaid); if(g) openReimbPaid(g.items.map(x=>x.e.id), ()=>{ closeSettingsModal(); renderOwed(); }); return; }
+    const di = e.target.closest("[data-owed-invoice-deal]");
+    if(di){ pendingInvoiceDealId = di.dataset.owedInvoiceDeal; showView("invoices"); openInvoiceModal(null); return; }
+    if(e.target.closest("[data-owed-gmail]")) startGoogleConnect();
+  });
+
+  /* ============================================================
+     Sample data: realistic figures to try GigBooks with, added to
+     this account and tracked by id so "Remove sample data" deletes
+     exactly those rows (plus anything created from them) and
+     nothing else.
+     ============================================================ */
+  // Tests swap this out; the browser's own reload can't be intercepted.
+  const reloadApp = () => (window.__gbReload || (() => location.reload()))();
+  function sampleData(){ const s = state.creatorSettings.sampleData; return s && typeof s === "object" && s.ids ? s : null; }
+  function isSample(table, id){ const s = sampleData(); return !!(s && (s.ids[table] || []).includes(id)); }
+  function sampleAdopt(table, id){ const s = sampleData(); if(!s || !id) return; (s.ids[table] = s.ids[table] || []).push(id); saveCreatorSettings(); }
+  async function addSampleData(){
+    if(!isOwnWorkspace() || !canWriteInWorkspace()) return;
+    if(sampleData()){ showToast("Sample data is already in your account."); return; }
+    const T = n => isoLocal(addDays(new Date(), n));
+    const ids = {}, skipped = [];
+    const put = async (table, row) => {
+      const { data, error } = await sb.from(table).insert(Object.assign({ user_id:workspaceOwnerId() }, row)).select().single();
+      if(error){ if(!skipped.includes(table)) skipped.push(table); return null; }
+      (ids[table] = ids[table] || []).push(data.id);
+      return data;
+    };
+    const cat = (re, fallback) => ((state.expenseCategoryList.find(c=>re.test(c.name)) || {}).name) || fallback || (state.expenseCategoryList[0] || {}).name || "Other";
+    const icat = (re) => ((state.incomeCategoryList.find(c=>re.test(c.name)) || state.incomeCategoryList[0] || {}).name) || "Other Income";
+    openSettingsModal(`<div class="sw-reading"><div class="sw-spin" aria-hidden="true"></div><h2>Adding sample data…</h2><p class="settings-note">Fictional brands and amounts, so you can see everything working.</p></div>`);
+    for(const c of [["Lumen Skincare","partners@lumenskincare.example"],["Northpeak Outdoors","ap@northpeak.example"],["Studio Maple","hello@studiomaple.example"],["Bright Bean Coffee","marketing@brightbean.example"]])
+      await put("clients", { name:c[0], email:c[1] });
+    for(const r of [["Lumen Skincare",2400,-40,"received",/brand/i],["Halo Audio",1500,-62,"received",/brand/i],["Northpeak Outdoors",1800,-25,"received",/brand/i],
+      ["YouTube AdSense",640,-12,"received",/ad|platform/i],["Amazon Associates",212.4,-8,"received",/affiliate/i],["Bright Bean Coffee",900,-5,"pending",/brand/i]])
+      await put("income", { date:T(r[2]), source:r[0], glyph:"💰", type:icat(r[4]), status:r[3], amount:r[1] });
+    const exp = {};
+    for(const r of [["canva","Canva Pro",14.99,-20,/software/i,true],["light","Ring light",89,-15,/equip/i,true],["flight","Flight to Austin for Northpeak shoot",386,-30,/travel/i,true],
+      ["props","Props for Lumen shoot",124.5,-18,/suppl|equip/i,true],["uber","Uber",42.1,-31,/^other$/i,true],["bh","B&H Photo",640,-10,/equip/i,true],["lunch","Lunch with Studio Maple",58,-6,/meal/i,true]]){
+      const row = await put("expenses", { date:T(r[3]), description:r[1], glyph:"🧾", category:cat(r[4], "Other"), payment_method:"Card", deductible:r[5], amount:r[2] });
+      if(row) exp[r[0]] = row.id;
+    }
+    const nextNum = async () => { const { data } = await sb.rpc("next_invoice_number", { target_owner: workspaceOwnerId() }); return data; };
+    for(const r of [["Northpeak Outdoors","ap@northpeak.example",2500,-45,-15,"sent","Spring campaign: 3 Reels"],["Studio Maple","hello@studiomaple.example",1200,-10,20,"sent","UGC video package"],
+      ["Bright Bean Coffee","marketing@brightbean.example",750,-1,29,"draft","Holiday menu post"],["Lumen Skincare","partners@lumenskincare.example",2400,-55,-25,"paid","Launch video"]]){
+      const n = await nextNum(); if(n === null || n === undefined){ if(!skipped.includes("invoices")) skipped.push("invoices"); break; }
+      await put("invoices", { invoice_number:n, client_name:r[0], client_email:r[1], issue_date:T(r[3]), due_date:T(r[4]), status:r[5], line_items:[{ description:r[6], quantity:1, rate:r[2] }], subtotal:r[2], total:r[2],
+        notes:"", accent_color: state.invoiceBranding.accentColor || "#2F4A2E", ...(r[5] === "sent" ? { sent_at:new Date(Date.now() + r[3]*DAY_MS).toISOString() } : {}), ...(r[5] === "paid" ? { sent_at:new Date(Date.now() + r[3]*DAY_MS).toISOString(), paid_at:new Date(Date.now() - 40*DAY_MS).toISOString() } : {}) });
+    }
+    for(const r of [["Halo Audio","2 TikToks",3000,"signed",14],["Lumen Skincare","Holiday reel",1800,"delivered",-2],["Northpeak Outdoors","Summer campaign",5000,"negotiating",45]])
+      await put("pipeline_deals", { brand_name:r[0], deliverable:r[1], estimated_value:r[2], stage:r[3], expected_date:T(r[4]) });
+    await put("unclassified_income", { date:T(-2), source:"PayPal: payment from Studio Maple", glyph:"📧", amount:600 });
+    await put("unclassified_income", { date:T(-3), source:"Stripe payout", glyph:"📧", amount:320 });
+    await put("email_opportunities", { date:T(-1), brand_name:"Bright Bean Coffee", amount:1500, summary:"Asked about a 3-post package for January.", status:"new" });
+    const cs = state.creatorSettings, rb = reimbursements(), reimbIds = [];
+    if(exp.flight){ rb[exp.flight] = { from:"Northpeak Outdoors", status:"owed", markedAt:T(-30), followUps:[] }; reimbIds.push(exp.flight); }
+    if(exp.props){ rb[exp.props] = { from:"Lumen Skincare", status:"owed", markedAt:T(-18), expectBy:T(-3), followUps:[] }; reimbIds.push(exp.props); }
+    const goalSet = !incomeGoal();
+    if(goalSet) cs.incomeGoal = 6000;
+    cs.sampleData = { at:todayISO(), ids, reimbIds, goalSet, skipped };
+    await saveCreatorSettings();
+    reloadApp();
+  }
+  async function removeSampleData(){
+    const s = sampleData(); if(!s) return;
+    openSettingsModal(`<div class="sw-reading"><div class="sw-spin" aria-hidden="true"></div><h2>Removing sample data…</h2></div>`);
+    const cs = state.creatorSettings, rb = reimbursements();
+    // Money logged from sample items (a sample invoice marked paid, a sample reimbursement paid back) goes too.
+    (s.reimbIds || []).forEach(id=>{ const r = rb[id]; if(r && r.incomeId) (s.ids.income = s.ids.income || []).push(r.incomeId); delete rb[id]; });
+    let failed = 0;
+    for(const table of ["income","expenses","invoices","pipeline_deals","clients","unclassified_income","email_opportunities"]){
+      const list = [...new Set(s.ids[table] || [])];
+      if(!list.length) continue;
+      const { error } = await sb.from(table).delete().in("id", list);
+      if(error) failed++;
+    }
+    if(cs.dealExpenses) Object.keys(cs.dealExpenses).forEach(k=>{ if((s.ids.pipeline_deals || []).includes(k)) delete cs.dealExpenses[k]; });
+    if(s.goalSet) delete cs.incomeGoal;
+    if(failed){ showToast("Some sample rows couldn't be removed. Try again in a moment.", true); closeSettingsModal(); return; }
+    delete cs.sampleData;
+    await saveCreatorSettings();
+    reloadApp();
+  }
+  function renderSampleBanner(){
+    let el = document.getElementById("sampleBanner");
+    const s = sampleData();
+    if(!s){ if(el) el.remove(); return; }
+    if(!el){
+      el = document.createElement("div"); el.id = "sampleBanner"; el.className = "sample-banner"; el.setAttribute("role", "status");
+      const main = document.querySelector("#page-app .main"); if(main) main.prepend(el); else return;
+    }
+    el.innerHTML = `<span><b>Sample data is showing.</b> Fictional brands and amounts added on ${shortDate(s.at)}. Remove it before you send real invoices or file taxes.</span><button type="button" class="fy-btn" data-sample-remove="1">Remove sample data</button>`;
+  }
+  function openSampleSettings(){
+    const s = sampleData();
+    openSettingsModal(s ? `<h2>Sample data</h2>
+      <p class="settings-note">Sample brands, invoices, deals, expenses and email suggestions were added on ${shortDate(s.at)}. Removing them deletes exactly those rows, plus anything created from them (like income logged when you marked a sample invoice paid). Your own records stay as they are.</p>
+      ${(s.skipped || []).length ? `<p class="sa-sub">Some samples couldn't be added (${escapeHtml(s.skipped.join(", "))}), so those sections may look empty.</p>` : ""}
+      <div class="modal-actions"><button type="button" class="btn-secondary" data-close-settings>Keep it</button><button type="button" class="btn-primary" data-sample-remove="1">Remove sample data</button></div>`
+      : `<h2>Add sample data</h2>
+      <p class="settings-note">See GigBooks with a few months of activity: fictional brand deals, paid and late invoices, expenses (some missing receipts), reimbursements, a monthly income goal, and payments spotted in email.</p>
+      <p class="sa-sub">It goes into this account, so your totals and reports will include it until you remove it. A banner reminds you, and one click removes exactly what was added.</p>
+      <div class="modal-actions"><button type="button" class="btn-secondary" data-close-settings>Cancel</button><button type="button" class="btn-primary" id="sampleAdd">Add sample data</button></div>`);
+    const add = document.getElementById("sampleAdd"); if(add) add.addEventListener("click", addSampleData);
+  }
+  document.addEventListener("click", e=>{ if(e.target.closest("[data-sample-remove]")) removeSampleData(); });
+
   /* ---------- Add an expense in three answers ---------- */
   (function simpleExpenseForm(){
     const form = document.getElementById("expenseForm");
@@ -11693,7 +11950,7 @@ table.m-cards td .empty-state{width:100%;}
       const total = open.reduce((a,i)=>a+Number(i.total),0) + pending.reduce((a,r)=>a+r.amount,0) + reimbG.reduce((a,g)=>a+g.total,0);
       const firstLate = open.find(i=>effectiveInvoiceStatus(i) === "overdue");
       return { lines:[`${open.length + pending.length + reimbG.length === 1 ? "One payment is" : `${open.length + pending.length + reimbG.length} payments are`} still on the way, <b>${money(total)}</b> in total:`, `<ul class="ask-list">${rows.join("")}</ul>`],
-        kind:"records", actions:[...(firstLate ? [askAction(`Remind ${firstLate.clientName}`, ()=>{ closeGiggy(); openChaseModal(firstLate.id); })] : []), askAction("See invoices", ()=>{ closeGiggy(); showView("invoices"); })] };
+        kind:"records", actions:[...(firstLate ? [askAction(`Remind ${firstLate.clientName}`, ()=>{ closeGiggy(); openChaseModal(firstLate.id); })] : []), askAction("See everything owed", ()=>{ closeGiggy(); showView("owed"); })] };
     }
     // Where did the money go
     if(/where.*(money|spend|spent)|biggest (expense|spend)|most of my money/i.test(q)){
@@ -13634,6 +13891,7 @@ table.m-cards td .empty-state{width:100%;}
     invite: renderInviteSettings,
     plan: renderPlanSettings,
     exportData: renderExportDataSettings,
+    sampleData: openSampleSettings,
     deleteAccount: renderDeleteAccountSettings
   };
 

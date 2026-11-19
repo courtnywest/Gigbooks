@@ -140,7 +140,7 @@ test("five destinations, each with its own tabs", async () => {
   assert.deepEqual(groups, ["Home", "Money", "Get Paid", "Reports", "More"]);
   const tabsOf = async g => { await page.click(`.nav-item[data-group="${g}"]`); return page.$$eval(".view.active .section-tabs button", els => els.map(e => e.textContent.trim())); };
   assert.deepEqual(await tabsOf("money"), ["All", "Money in", "Money out", "Accounts"]);
-  assert.deepEqual(await tabsOf("getpaid"), ["Invoices", "Brand deals", "What to charge"]);
+  assert.deepEqual(await tabsOf("getpaid"), ["Owed to you", "Invoices", "Brand deals", "What to charge"]);
   assert.deepEqual(await tabsOf("reports"), ["Monthly recap", "Taxes"]);
   assert.deepEqual(await tabsOf("more"), ["Gifts & freebies", "Contract reader", "Help", "Settings"]);
 });
